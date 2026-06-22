@@ -1,0 +1,3 @@
+CompileFlags:
+  Add: [-std=c++26, -I/home/impostorboy/projects/insane_night/external/bgfx/include, -I/home/impostorboy/projects/insane_night/external/bx/include, -I/home/impostorboy/projects/insane_night/external/bimg/include]
+

@@ -1,0 +1,15 @@
+[submodule "cpp/external/external/bx"]
+	path = cpp/external/external/bx
+	url = https://github.com/bkaradzic/bx
+[submodule "cpp/external/external/bimg"]
+	path = cpp/external/external/bimg
+	url = https://github.com/bkaradzic/bimg
+[submodule "cpp/external/bx"]
+	path = cpp/external/bx
+	url = https://github.com/bkaradzic/bx
+[submodule "cpp/external/bimg"]
+	path = cpp/external/bimg
+	url = https://github.com/bkaradzic/bimg
+[submodule "cpp/external/bgfx"]
+	path = cpp/external/bgfx
+	url = https://github.com/bkaradzic/bgfx
