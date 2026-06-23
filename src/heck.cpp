@@ -2,13 +2,12 @@ module;
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
 #include <bgfx/bgfx.h>
-#include <expected>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 export module heck;
 
-//SDL
 export class Sigma {
 private:
   Sigma(std::string_view title, int x, int y, SDL_Window *buzz)
@@ -22,20 +21,14 @@ public:
     }
   }
 
-  static std::expected<Sigma, std::string>
-  skid(std::string_view title, int x, int y) {
-
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-      std::cerr << "fuckup: " << SDL_GetError() << std::endl;
-      return std::unexpected(std::string(SDL_GetError()));
-    }
+  static Sigma skid(std::string_view title, int x, int y) {
+    if (!SDL_Init(SDL_INIT_VIDEO))
+      throw std::runtime_error(std::string("SDL_Init: ") + SDL_GetError());
 
     SDL_Window *buzz = SDL_CreateWindow(title.data(), x, y, 0);
     if (!buzz) {
       SDL_Quit();
-      return std::unexpected(
-          "SDL_CreateWindow got ligma💀(no sigma): " +
-          std::string(SDL_GetError()));
+      throw std::runtime_error("SDL_CreateWindow: " + std::string(SDL_GetError()));
     }
     return Sigma(title, x, y, buzz);
   }
@@ -56,7 +49,6 @@ private:
   SDL_Window *buzz = nullptr;
 };
 
-//bgfx
 export class Amogus {
 private:
   SDL_Window *buzz = nullptr;
@@ -68,8 +60,7 @@ private:
 public:
   ~Amogus() {if (buzz) bgfx::shutdown();}
 
-  static std::expected<Amogus, std::string>
-  rizzing(SDL_Window *buzz, int w, int h, bgfx::RendererType::Enum goonerType) {
+  static Amogus rizzing(SDL_Window *buzz, int w, int h, bgfx::RendererType::Enum goonerType) {
       bgfx::PlatformData pld{};
       pld.nwh = nullptr;
       pld.ndt = nullptr;
@@ -97,7 +88,7 @@ public:
           pld.ndt = x11_display;
           pld.nwh = x11_window;
         } else {
-          return std::unexpected("no wayland or x11 props");
+          throw std::runtime_error("no wayland or x11 props");
         }
       }
 
@@ -108,14 +99,13 @@ public:
       init.resolution.reset = BGFX_RESET_VSYNC;
       init.platformData = pld;
 
-      if (!bgfx::init(init)) {
-          return std::unexpected("bgfx::init edged");
-      }
+      if (!bgfx::init(init))
+        throw std::runtime_error("bgfx::init edged");
 
       bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000ff, 1.0f, 0);
       bgfx::setViewRect(0, 0, 0, w, h);
 
-      return std::expected<Amogus, std::string>(Amogus(buzz, w, h, goonerType));
+      return Amogus(buzz, w, h, goonerType);
   }
 
   void frame() {bgfx::touch(0); bgfx::frame();}
