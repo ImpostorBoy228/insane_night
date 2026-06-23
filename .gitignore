@@ -1,2 +1,5 @@
 /target
 external/b*
+*.o
+insane_night
+main.s

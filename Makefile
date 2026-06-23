@@ -18,3 +18,4 @@ heck.o: src/heck.cpp
 clean:
 	rm -f *.o insane_night
 	rm -rf gcm.cache
+	rm -f main.s
