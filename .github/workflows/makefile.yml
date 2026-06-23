@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: deps
-      run: curl https://github.com/libsdl-org/SDL/releases/download/release-3.4.10/SDL3-3.4.10.tar.gz | tar -xz && cd SDL3-3.4.10 && mkdir build && cd build && cmake .. && make -j$(nproc) && sudo make install
+      run: sudo apt-get update && sudo apt-get install -y wget && wget https://github.com/libsdl-org/SDL/releases/download/release-3.4.10/SDL3-3.4.10.tar.gz && tar -xz SDL3-3.4.10 && cd SDL3-3.4.10 && mkdir build && cd build && cmake .. && make -j$(nproc) && sudo make install
     - name: build from source
       run: make
       working-directory: insane_night
