@@ -1,5 +1,5 @@
 /target
-external/b*
+external/bin
 *.o
 insane_night
 main.s
