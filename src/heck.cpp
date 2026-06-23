@@ -112,7 +112,7 @@ public:
           return std::unexpected("bgfx::init edged");
       }
 
-      bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+      bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000ff, 1.0f, 0);
       bgfx::setViewRect(0, 0, 0, w, h);
 
       return std::expected<Amogus, std::string>(Amogus(buzz, w, h, goonerType));
