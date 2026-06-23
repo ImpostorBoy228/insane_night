@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++23 -fmodules-ts -Wall -Wextra -O2
-INCLUDES = -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Lexternal/SDL/lib
+INCLUDES = -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL -Lexternal/SDL/lib
 LDFLAGS  = -lSDL3 -lX11 -lGL -ldl -lpthread
 LIBS     = external/lib/libbgfx.a external/lib/libbx.a external/lib/libbimg.a
 
