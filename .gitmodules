@@ -1,15 +1,12 @@
-[submodule "cpp/external/external/bx"]
-	path = cpp/external/external/bx
+[submodule "external/bx"]
+	path = external/bx
 	url = https://github.com/bkaradzic/bx
-[submodule "cpp/external/external/bimg"]
-	path = cpp/external/external/bimg
+[submodule "external/bimg"]
+	path = external/bimg
 	url = https://github.com/bkaradzic/bimg
-[submodule "cpp/external/bx"]
-	path = cpp/external/bx
-	url = https://github.com/bkaradzic/bx
-[submodule "cpp/external/bimg"]
-	path = cpp/external/bimg
-	url = https://github.com/bkaradzic/bimg
-[submodule "cpp/external/bgfx"]
-	path = cpp/external/bgfx
+[submodule "external/bgfx"]
+	path = external/bgfx
 	url = https://github.com/bkaradzic/bgfx
+[submodule "external/SDL"]
+	path = external/SDL
+	url = https://github.com/libsdl-org/SDL
