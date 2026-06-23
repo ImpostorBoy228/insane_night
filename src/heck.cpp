@@ -3,10 +3,66 @@ module;
 #include <SDL3/SDL_properties.h>
 #include <bgfx/bgfx.h>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 export module heck;
+
+export class Skibidi {
+public:
+  Skibidi(std::string_view type, uint32_t zindex) : zindex(zindex), type(type) {}
+  virtual ~Skibidi() {}
+  virtual void Build() = 0;
+  virtual void Draw() = 0;
+  uint32_t zindex;
+protected:
+  std::string type;
+};
+
+export class Text : public Skibidi {
+public:
+  Text(std::string_view text, uint32_t x, uint32_t y, uint32_t fontSize, uint32_t color, uint32_t zindex)
+  : Skibidi("text", zindex), text(text), x(x), y(y), fontSize(fontSize), color(color) {}
+  void Build() override {
+
+  }
+  void Draw() override {
+
+  }
+private:
+  std::string text;
+  uint32_t x, y, fontSize, color;
+};
+
+export class UIman {
+private:
+  std::vector<std::unique_ptr<Skibidi>> elements;
+public:
+  UIman() {}
+  template <typename T, typename... Args>
+  requires std::derived_from<T, Skibidi>
+  T* AddElement(Args&&... args)
+  {
+      auto obj = std::make_unique<T>(std::forward<Args>(args)...);
+      T* ptr = obj.get();
+      elements.push_back(std::move(obj));
+      return ptr;
+  }
+
+  void BuildAll() {
+    for (const auto &element : elements) {
+      element->Build();
+    }
+  }
+
+  void Draw() {
+    for (const auto &element : elements) {
+      element->Draw();
+    }
+  }
+};
 
 export class Sigma {
 private:

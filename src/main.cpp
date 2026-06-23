@@ -10,22 +10,23 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     Amogus amogus = Amogus::rizzing(
         sigma.getWindow(), 800, 600, bgfx::RendererType::Vulkan);
 
+    UIman ui;
+    ui.BuildAll();
+
     bool gooning = true;
     while (gooning) {
       SDL_Event event;
       while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_EVENT_QUIT) {
+        if (event.type == SDL_EVENT_QUIT or (
+            event.type == SDL_EVENT_KEY_DOWN and
+            event.key.key == SDLK_ESCAPE)) {
           gooning = false;
-        }
-        if (event.type == SDL_EVENT_KEY_DOWN) {
-          if (event.key.key == SDLK_ESCAPE) {
-            gooning = false;
-          }
         }
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
           amogus.resize(event.window.data1, event.window.data2);
         }
       }
+      ui.Draw();
       amogus.frame();
     }
 
