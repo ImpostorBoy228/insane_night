@@ -18,6 +18,10 @@ jobs:
     - name: install SDL3 dependencies
       run: sudo apt-get update && sudo apt-get install -y cmake build-essential libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
 
+    - name: Get SDL submodule commit
+      id: sdl-commit
+      run: echo "hash=$(git submodule status external/SDL | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
     - name: Cache SDL3 build
       id: cache-sdl
       uses: actions/cache@v4
@@ -26,7 +30,7 @@ jobs:
           external/SDL/build
           /usr/local/lib/libSDL3*
           /usr/local/include/SDL3
-        key: sdl3-${{ hashFiles('external/SDL/.git/HEAD') }}
+        key: sdl3-${{ steps.sdl-commit.outputs.hash }}
 
     - name: build SDL3 from source
       if: steps.cache-sdl.outputs.cache-hit != 'true'
