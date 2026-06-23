@@ -16,4 +16,3 @@ jobs:
 
     - name: build from source
       run: make
-      working-directory: insane_night
