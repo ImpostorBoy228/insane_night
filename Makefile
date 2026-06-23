@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++26 -fmodules -Wall -Wextra -O2
+CXXFLAGS = -std=c++20 -fmodules -Wall -Wextra -O2
 INCLUDES = -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include
 LDFLAGS  = -lSDL3 -lX11 -lGL -ldl -lpthread
 LIBS     = external/lib/libbgfx.a external/lib/libbx.a external/lib/libbimg.a
