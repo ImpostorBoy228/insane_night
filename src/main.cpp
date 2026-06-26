@@ -4,16 +4,12 @@
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   try {
-    Sigma sigma = Sigma::skid("heck", 800, 600);
-    Amogus amogus = Amogus::rizzing(
-        sigma.getWindow(), 800, 600, bgfx::RendererType::Vulkan);
+    Hell_Machina engine;
+    engine.init("heck", 800, 600, bgfx::RendererType::Vulkan);
 
-    TextGooner textGooner;
-    textGooner.init("/usr/share/fonts/TTF/DejaVuSans.ttf", 32);
-
-    UIman ui;
-    ui.AddElement<Text>("Hello, world!", 50, 50, 32, 0xffffffff, 0);
-    ui.BuildAll();
+    auto &uiLayer = engine.addUILayer("ui");
+    uiLayer.add<Text>(engine.getTextGooner(), "Hello, world!", 50, 50, 0xffffffff, 0);
+    uiLayer.buildAll();
 
     bool gooning = true;
     while (gooning) {
@@ -25,14 +21,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
           gooning = false;
         }
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-          amogus.resize(event.window.data1, event.window.data2);
+          engine.resize(event.window.data1, event.window.data2);
         }
       }
 
-      textGooner.beginFrame(800, 600);
-      ui.Draw(textGooner);
-      textGooner.endFrame();
-      amogus.frame();
+      engine.frame();
     }
 
     return 0;

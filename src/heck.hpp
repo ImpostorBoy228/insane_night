@@ -11,10 +11,55 @@
 #include <string>
 #include <string_view>
 #include <array>
+#include <optional>
 #include <vector>
 #include "tsfont_wrapper.hpp"
 #include "shaders/vs_text.bin.h"
 #include "shaders/fs_text.bin.h"
+
+
+struct Kino {
+    uint16_t id;
+    bgfx::FrameBufferHandle fb;
+    uint32_t clearFlags;
+    uint32_t clearColor;
+    uint16_t viewW = 0, viewH = 0;
+    bool dirty = true;
+    float ortho[16];
+    bool useOrtho = false;
+
+    void setViewport(uint16_t w, uint16_t h);
+    void setOrtho(float left, float right, float bottom, float top);
+    void begin();
+};
+
+struct DrawCmd {
+    bgfx::TransientVertexBuffer tvb;
+    bgfx::TransientIndexBuffer  tib;
+    bgfx::ProgramHandle         program;
+    bgfx::UniformHandle         texUniform;
+    bgfx::TextureHandle         tex;
+    uint64_t                    state;
+};
+
+class JohnPork {
+    std::vector<DrawCmd> cmds;
+public:
+    void push(const DrawCmd &cmd) { cmds.push_back(cmd); }
+    void flush(uint16_t viewId) {
+        for (auto &cmd : cmds) {
+            bgfx::setVertexBuffer(0, &cmd.tvb);
+            bgfx::setIndexBuffer(&cmd.tib);
+            bgfx::setTexture(0, cmd.texUniform, cmd.tex);
+            bgfx::setState(cmd.state);
+            bgfx::submit(viewId, cmd.program);
+        }
+        cmds.clear();
+    }
+    void clear() { cmds.clear(); }
+};
+
+class Hell_Machina;
 
 class TsFontHandler {
 public:
@@ -91,8 +136,9 @@ public:
   Skibidi(std::string_view type, uint32_t zindex) : zindex(zindex), type(type) {}
   virtual ~Skibidi() {}
   virtual void Build() = 0;
-  virtual void Draw(TextGooner &tr) = 0;
+  virtual void collect(JohnPork &pork) = 0;
   uint32_t zindex;
+  bool visible = true;
 protected:
   std::string type;
 };
@@ -183,23 +229,43 @@ public:
     return true;
   }
 
-  void beginFrame(int w, int h) {
-    bgfx::setViewFrameBuffer(1, BGFX_INVALID_HANDLE);
-    bgfx::setViewRect(1, 0, 0, (uint16_t)w, (uint16_t)h);
-    bgfx::setViewClear(1, BGFX_CLEAR_NONE, 0, 1.0f, 0);
-    bgfx::touch(1);
+  const bgfx::VertexLayout& getLayout() const { return layout; }
+  const GlyphData* getGlyphs() const { return glyphs.data(); }
+  bgfx::TextureHandle getAtlas() const { return atlas; }
+  bgfx::ProgramHandle getProgram() const { return program; }
+  bgfx::UniformHandle getSampler() const { return s_tex; }
 
-    float ortho[16];
-    bx::mtxOrtho(ortho, 0, (float)w, (float)h, 0, 0.0f, 1.0f, 0.0f, false);
-    bgfx::setViewTransform(1, NULL, ortho);
+  void destroy() {
+    if (bgfx::isValid(atlas))   bgfx::destroy(atlas);
+    if (bgfx::isValid(program)) bgfx::destroy(program);
+    if (bgfx::isValid(s_tex))   bgfx::destroy(s_tex);
+    fontHandler.destroy();
   }
 
-  void drawText(float x, float y, const char *text, uint32_t color = 0xffffffff) {
-    if (!text || !*text) return;
+private:
+  TsFontHandler fontHandler;
+  bgfx::TextureHandle atlas  = BGFX_INVALID_HANDLE;
+  bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+  bgfx::UniformHandle s_tex   = BGFX_INVALID_HANDLE;
+  bgfx::VertexLayout layout;
+  std::array<GlyphData, 256> glyphs{};
+};
+
+class Text : public Skibidi {
+public:
+  Text(TextGooner &gooner, std::string_view text, float x, float y, uint32_t color, uint32_t zindex)
+  : Skibidi("text", zindex), gooner(gooner), text(text), x(x), y(y), color(color) {}
+  void Build() override {}
+
+  void collect(JohnPork &pork) override {
+    if (!visible || text.empty()) return;
 
     struct Vertex { float x, y, u, v; uint32_t color; };
 
-    int len = (int)std::strlen(text);
+    auto *glyphs = gooner.getGlyphs();
+    auto &layout = gooner.getLayout();
+
+    int len = (int)text.size();
     int quads = 0;
     for (int i = 0; i < len; i++) {
       unsigned char c = (unsigned char)text[i];
@@ -209,7 +275,8 @@ public:
 
     bgfx::TransientVertexBuffer tvb;
     bgfx::TransientIndexBuffer tib;
-    if (!bgfx::allocTransientBuffers(&tvb, layout, quads * 4, &tib, quads * 6)) return;
+    if (!bgfx::allocTransientBuffers(&tvb, layout, quads * 4, &tib, quads * 6))
+      return;
 
     auto *vert = (Vertex *)tvb.data;
     float penX = x;
@@ -240,64 +307,46 @@ public:
       idx += 6;
     }
 
-    bgfx::setVertexBuffer(0, &tvb);
-    bgfx::setIndexBuffer(&tib);
-    bgfx::setTexture(0, s_tex, atlas);
-    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA);
-    bgfx::submit(1, program);
-  }
-
-  void endFrame() {}
-
-  void destroy() {
-    if (bgfx::isValid(atlas))   bgfx::destroy(atlas);
-    if (bgfx::isValid(program)) bgfx::destroy(program);
-    if (bgfx::isValid(s_tex))   bgfx::destroy(s_tex);
-    fontHandler.destroy();
+    DrawCmd cmd;
+    cmd.tvb = tvb;
+    cmd.tib = tib;
+    cmd.program = gooner.getProgram();
+    cmd.texUniform = gooner.getSampler();
+    cmd.tex = gooner.getAtlas();
+    cmd.state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
+    pork.push(cmd);
   }
 
 private:
-  TsFontHandler fontHandler;
-  bgfx::TextureHandle atlas  = BGFX_INVALID_HANDLE;
-  bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
-  bgfx::UniformHandle s_tex   = BGFX_INVALID_HANDLE;
-  bgfx::VertexLayout layout;
-  std::array<GlyphData, 256> glyphs{};
-};
-
-class Text : public Skibidi {
-public:
-  Text(std::string_view text, uint32_t x, uint32_t y, uint32_t fontSize, uint32_t color, uint32_t zindex)
-  : Skibidi("text", zindex), text(text), x(x), y(y), fontSize(fontSize), color(color) {}
-  void Build() override {}
-  void Draw(TextGooner &tr) override {
-    tr.drawText((float)x, (float)y, text.c_str(), color);
-  }
-private:
+  TextGooner &gooner;
   std::string text;
-  uint32_t x, y, fontSize, color;
+  float x, y;
+  uint32_t color;
 };
 
-class UIman {
-private:
-  std::vector<std::unique_ptr<Skibidi>> elements;
-public:
-  UIman() {}
-  template <typename T, typename... Args>
+struct Layer {
+  std::string name;
+  bool visible = true;
+  std::vector<std::unique_ptr<Skibidi>> items;
+
+  template<typename T, typename... Args>
   requires std::derived_from<T, Skibidi>
-  T* AddElement(Args&&... args) {
+  T* add(Args&&... args) {
     auto obj = std::make_unique<T>(std::forward<Args>(args)...);
-    T* ptr = obj.get();
-    elements.push_back(std::move(obj));
-    return ptr;
+    T* raw = obj.get();
+    items.push_back(std::move(obj));
+    return raw;
   }
 
-  void BuildAll() {
-    for (const auto &element : elements) element->Build();
+  void buildAll() {
+    for (auto &item : items) item->Build();
   }
 
-  void Draw(TextGooner &tr) {
-    for (const auto &element : elements) element->Draw(tr);
+  void collect(JohnPork &pork) {
+    if (!visible) return;
+    for (auto &item : items)
+      if (item->visible)
+        item->collect(pork);
   }
 };
 
@@ -426,4 +475,24 @@ public:
     }
     return *this;
   }
+};
+
+class Hell_Machina {
+    std::optional<Sigma> sigma;
+    std::optional<Amogus> amogus;
+    Kino scenePass;
+    Kino uiPass;
+    TextGooner textGooner;
+    std::vector<Layer> sceneLayers;
+    std::vector<Layer> uiLayers;
+public:
+    Hell_Machina() = default;
+
+    void init(const char *title, int w, int h, bgfx::RendererType::Enum renderer);
+    void frame();
+    void resize(int w, int h);
+
+    Layer& addSceneLayer(const char *name);
+    Layer& addUILayer(const char *name);
+    TextGooner& getTextGooner() { return textGooner; }
 };
