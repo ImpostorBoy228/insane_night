@@ -49,6 +49,7 @@ void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enu
     uiPass.setOrtho(0, (float)w, (float)h, 0);
 
     textGooner.init("/usr/share/fonts/TTF/DejaVuSans.ttf", 32);
+    rectGooner.init();
 }
 
 void Hell_Machina::frame() {

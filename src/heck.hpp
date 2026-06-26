@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
+#include <algorithm>
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <cstdint>
@@ -16,6 +17,8 @@
 #include "tsfont_wrapper.hpp"
 #include "shaders/vs_text.bin.h"
 #include "shaders/fs_text.bin.h"
+#include "shaders/vs_rect.bin.h"
+#include "shaders/fs_rect.bin.h"
 
 
 struct Kino {
@@ -50,7 +53,7 @@ public:
         for (auto &cmd : cmds) {
             bgfx::setVertexBuffer(0, &cmd.tvb);
             bgfx::setIndexBuffer(&cmd.tib);
-            bgfx::setTexture(0, cmd.texUniform, cmd.tex);
+            if (bgfx::isValid(cmd.tex)) bgfx::setTexture(0, cmd.texUniform, cmd.tex);
             bgfx::setState(cmd.state);
             bgfx::submit(viewId, cmd.program);
         }
@@ -130,6 +133,30 @@ private:
 };
 
 class TextGooner;
+
+class RectGooner {
+    bgfx::ProgramHandle program;
+    bgfx::VertexLayout layout;
+public:
+    bool init() {
+        bgfx::ShaderHandle vsh = bgfx::createShader(bgfx::makeRef(vs_rect, sizeof(vs_rect)));
+        bgfx::ShaderHandle fsh = bgfx::createShader(bgfx::makeRef(fs_rect, sizeof(fs_rect)));
+        program = bgfx::createProgram(vsh, fsh, true);
+
+        layout.begin()
+            .add(bgfx::Attrib::Position, 2, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
+            .end();
+        return true;
+    }
+
+    bgfx::ProgramHandle getProgram() const { return program; }
+    const bgfx::VertexLayout& getLayout() const { return layout; }
+
+    void destroy() {
+        if (bgfx::isValid(program)) bgfx::destroy(program);
+    }
+};
 
 class Skibidi {
 public:
@@ -324,6 +351,45 @@ private:
   uint32_t color;
 };
 
+class Rectangle : public Skibidi {
+    RectGooner &gooner;
+    float x, y, w, h;
+    uint32_t color;
+public:
+    Rectangle(RectGooner &gooner, float x, float y, float w, float h, uint32_t color, uint32_t zindex)
+    : Skibidi("rect", zindex), gooner(gooner), x(x), y(y), w(w), h(h), color(color) {}
+
+    void Build() override {}
+
+    void collect(JohnPork &pork) override {
+        struct Vertex { float x, y; uint32_t color; };
+
+        bgfx::TransientVertexBuffer tvb;
+        bgfx::TransientIndexBuffer tib;
+        if (!bgfx::allocTransientBuffers(&tvb, gooner.getLayout(), 4, &tib, 6))
+            return;
+
+        auto *vert = (Vertex *)tvb.data;
+        vert[0] = {x,     y,      color};
+        vert[1] = {x + w, y,      color};
+        vert[2] = {x + w, y + h,  color};
+        vert[3] = {x,     y + h,  color};
+
+        auto *idx = (uint16_t *)tib.data;
+        idx[0] = 0; idx[1] = 1; idx[2] = 2;
+        idx[3] = 0; idx[4] = 2; idx[5] = 3;
+
+        DrawCmd cmd;
+        cmd.tvb = tvb;
+        cmd.tib = tib;
+        cmd.program = gooner.getProgram();
+        cmd.texUniform = BGFX_INVALID_HANDLE;
+        cmd.tex = BGFX_INVALID_HANDLE;
+        cmd.state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
+        pork.push(cmd);
+    }
+};
+
 struct Layer {
   std::string name;
   bool visible = true;
@@ -334,16 +400,14 @@ struct Layer {
   T* add(Args&&... args) {
     auto obj = std::make_unique<T>(std::forward<Args>(args)...);
     T* raw = obj.get();
+    raw->Build();
     items.push_back(std::move(obj));
     return raw;
   }
 
-  void buildAll() {
-    for (auto &item : items) item->Build();
-  }
-
   void collect(JohnPork &pork) {
     if (!visible) return;
+    std::sort(items.begin(), items.end(), [](auto &a, auto &b) { return a->zindex < b->zindex; });
     for (auto &item : items)
       if (item->visible)
         item->collect(pork);
@@ -483,6 +547,7 @@ class Hell_Machina {
     Kino scenePass;
     Kino uiPass;
     TextGooner textGooner;
+    RectGooner rectGooner;
     std::vector<Layer> sceneLayers;
     std::vector<Layer> uiLayers;
 public:
@@ -495,4 +560,5 @@ public:
     Layer& addSceneLayer(const char *name);
     Layer& addUILayer(const char *name);
     TextGooner& getTextGooner() { return textGooner; }
+    RectGooner& getRectGooner() { return rectGooner; }
 };

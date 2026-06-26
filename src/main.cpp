@@ -9,7 +9,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 
     auto &uiLayer = engine.addUILayer("ui");
     uiLayer.add<Text>(engine.getTextGooner(), "Hello, world!", 50, 50, 0xffffffff, 0);
-    uiLayer.buildAll();
+    uiLayer.add<Text>(engine.getTextGooner(), "Dick pic", 50, 100, 0xffffffff, 0);
+    uiLayer.add<Rectangle>(engine.getRectGooner(), 50, 50, 150, 30, 0xff0000ff, -1);
+    uiLayer.add<Rectangle>(engine.getRectGooner(), 50, 50, 150, 30, 0xff00ffff, 0);
 
     bool gooning = true;
     while (gooning) {
