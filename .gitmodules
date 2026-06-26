@@ -10,3 +10,6 @@
 [submodule "external/SDL"]
 	path = external/SDL
 	url = https://github.com/libsdl-org/SDL
+[submodule "external/tsfont"]
+	path = external/tsfont
+	url = https://github.com/ImpostorBoy228/tsfont

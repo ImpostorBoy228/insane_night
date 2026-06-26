@@ -1,8 +1,6 @@
-#include <SDL3/SDL.h>
-#include <bgfx/bgfx.h>
 #include <iostream>
 #include <stdexcept>
-import heck;
+#include "heck.h"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   try {
@@ -10,7 +8,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     Amogus amogus = Amogus::rizzing(
         sigma.getWindow(), 800, 600, bgfx::RendererType::Vulkan);
 
+    TextGooner textGooner;
+    textGooner.init("/usr/share/fonts/TTF/DejaVuSans.ttf", 32);
+
     UIman ui;
+    ui.AddElement<Text>("Hello, world!", 50, 50, 32, 0xffffffff, 0);
     ui.BuildAll();
 
     bool gooning = true;
@@ -26,7 +28,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
           amogus.resize(event.window.data1, event.window.data2);
         }
       }
-      ui.Draw();
+
+      textGooner.beginFrame(800, 600);
+      ui.Draw(textGooner);
+      textGooner.endFrame();
       amogus.frame();
     }
 

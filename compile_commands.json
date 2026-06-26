@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "/home/impostorboy/projects/insane_night",
+    "command": "g++ -c src/heck.cpp -std=c++23 -Wall -Wextra -O2 -fmodules-ts -DBX_CONFIG_DEBUG=0 -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2",
+    "file": "src/heck.cpp"
+  },
+  {
+    "directory": "/home/impostorboy/projects/insane_night",
+    "command": "g++ -c src/main.cpp -std=c++23 -Wall -Wextra -O2 -fmodules-ts -DBX_CONFIG_DEBUG=0 -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2",
+    "file": "src/main.cpp"
+  },
+  {
+    "directory": "/home/impostorboy/projects/insane_night",
+    "command": "gcc -c external/tsfont/font_handler.c -std=c11 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2",
+    "file": "external/tsfont/font_handler.c"
+  }
+]
