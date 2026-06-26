@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdexcept>
-#include "heck.h"
+#include "heck.hpp"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   try {

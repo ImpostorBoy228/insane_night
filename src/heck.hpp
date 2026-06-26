@@ -12,7 +12,7 @@
 #include <string_view>
 #include <array>
 #include <vector>
-#include "tsfont_wrapper.h"
+#include "tsfont_wrapper.hpp"
 #include "shaders/vs_text.bin.h"
 #include "shaders/fs_text.bin.h"
 
