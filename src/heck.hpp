@@ -27,6 +27,8 @@
 #include "shaders/vs_image.bin.h"
 #include "shaders/fs_image.bin.h"
 
+static bool fuckCpp = true;
+
 inline bgfx::TextureHandle loadTexture(const char *path) {
     int w, h, n;
     stbi_uc *data = stbi_load(path, &w, &h, &n, STBI_rgb_alpha);

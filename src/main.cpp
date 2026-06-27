@@ -3,6 +3,8 @@
 #include "heck.hpp"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
+    if (!fuckCpp) goto naxyi;
+
   try {
     Hell_Machina engine;
     engine.init("heck", 800, 600, bgfx::RendererType::Vulkan);
@@ -36,7 +38,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     if (bgfx::isValid(tex)) bgfx::destroy(tex);
     return 0;
   } catch (const std::exception &e) {
-    std::cerr << "E666: " << e.what() << std::endl;
+    std::cerr << "E666: " << e.what() << "\n";
     return 1;
   }
+naxyi:
+  return -1;
 }
