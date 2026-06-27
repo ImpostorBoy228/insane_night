@@ -1,3 +1,4 @@
+#define STB_IMAGE_IMPLEMENTATION
 #include "heck.hpp"
 
 void Kino::setViewport(uint16_t w, uint16_t h) {

@@ -7,7 +7,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     Hell_Machina engine;
     engine.init("heck", 800, 600, bgfx::RendererType::Vulkan);
 
-    auto tex = loadTexture("test.tga");
+    auto tex = loadTexture("test.png");
     if (!bgfx::isValid(tex))
       throw std::runtime_error("failed to load test.tga");
 

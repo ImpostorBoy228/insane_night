@@ -3,7 +3,7 @@ CXX  = g++
 MAKEFLAGS += -j16
 CXXFLAGS = -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0
 CFLAGS   = -std=c11 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0
-INCLUDES = -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2
+INCLUDES = -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2
 LDFLAGS  = -lSDL3 -lX11 -lGL -ldl -lpthread -lfreetype
 LIBS     = external/lib/libbgfx.a external/lib/libbx.a external/lib/libbimg.a
 

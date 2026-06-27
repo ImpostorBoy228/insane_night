@@ -19,6 +19,7 @@
 #include <optional>
 #include <vector>
 #include "tsfont_wrapper.hpp"
+#include "stb_image.h"
 #include "shaders/vs_text.bin.h"
 #include "shaders/fs_text.bin.h"
 #include "shaders/vs_rect.bin.h"
@@ -27,6 +28,15 @@
 #include "shaders/fs_image.bin.h"
 
 inline bgfx::TextureHandle loadTexture(const char *path) {
+    int w, h, n;
+    stbi_uc *data = stbi_load(path, &w, &h, &n, STBI_rgb_alpha);
+    if (data) {
+        auto mem = bgfx::copy(data, (uint32_t)(w * h * 4));
+        stbi_image_free(data);
+        return bgfx::createTexture2D((uint16_t)w, (uint16_t)h, false, 1,
+            bgfx::TextureFormat::RGBA8, 0, mem);
+    }
+
     FILE *fp = std::fopen(path, "rb");
     if (!fp) return BGFX_INVALID_HANDLE;
     std::fseek(fp, 0, SEEK_END);
@@ -39,7 +49,6 @@ inline bgfx::TextureHandle loadTexture(const char *path) {
     }
     std::fclose(fp);
 
-    // Try bimg (DDS, KTX, PVR3)
     bimg::ImageContainer img;
     bx::Error err;
     if (bimg::imageParse(img, buf.get(), (uint32_t)sz, &err)) {
@@ -63,40 +72,7 @@ inline bgfx::TextureHandle loadTexture(const char *path) {
         bimg::imageFree(&img);
         return tex;
     }
-
-    // Fallback: TGA (uncompressed true-color)
-    if (sz < 18) return BGFX_INVALID_HANDLE;
-    uint8_t idLen = buf[0];
-    uint8_t cmapType = buf[1];
-    uint8_t imgType = buf[2];
-    if (cmapType != 0 || (imgType != 2 && imgType != 3)) return BGFX_INVALID_HANDLE;
-    uint16_t w = (uint16_t)buf[12] | (uint16_t)buf[13] << 8;
-    uint16_t h = (uint16_t)buf[14] | (uint16_t)buf[15] << 8;
-    uint8_t bpp = buf[16];
-    if (w == 0 || h == 0 || (bpp != 24 && bpp != 32)) return BGFX_INVALID_HANDLE;
-    uint8_t desc = buf[17];
-    bool topLeft = (desc & 0x20) != 0;
-
-    uint32_t dataOff = 18 + idLen;
-    uint32_t pixelBytes = (uint32_t)w * h * (bpp / 8);
-    if (dataOff + pixelBytes > (uint32_t)sz) return BGFX_INVALID_HANDLE;
-
-    auto rgba = std::make_unique<uint8_t[]>((uint32_t)w * h * 4);
-    for (uint32_t y = 0; y < h; y++) {
-        uint32_t srcY = topLeft ? y : (h - 1 - y);
-        for (uint32_t x = 0; x < w; x++) {
-            uint32_t si = dataOff + (srcY * w + x) * (bpp / 8);
-            uint32_t di = (y * w + x) * 4;
-            rgba[di + 2] = buf[si + 0]; // B → R
-            rgba[di + 1] = buf[si + 1]; // G
-            rgba[di + 0] = buf[si + 2]; // R → B
-            rgba[di + 3] = (bpp == 32) ? buf[si + 3] : 255;
-        }
-    }
-
-    auto mem = bgfx::copy(rgba.get(), (uint32_t)w * h * 4);
-    return bgfx::createTexture2D(w, h, false, 1,
-        bgfx::TextureFormat::RGBA8, 0, mem);
+    return BGFX_INVALID_HANDLE;
 }
 
 struct Kino {
