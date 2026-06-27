@@ -15,8 +15,8 @@ jobs:
       with:
         submodules: recursive
 
-    - name: install SDL3 dependencies
-      run: sudo apt-get update && sudo apt-get install -y cmake build-essential libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
+    - name: install dependencies
+      run: sudo apt-get update && sudo apt-get install -y cmake build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
 
     - name: Get SDL submodule commit
       id: sdl-commit

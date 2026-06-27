@@ -50,6 +50,7 @@ void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enu
 
     textGooner.init("/usr/share/fonts/TTF/DejaVuSans.ttf", 32);
     rectGooner.init();
+    imageGooner.init();
 }
 
 void Hell_Machina::frame() {

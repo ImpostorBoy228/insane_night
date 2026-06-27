@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
+#include <bx/allocator.h>
+#include <bx/error.h>
+#include <bimg/decode.h>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -12,6 +15,7 @@
 #include <string>
 #include <string_view>
 #include <array>
+#include <algorithm>
 #include <optional>
 #include <vector>
 #include "tsfont_wrapper.hpp"
@@ -19,7 +23,81 @@
 #include "shaders/fs_text.bin.h"
 #include "shaders/vs_rect.bin.h"
 #include "shaders/fs_rect.bin.h"
+#include "shaders/vs_image.bin.h"
+#include "shaders/fs_image.bin.h"
 
+inline bgfx::TextureHandle loadTexture(const char *path) {
+    FILE *fp = std::fopen(path, "rb");
+    if (!fp) return BGFX_INVALID_HANDLE;
+    std::fseek(fp, 0, SEEK_END);
+    long sz = std::ftell(fp);
+    if (sz <= 0) { std::fclose(fp); return BGFX_INVALID_HANDLE; }
+    auto buf = std::make_unique<uint8_t[]>(sz);
+    std::fseek(fp, 0, SEEK_SET);
+    if (std::fread(buf.get(), 1, sz, fp) != (size_t)sz) {
+        std::fclose(fp); return BGFX_INVALID_HANDLE;
+    }
+    std::fclose(fp);
+
+    // Try bimg (DDS, KTX, PVR3)
+    bimg::ImageContainer img;
+    bx::Error err;
+    if (bimg::imageParse(img, buf.get(), (uint32_t)sz, &err)) {
+        if (img.m_format != bimg::TextureFormat::RGBA8) {
+            bx::DefaultAllocator alloc;
+            auto *conv = bimg::imageConvert(&alloc, bimg::TextureFormat::RGBA8, img);
+            if (conv) {
+                bimg::imageFree(&img);
+                auto mem = bgfx::copy(conv->m_data, conv->m_size);
+                auto tex = bgfx::createTexture2D(
+                    conv->m_width, conv->m_height, false, 1,
+                    bgfx::TextureFormat::RGBA8, 0, mem);
+                bimg::imageFree(conv);
+                return tex;
+            }
+        }
+        auto mem = bgfx::copy(img.m_data, img.m_size);
+        auto tex = bgfx::createTexture2D(
+            img.m_width, img.m_height, false, 1,
+            bgfx::TextureFormat::RGBA8, 0, mem);
+        bimg::imageFree(&img);
+        return tex;
+    }
+
+    // Fallback: TGA (uncompressed true-color)
+    if (sz < 18) return BGFX_INVALID_HANDLE;
+    uint8_t idLen = buf[0];
+    uint8_t cmapType = buf[1];
+    uint8_t imgType = buf[2];
+    if (cmapType != 0 || (imgType != 2 && imgType != 3)) return BGFX_INVALID_HANDLE;
+    uint16_t w = (uint16_t)buf[12] | (uint16_t)buf[13] << 8;
+    uint16_t h = (uint16_t)buf[14] | (uint16_t)buf[15] << 8;
+    uint8_t bpp = buf[16];
+    if (w == 0 || h == 0 || (bpp != 24 && bpp != 32)) return BGFX_INVALID_HANDLE;
+    uint8_t desc = buf[17];
+    bool topLeft = (desc & 0x20) != 0;
+
+    uint32_t dataOff = 18 + idLen;
+    uint32_t pixelBytes = (uint32_t)w * h * (bpp / 8);
+    if (dataOff + pixelBytes > (uint32_t)sz) return BGFX_INVALID_HANDLE;
+
+    auto rgba = std::make_unique<uint8_t[]>((uint32_t)w * h * 4);
+    for (uint32_t y = 0; y < h; y++) {
+        uint32_t srcY = topLeft ? y : (h - 1 - y);
+        for (uint32_t x = 0; x < w; x++) {
+            uint32_t si = dataOff + (srcY * w + x) * (bpp / 8);
+            uint32_t di = (y * w + x) * 4;
+            rgba[di + 2] = buf[si + 0]; // B → R
+            rgba[di + 1] = buf[si + 1]; // G
+            rgba[di + 0] = buf[si + 2]; // R → B
+            rgba[di + 3] = (bpp == 32) ? buf[si + 3] : 255;
+        }
+    }
+
+    auto mem = bgfx::copy(rgba.get(), (uint32_t)w * h * 4);
+    return bgfx::createTexture2D(w, h, false, 1,
+        bgfx::TextureFormat::RGBA8, 0, mem);
+}
 
 struct Kino {
     uint16_t id;
@@ -155,6 +233,36 @@ public:
 
     void destroy() {
         if (bgfx::isValid(program)) bgfx::destroy(program);
+    }
+};
+
+class ImageGooner {
+    bgfx::ProgramHandle program;
+    bgfx::UniformHandle s_tex;
+    bgfx::VertexLayout layout;
+public:
+    bool init() {
+        bgfx::ShaderHandle vsh = bgfx::createShader(bgfx::makeRef(vs_image, sizeof(vs_image)));
+        bgfx::ShaderHandle fsh = bgfx::createShader(bgfx::makeRef(fs_image, sizeof(fs_image)));
+        program = bgfx::createProgram(vsh, fsh, true);
+
+        s_tex = bgfx::createUniform("s_tex", bgfx::UniformType::Sampler);
+
+        layout.begin()
+            .add(bgfx::Attrib::Position,  2, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::Color0,    4, bgfx::AttribType::Uint8, true)
+            .end();
+        return true;
+    }
+
+    bgfx::ProgramHandle getProgram() const { return program; }
+    bgfx::UniformHandle getSampler() const { return s_tex; }
+    const bgfx::VertexLayout& getLayout() const { return layout; }
+
+    void destroy() {
+        if (bgfx::isValid(program)) bgfx::destroy(program);
+        if (bgfx::isValid(s_tex))   bgfx::destroy(s_tex);
     }
 };
 
@@ -390,6 +498,46 @@ public:
     }
 };
 
+class Image : public Skibidi {
+    ImageGooner &gooner;
+    bgfx::TextureHandle tex;
+    float x, y, w, h;
+    uint32_t color;
+public:
+    Image(ImageGooner &gooner, bgfx::TextureHandle tex, float x, float y, float w, float h, uint32_t color, uint32_t zindex)
+    : Skibidi("image", zindex), gooner(gooner), tex(tex), x(x), y(y), w(w), h(h), color(color) {}
+
+    void Build() override {}
+
+    void collect(JohnPork &pork) override {
+        struct Vertex { float x, y, u, v; uint32_t color; };
+
+        bgfx::TransientVertexBuffer tvb;
+        bgfx::TransientIndexBuffer tib;
+        if (!bgfx::allocTransientBuffers(&tvb, gooner.getLayout(), 4, &tib, 6))
+            return;
+
+        auto *vert = (Vertex *)tvb.data;
+        vert[0] = {x,     y,      0, 0, color};
+        vert[1] = {x + w, y,      1, 0, color};
+        vert[2] = {x + w, y + h,  1, 1, color};
+        vert[3] = {x,     y + h,  0, 1, color};
+
+        auto *idx = (uint16_t *)tib.data;
+        idx[0] = 0; idx[1] = 1; idx[2] = 2;
+        idx[3] = 0; idx[4] = 2; idx[5] = 3;
+
+        DrawCmd cmd;
+        cmd.tvb = tvb;
+        cmd.tib = tib;
+        cmd.program = gooner.getProgram();
+        cmd.texUniform = gooner.getSampler();
+        cmd.tex = tex;
+        cmd.state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
+        pork.push(cmd);
+    }
+};
+
 struct Layer {
   std::string name;
   bool visible = true;
@@ -548,6 +696,7 @@ class Hell_Machina {
     Kino uiPass;
     TextGooner textGooner;
     RectGooner rectGooner;
+    ImageGooner imageGooner;
     std::vector<Layer> sceneLayers;
     std::vector<Layer> uiLayers;
 public:
@@ -561,4 +710,5 @@ public:
     Layer& addUILayer(const char *name);
     TextGooner& getTextGooner() { return textGooner; }
     RectGooner& getRectGooner() { return rectGooner; }
+    ImageGooner& getImageGooner() { return imageGooner; }
 };
