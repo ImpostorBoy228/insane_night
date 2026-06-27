@@ -1,17 +1,22 @@
 [
   {
     "directory": "/home/impostorboy/projects/insane_night",
-    "command": "g++ -c src/heck.cpp -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2",
+    "command": "g++ -c src/heck.cpp -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src",
     "file": "src/heck.cpp"
   },
   {
     "directory": "/home/impostorboy/projects/insane_night",
-    "command": "g++ -c src/main.cpp -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2",
+    "command": "g++ -c src/main.cpp -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src",
     "file": "src/main.cpp"
   },
   {
     "directory": "/home/impostorboy/projects/insane_night",
-    "command": "gcc -c external/tsfont/font_handler.c -std=c11 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2",
+    "command": "gcc -c external/tsfont/font_handler.c -std=c11 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src",
     "file": "external/tsfont/font_handler.c"
+  },
+  {
+    "directory": "/home/impostorboy/projects/insane_night",
+    "command": "g++ -c src/ligma/ligma.cpp -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src",
+    "file": "src/ligma/ligma.cpp"
   }
 ]

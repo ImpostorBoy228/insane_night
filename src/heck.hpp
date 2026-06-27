@@ -27,7 +27,7 @@
 #include "shaders/vs_image.bin.h"
 #include "shaders/fs_image.bin.h"
 
-static bool fuckCpp = true;
+//static bool fuckCpp = true;
 
 inline bgfx::TextureHandle loadTexture(const char *path) {
     int w, h, n;
@@ -531,6 +531,16 @@ struct Layer {
     return raw;
   }
 
+    Text* addText(TextGooner& gooner, const char* text, float x, float y, uint32_t color, uint32_t zindex) {
+        return add<Text>(gooner, std::string_view(text), x, y, color, zindex);
+    }
+    Rectangle* addRectangle(RectGooner& gooner, float x, float y, float w, float h, uint32_t color, uint32_t zindex) {
+        return add<Rectangle>(gooner, x, y, w, h, color, zindex);
+    }
+    Image* addImage(ImageGooner& gooner, bgfx::TextureHandle tex, float x, float y, float w, float h, uint32_t color, uint32_t zindex) {
+        return add<Image>(gooner, tex, x, y, w, h, color, zindex);
+    }
+
   void collect(JohnPork &pork) {
     if (!visible) return;
     std::sort(items.begin(), items.end(), [](auto &a, auto &b) { return a->zindex < b->zindex; });
@@ -686,6 +696,14 @@ public:
 
     Layer& addSceneLayer(const char *name);
     Layer& addUILayer(const char *name);
+    Layer* getSceneLayer(const char *name) {
+        for (auto &l : sceneLayers) if (l.name == name) return &l;
+        return nullptr;
+    }
+    Layer* getUILayer(const char *name) {
+        for (auto &l : uiLayers) if (l.name == name) return &l;
+        return nullptr;
+    }
     TextGooner& getTextGooner() { return textGooner; }
     RectGooner& getRectGooner() { return rectGooner; }
     ImageGooner& getImageGooner() { return imageGooner; }

@@ -1,22 +1,38 @@
 #include <iostream>
 #include <stdexcept>
+#include <filesystem>
 #include "heck.hpp"
+#include "ligma/ligma.hpp"
+#include "ligma/bind.hpp"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
-    if (!fuckCpp) goto naxyi;
+    LigmaEngine lua;
+
+    if (!lua.Init()) {
+        std::cerr << "Lua fuckup" << "\n";
+        return 1;
+    }
 
   try {
     Hell_Machina engine;
     engine.init("heck", 800, 600, bgfx::RendererType::Vulkan);
 
-    auto tex = loadTexture("test.png");
-    if (!bgfx::isValid(tex))
-      throw std::runtime_error("failed to load test.tga");
+    ligma_bind(lua.get_state(), engine);
 
-    auto &uiLayer = engine.addUILayer("ui");
-    uiLayer.add<Text>(engine.getTextGooner(), "Hello, world!", 50, 50, 0xffffffff, 0);
-    uiLayer.add<Rectangle>(engine.getRectGooner(), 50, 50, 150, 30, 0xff0000ff, 0);
-    uiLayer.add<Image>(engine.getImageGooner(), tex, 200, 200, 48, 48, 0xffffffff, 0);
+    std::string scriptPath = "scripts/init.lua";
+    if (std::filesystem::exists("scripts/init.lua")) {
+        std::cout << "exec " << scriptPath << "\n";
+        lua.ExecuteFile(scriptPath);
+    } else {
+        std::cout << "no " << scriptPath << ", using C++ fallback\n";
+        auto tex = loadTexture("test.png");
+        if (!bgfx::isValid(tex))
+            throw std::runtime_error("failed to load test.png");
+        auto &uiLayer = engine.addUILayer("ui");
+        uiLayer.add<Text>(engine.getTextGooner(), "Hello, world!", 50, 50, 0xffffffff, 0);
+        uiLayer.add<Rectangle>(engine.getRectGooner(), 50, 50, 150, 30, 0xff0000ff, 0);
+        uiLayer.add<Image>(engine.getImageGooner(), tex, 200, 200, 48, 48, 0xffffffff, 0);
+    }
 
     bool gooning = true;
     while (gooning) {
@@ -30,17 +46,18 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
           engine.resize(event.window.data1, event.window.data2);
         }
+        if (event.type == SDL_EVENT_KEY_DOWN and
+            event.key.key == SDLK_F5) {
+            std::cout << "reload scripts (TODO)\n";
+        }
       }
 
       engine.frame();
     }
 
-    if (bgfx::isValid(tex)) bgfx::destroy(tex);
     return 0;
   } catch (const std::exception &e) {
     std::cerr << "E666: " << e.what() << "\n";
     return 1;
   }
-naxyi:
-  return -1;
 }
