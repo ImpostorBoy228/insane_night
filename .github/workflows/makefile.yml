@@ -18,6 +18,12 @@ jobs:
     - name: install dependencies
       run: sudo apt-get update && sudo apt-get install -y cmake build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
 
+    - name: Setup Lua
+      run: |
+        curl -L https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz
+        mv lua-5.4.8 external/
+        make -C external/lua-5.4.8/src linux
+
     - name: Get SDL submodule commit
       id: sdl-commit
       run: echo "hash=$(git submodule status external/SDL | awk '{print $1}')" >> "$GITHUB_OUTPUT"
