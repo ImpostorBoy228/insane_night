@@ -15,12 +15,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 
   try {
     Hell_Machina engine;
-    engine.init("heck", 800, 600, bgfx::RendererType::Vulkan);
+    engine.init("heck", 1280, 720, bgfx::RendererType::Vulkan);
 
     ligma_bind(lua.get_state(), engine);
 
-    std::string scriptPath = "scripts/init.lua";
-    if (std::filesystem::exists("scripts/init.lua")) {
+    std::string scriptPath = "scripts/sscreen.lua";
+    if (std::filesystem::exists(scriptPath)) {
         std::cout << "exec " << scriptPath << "\n";
         lua.ExecuteFile(scriptPath);
     } else {
@@ -50,6 +50,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
             event.key.key == SDLK_F5) {
             std::cout << "reload scripts (TODO)\n";
         }
+        engine.handleEvent(event);
       }
 
       engine.frame();

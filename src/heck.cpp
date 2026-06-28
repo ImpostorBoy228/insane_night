@@ -25,11 +25,11 @@ void Kino::begin() {
 }
 
 Layer& Hell_Machina::addSceneLayer(const char *name) {
-    return sceneLayers.emplace_back(Layer{name, true, {}});
+    return sceneLayers.emplace_back(Layer{name, true, {}, {}});
 }
 
 Layer& Hell_Machina::addUILayer(const char *name) {
-    return uiLayers.emplace_back(Layer{name, true, {}});
+    return uiLayers.emplace_back(Layer{name, true, {}, {}});
 }
 
 void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enum renderer) {
@@ -48,6 +48,7 @@ void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enu
     uiPass.clearColor = 0;
     uiPass.setViewport((uint16_t)w, (uint16_t)h);
     uiPass.setOrtho(0, (float)w, (float)h, 0);
+    bgfx::setViewMode(uiPass.id, bgfx::ViewMode::Sequential);
 
     textGooner.init("/usr/share/fonts/TTF/DejaVuSans.ttf", 32);
     rectGooner.init();
@@ -66,6 +67,14 @@ void Hell_Machina::frame() {
     pork.flush(uiPass.id);
 
     bgfx::frame();
+}
+
+bool Hell_Machina::handleEvent(const SDL_Event &ev) {
+    for (auto &l : uiLayers)
+        if (l.handleEvent(ev)) return true;
+    for (auto &l : sceneLayers)
+        if (l.handleEvent(ev)) return true;
+    return false;
 }
 
 void Hell_Machina::resize(int w, int h) {

@@ -9,6 +9,7 @@
 #include <bimg/decode.h>
 #include <cstdint>
 #include <cstdio>
+#include <functional>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
@@ -246,12 +247,22 @@ public:
 
 class Skibidi {
 public:
-  Skibidi(std::string_view type, uint32_t zindex) : zindex(zindex), type(type) {}
+  Skibidi(std::string_view type, int32_t zindex) : zindex(zindex), type(type) {}
   virtual ~Skibidi() {}
   virtual void Build() = 0;
   virtual void collect(JohnPork &pork) = 0;
-  uint32_t zindex;
+  int32_t zindex;
   bool visible = true;
+
+  std::function<void()> onClick;
+  float hitX = 0, hitY = 0, hitW = 0, hitH = 0;
+
+  void setHitbox(float x, float y, float w, float h) {
+    hitX = x; hitY = y; hitW = w; hitH = h;
+  }
+  bool hitTest(float mx, float my) const {
+    return mx >= hitX && mx < hitX + hitW && my >= hitY && my < hitY + hitH;
+  }
 protected:
   std::string type;
 };
@@ -366,7 +377,7 @@ private:
 
 class Text : public Skibidi {
 public:
-  Text(TextGooner &gooner, std::string_view text, float x, float y, uint32_t color, uint32_t zindex)
+  Text(TextGooner &gooner, std::string_view text, float x, float y, uint32_t color, int32_t zindex)
   : Skibidi("text", zindex), gooner(gooner), text(text), x(x), y(y), color(color) {}
   void Build() override {}
 
@@ -442,8 +453,10 @@ class Rectangle : public Skibidi {
     float x, y, w, h;
     uint32_t color;
 public:
-    Rectangle(RectGooner &gooner, float x, float y, float w, float h, uint32_t color, uint32_t zindex)
-    : Skibidi("rect", zindex), gooner(gooner), x(x), y(y), w(w), h(h), color(color) {}
+    Rectangle(RectGooner &gooner, float x, float y, float w, float h, uint32_t color, int32_t zindex)
+    : Skibidi("rect", zindex), gooner(gooner), x(x), y(y), w(w), h(h), color(color) {
+        setHitbox(x, y, w, h);
+    }
 
     void Build() override {}
 
@@ -482,8 +495,10 @@ class Image : public Skibidi {
     float x, y, w, h;
     uint32_t color;
 public:
-    Image(ImageGooner &gooner, bgfx::TextureHandle tex, float x, float y, float w, float h, uint32_t color, uint32_t zindex)
-    : Skibidi("image", zindex), gooner(gooner), tex(tex), x(x), y(y), w(w), h(h), color(color) {}
+    Image(ImageGooner &gooner, bgfx::TextureHandle tex, float x, float y, float w, float h, uint32_t color, int32_t zindex)
+    : Skibidi("image", zindex), gooner(gooner), tex(tex), x(x), y(y), w(w), h(h), color(color) {
+        setHitbox(x, y, w, h);
+    }
 
     void Build() override {}
 
@@ -516,10 +531,16 @@ public:
     }
 };
 
+struct Clickable {
+    float x, y, w, h;
+    std::function<void()> onClick;
+};
+
 struct Layer {
   std::string name;
   bool visible = true;
   std::vector<std::unique_ptr<Skibidi>> items;
+  std::vector<Clickable> clickables;
 
   template<typename T, typename... Args>
   requires std::derived_from<T, Skibidi>
@@ -531,14 +552,18 @@ struct Layer {
     return raw;
   }
 
-    Text* addText(TextGooner& gooner, const char* text, float x, float y, uint32_t color, uint32_t zindex) {
+    Text* addText(TextGooner& gooner, const char* text, float x, float y, uint32_t color, int32_t zindex) {
         return add<Text>(gooner, std::string_view(text), x, y, color, zindex);
     }
-    Rectangle* addRectangle(RectGooner& gooner, float x, float y, float w, float h, uint32_t color, uint32_t zindex) {
+    Rectangle* addRectangle(RectGooner& gooner, float x, float y, float w, float h, uint32_t color, int32_t zindex) {
         return add<Rectangle>(gooner, x, y, w, h, color, zindex);
     }
-    Image* addImage(ImageGooner& gooner, bgfx::TextureHandle tex, float x, float y, float w, float h, uint32_t color, uint32_t zindex) {
+    Image* addImage(ImageGooner& gooner, bgfx::TextureHandle tex, float x, float y, float w, float h, uint32_t color, int32_t zindex) {
         return add<Image>(gooner, tex, x, y, w, h, color, zindex);
+    }
+
+    void addClickable(float x, float y, float w, float h, std::function<void()> cb) {
+        clickables.push_back({x, y, w, h, std::move(cb)});
     }
 
   void collect(JohnPork &pork) {
@@ -547,6 +572,30 @@ struct Layer {
     for (auto &item : items)
       if (item->visible)
         item->collect(pork);
+  }
+
+  bool handleEvent(const SDL_Event &ev) {
+    if (!visible) return false;
+    if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN && ev.button.button == SDL_BUTTON_LEFT) {
+        float mx = ev.button.x;
+        float my = ev.button.y;
+        std::sort(items.begin(), items.end(), [](auto &a, auto &b) { return a->zindex < b->zindex; });
+        for (int i = (int)items.size() - 1; i >= 0; --i) {
+            auto &item = items[i];
+            if (item->visible && item->onClick && item->hitTest(mx, my)) {
+                item->onClick();
+                return true;
+            }
+        }
+        for (int i = (int)clickables.size() - 1; i >= 0; --i) {
+            auto &c = clickables[i];
+            if (mx >= c.x && mx < c.x + c.w && my >= c.y && my < c.y + c.h) {
+                if (c.onClick) c.onClick();
+                return true;
+            }
+        }
+    }
+    return false;
   }
 };
 
@@ -693,6 +742,7 @@ public:
     void init(const char *title, int w, int h, bgfx::RendererType::Enum renderer);
     void frame();
     void resize(int w, int h);
+    bool handleEvent(const SDL_Event &ev);
 
     Layer& addSceneLayer(const char *name);
     Layer& addUILayer(const char *name);
