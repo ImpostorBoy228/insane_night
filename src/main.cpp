@@ -19,7 +19,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 
     ligma_bind(lua.get_state(), engine);
 
-    std::string scriptPath = "scripts/sscreen.lua";
+    std::string scriptPath = "scripts/main.lua";
     if (std::filesystem::exists(scriptPath)) {
         std::cout << "exec " << scriptPath << "\n";
         lua.ExecuteFile(scriptPath);

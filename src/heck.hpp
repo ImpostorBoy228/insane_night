@@ -577,6 +577,7 @@ struct Layer {
   bool visible = true;
   std::vector<std::unique_ptr<Skibidi>> items;
   std::vector<Clickable> clickables;
+  void clear() { items.clear(); clickables.clear(); }
 
   template<typename T, typename... Args>
   requires std::derived_from<T, Skibidi>

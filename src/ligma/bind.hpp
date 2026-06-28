@@ -33,7 +33,7 @@ inline void ligma_bind(sol::state& L, Hell_Machina& engine) {
         },
         "visible", sol::property([](Layer& self) { return self.visible; },
                                  [](Layer& self, bool v) { self.visible = v; }),
-        "clear", [](Layer& self) { self.items.clear(); self.clickables.clear(); }
+        "clear", [](Layer& self) { self.clear(); }
     );
 
     L.new_usertype<Rectangle>("Rect",
