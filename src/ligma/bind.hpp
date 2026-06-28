@@ -14,6 +14,21 @@ inline void ligma_bind(sol::state& L, Hell_Machina& engine) {
         "addImage",     &Layer::addImage,
         "addClickable", [](Layer& self, float x, float y, float w, float h, sol::function cb) {
             self.addClickable(x, y, w, h, [cb]() { cb(); });
+        },
+        "addTextF", [&](Layer& self, TextGooner& g, const char* t, float rx, float ry, uint32_t c, int32_t z) {
+            auto *el = self.addText(g, t, rx * engine.width, ry * engine.height, c, z);
+            el->setFrac(rx, ry, 0, 0);
+            return el;
+        },
+        "addRectF", [&](Layer& self, RectGooner& g, float rx, float ry, float rw, float rh, uint32_t c, int32_t z) {
+            auto *el = self.addRectangle(g, rx * engine.width, ry * engine.height, rw * engine.width, rh * engine.height, c, z);
+            el->setFrac(rx, ry, rw, rh);
+            return el;
+        },
+        "addImageF", [&](Layer& self, ImageGooner& g, bgfx::TextureHandle tex, float rx, float ry, float rw, float rh, uint32_t c, int32_t z) {
+            auto *el = self.addImage(g, tex, rx * engine.width, ry * engine.height, rw * engine.width, rh * engine.height, c, z);
+            el->setFrac(rx, ry, rw, rh);
+            return el;
         }
     );
 
@@ -35,6 +50,7 @@ inline void ligma_bind(sol::state& L, Hell_Machina& engine) {
     L.new_usertype<ImageGooner>("ImageGooner");
 
     L.set_function("loadTexture", loadTexture);
+    L.set_function("setFullscreen", [&](bool on) { engine.setFullscreen(on); });
 
     // engine-bound helpers
     L.set_function("addUILayer",    [&](const char* n) -> Layer& { return engine.addUILayer(n); });

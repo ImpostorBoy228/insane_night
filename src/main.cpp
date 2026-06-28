@@ -46,8 +46,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
           engine.resize(event.window.data1, event.window.data2);
         }
-        if (event.type == SDL_EVENT_KEY_DOWN and
-            event.key.key == SDLK_F5) {
+        if (event.type == SDL_EVENT_KEY_DOWN and event.key.key == SDLK_F5) {
             std::cout << "reload scripts (TODO)\n";
         }
         engine.handleEvent(event);

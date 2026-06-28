@@ -2,7 +2,12 @@
 #include "heck.hpp"
 
 void Kino::setViewport(uint16_t w, uint16_t h) {
-    viewW = w; viewH = h;
+    viewX = 0; viewY = 0; viewW = w; viewH = h;
+    dirty = true;
+}
+
+void Kino::setViewport(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
+    viewX = x; viewY = y; viewW = w; viewH = h;
     dirty = true;
 }
 
@@ -17,7 +22,7 @@ void Kino::begin() {
         bgfx::setViewFrameBuffer(id, fb);
         dirty = false;
     }
-    bgfx::setViewRect(id, 0, 0, viewW, viewH);
+    bgfx::setViewRect(id, viewX, viewY, viewW, viewH);
     bgfx::setViewClear(id, clearFlags, clearColor, 1.0f, 0);
     bgfx::touch(id);
     if (useOrtho)
@@ -33,6 +38,7 @@ Layer& Hell_Machina::addUILayer(const char *name) {
 }
 
 void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enum renderer) {
+    width = w; height = h;
     sigma.emplace(Sigma::skid(title, w, h));
     amogus.emplace(Amogus::rizzing(sigma->getWindow(), w, h, renderer));
 
@@ -77,9 +83,22 @@ bool Hell_Machina::handleEvent(const SDL_Event &ev) {
     return false;
 }
 
+void Hell_Machina::setFullscreen(bool on) {
+    if (sigma->isFullscreen() == on) return;
+    sigma->toggleFullscreen();
+    int fw, fh;
+    SDL_GetWindowSizeInPixels(sigma->getWindow(), &fw, &fh);
+    resize(fw, fh);
+}
+
 void Hell_Machina::resize(int w, int h) {
+    width = w; height = h;
     amogus->resize(w, h);
     scenePass.setViewport((uint16_t)w, (uint16_t)h);
     uiPass.setViewport((uint16_t)w, (uint16_t)h);
     uiPass.setOrtho(0, (float)w, (float)h, 0);
+    for (auto &l : uiLayers) l.onResize(w, h);
+    for (auto &l : sceneLayers) l.onResize(w, h);
 }
+
+

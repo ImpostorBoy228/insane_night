@@ -83,12 +83,13 @@ struct Kino {
     bgfx::FrameBufferHandle fb;
     uint32_t clearFlags;
     uint32_t clearColor;
-    uint16_t viewW = 0, viewH = 0;
+    uint16_t viewX = 0, viewY = 0, viewW = 0, viewH = 0;
     bool dirty = true;
     float ortho[16];
     bool useOrtho = false;
 
     void setViewport(uint16_t w, uint16_t h);
+    void setViewport(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
     void setOrtho(float left, float right, float bottom, float top);
     void begin();
 };
@@ -251,6 +252,8 @@ public:
   virtual ~Skibidi() {}
   virtual void Build() = 0;
   virtual void collect(JohnPork &pork) = 0;
+  virtual void onResize(int pw, int ph) {}
+
   int32_t zindex;
   bool visible = true;
 
@@ -262,6 +265,13 @@ public:
   }
   bool hitTest(float mx, float my) const {
     return mx >= hitX && mx < hitX + hitW && my >= hitY && my < hitY + hitH;
+  }
+
+  bool hasFrac = false;
+  float frx = 0, fry = 0, frw = 0, frh = 0;
+  void setFrac(float rx, float ry, float rw, float rh) {
+    hasFrac = true;
+    frx = rx; fry = ry; frw = rw; frh = rh;
   }
 protected:
   std::string type;
@@ -379,15 +389,19 @@ class Text : public Skibidi {
 public:
   Text(TextGooner &gooner, std::string_view text, float x, float y, uint32_t color, int32_t zindex)
   : Skibidi("text", zindex), gooner(gooner), text(text), x(x), y(y), color(color) {}
-  void Build() override {}
+    void Build() override {}
 
-  void collect(JohnPork &pork) override {
-    if (!visible || text.empty()) return;
+    void onResize(int pw, int ph) override {
+        if (hasFrac) { x = frx * pw; y = fry * ph; }
+    }
 
-    struct Vertex { float x, y, u, v; uint32_t color; };
+    void collect(JohnPork &pork) override {
+        if (!visible || text.empty()) return;
 
-    auto *glyphs = gooner.getGlyphs();
-    auto &layout = gooner.getLayout();
+        struct Vertex { float x, y, u, v; uint32_t color; };
+
+        auto *glyphs = gooner.getGlyphs();
+        auto &layout = gooner.getLayout();
 
     int len = (int)text.size();
     int quads = 0;
@@ -460,6 +474,14 @@ public:
 
     void Build() override {}
 
+    void onResize(int pw, int ph) override {
+        if (hasFrac) {
+            x = frx * pw; y = fry * ph;
+            w = frw * pw; h = frh * ph;
+            setHitbox(x, y, w, h);
+        }
+    }
+
     void collect(JohnPork &pork) override {
         struct Vertex { float x, y; uint32_t color; };
 
@@ -501,6 +523,14 @@ public:
     }
 
     void Build() override {}
+
+    void onResize(int pw, int ph) override {
+        if (hasFrac) {
+            x = frx * pw; y = fry * ph;
+            w = frw * pw; h = frh * ph;
+            setHitbox(x, y, w, h);
+        }
+    }
 
     void collect(JohnPork &pork) override {
         struct Vertex { float x, y, u, v; uint32_t color; };
@@ -566,6 +596,10 @@ struct Layer {
         clickables.push_back({x, y, w, h, std::move(cb)});
     }
 
+  void onResize(int pw, int ph) {
+    for (auto &item : items) item->onResize(pw, ph);
+  }
+
   void collect(JohnPork &pork) {
     if (!visible) return;
     std::sort(items.begin(), items.end(), [](auto &a, auto &b) { return a->zindex < b->zindex; });
@@ -615,7 +649,7 @@ public:
     if (!SDL_Init(SDL_INIT_VIDEO))
       throw std::runtime_error(std::string("SDL_Init: ") + SDL_GetError());
 
-    SDL_Window *buzz = SDL_CreateWindow(title.data(), x, y, 0);
+    SDL_Window *buzz = SDL_CreateWindow(title.data(), x, y, SDL_WINDOW_RESIZABLE);
     if (!buzz) {
       SDL_Quit();
       throw std::runtime_error("SDL_CreateWindow: " + std::string(SDL_GetError()));
@@ -625,10 +659,18 @@ public:
 
   SDL_Window *getWindow() const { return buzz; }
 
+  void toggleFullscreen() {
+    fullscreen = !fullscreen;
+    SDL_SetWindowFullscreen(buzz, fullscreen);
+  }
+  bool isFullscreen() const { return fullscreen; }
+
   Sigma(const Sigma &) = delete;
   Sigma &operator=(const Sigma &) = delete;
   Sigma(Sigma&& other)
-  : title(std::move(other.title)), x(other.x), y(other.y), buzz(other.buzz) {
+  : title(std::move(other.title)), x(other.x), y(other.y) {
+    buzz = other.buzz;
+    fullscreen = other.fullscreen;
     other.buzz = nullptr;
   }
   Sigma &operator=(Sigma &&) = default;
@@ -636,6 +678,7 @@ public:
 private:
   std::string title;
   int x, y;
+  bool fullscreen = false;
   SDL_Window *buzz = nullptr;
 };
 
@@ -736,13 +779,17 @@ class Hell_Machina {
     ImageGooner imageGooner;
     std::vector<Layer> sceneLayers;
     std::vector<Layer> uiLayers;
+
 public:
+    int width = 1280, height = 720;
+
     Hell_Machina() = default;
 
     void init(const char *title, int w, int h, bgfx::RendererType::Enum renderer);
     void frame();
     void resize(int w, int h);
     bool handleEvent(const SDL_Event &ev);
+    void setFullscreen(bool on);
 
     Layer& addSceneLayer(const char *name);
     Layer& addUILayer(const char *name);
