@@ -34,14 +34,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         uiLayer.add<Image>(engine.getImageGooner(), tex, 200, 200, 48, 48, 0xffffffff, 0);
     }
 
-    bool gooning = true;
-    while (gooning) {
+    while (engine.gooning) {
       SDL_Event event;
       while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT or (
             event.type == SDL_EVENT_KEY_DOWN and
             event.key.key == SDLK_ESCAPE)) {
-          gooning = false;
+          engine.gooning = false;
         }
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
           engine.resize(event.window.data1, event.window.data2);

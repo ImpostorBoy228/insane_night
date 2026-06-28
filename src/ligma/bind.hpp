@@ -17,6 +17,7 @@ inline void ligma_bind(sol::state& L, Hell_Machina& engine) {
         },
         "addTextF", [&](Layer& self, TextGooner& g, const char* t, float rx, float ry, uint32_t c, int32_t z) {
             auto *el = self.addText(g, t, rx * engine.width, ry * engine.height, c, z);
+            el->baselineBias = g.getMaxBearingY();
             el->setFrac(rx, ry, 0, 0);
             return el;
         },
@@ -29,7 +30,10 @@ inline void ligma_bind(sol::state& L, Hell_Machina& engine) {
             auto *el = self.addImage(g, tex, rx * engine.width, ry * engine.height, rw * engine.width, rh * engine.height, c, z);
             el->setFrac(rx, ry, rw, rh);
             return el;
-        }
+        },
+        "visible", sol::property([](Layer& self) { return self.visible; },
+                                 [](Layer& self, bool v) { self.visible = v; }),
+        "clear", [](Layer& self) { self.items.clear(); self.clickables.clear(); }
     );
 
     L.new_usertype<Rectangle>("Rect",
@@ -55,7 +59,10 @@ inline void ligma_bind(sol::state& L, Hell_Machina& engine) {
     // engine-bound helpers
     L.set_function("addUILayer",    [&](const char* n) -> Layer& { return engine.addUILayer(n); });
     L.set_function("addSceneLayer", [&](const char* n) -> Layer& { return engine.addSceneLayer(n); });
+    L.set_function("getUILayer",    [&](const char* n) -> Layer* { return engine.getUILayer(n); });
+    L.set_function("getSceneLayer", [&](const char* n) -> Layer* { return engine.getSceneLayer(n); });
     L.set_function("getTextGooner", [&]() -> TextGooner& { return engine.getTextGooner(); });
     L.set_function("getRectGooner", [&]() -> RectGooner& { return engine.getRectGooner(); });
     L.set_function("getImageGooner",[&]() -> ImageGooner& { return engine.getImageGooner(); });
+    L.set_function("fuckOff", [&]() { engine.gooning = false; });
 }

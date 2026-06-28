@@ -281,6 +281,7 @@ class TextGooner {
 public:
   static constexpr uint32_t ATLAS_SIZE = 512;
   static constexpr int PADDING = 2;
+  float maxBearingY = 0;
 
   struct GlyphData {
     float u0, v0, u1, v1;
@@ -338,6 +339,7 @@ public:
         g.width  = (float)gw;
         g.height = (float)gh;
         g.loaded = true;
+        if (info.br_y > maxBearingY) maxBearingY = info.br_y;
       }
 
       curX += gw + PADDING;
@@ -375,6 +377,7 @@ public:
     if (bgfx::isValid(s_tex))   bgfx::destroy(s_tex);
     fontHandler.destroy();
   }
+  float getMaxBearingY() const { return maxBearingY; }
 
 private:
   TsFontHandler fontHandler;
@@ -425,7 +428,7 @@ public:
 
       auto &g = glyphs[c];
       float x0 = penX + g.bearing_x;
-      float y0 = y - g.bearing_y;
+      float y0 = y + baselineBias - g.bearing_y;
       float x1 = x0 + g.width;
       float y1 = y0 + g.height;
 
@@ -460,6 +463,9 @@ private:
   std::string text;
   float x, y;
   uint32_t color;
+
+public:
+  float baselineBias = 0;
 };
 
 class Rectangle : public Skibidi {
@@ -782,6 +788,7 @@ class Hell_Machina {
 
 public:
     int width = 1280, height = 720;
+    bool gooning = true;
 
     Hell_Machina() = default;
 
