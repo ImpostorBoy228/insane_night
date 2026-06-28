@@ -1,5 +1,6 @@
 /target
 external/bin
+external/lua-5.4.8
 *.o
 insane_night
 main.s
