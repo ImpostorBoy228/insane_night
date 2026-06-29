@@ -16,20 +16,20 @@ bool LigmaEngine::Init() {
         );
         return true;
     } catch (const sol::error& e) {
-        std::cerr << "Lua einit : " << e.what() << std::endl;
+        std::cerr << "Lua einit : " << e.what() << '\n';
         return false;
     }
 }
 
 void LigmaEngine::ExecuteFile(const std::string& path) {
     if (!std::filesystem::exists(path)) {
-        std::cerr << "nf: " << path << std::endl;
+        std::cerr << "nf: " << path << '\n';
         return;
     }
     try {
         lua.script_file(path);
     } catch (const sol::error& e) {
-        std::cerr << "runtime e " << path << ": " << e.what() << std::endl;
+        std::cerr << "runtime e " << path << ": " << e.what() << '\n';
     }
 }
 
@@ -37,6 +37,6 @@ void LigmaEngine::ExecuteString(const std::string& code) {
     try {
         lua.script(code);
     } catch (const sol::error& e) {
-        std::cerr << "runtime e: " << e.what() << std::endl;
+        std::cerr << "runtime e: " << e.what() << '\n';
     }
 }

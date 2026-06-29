@@ -78,10 +78,20 @@ void Hell_Machina::frame() {
 }
 
 bool Hell_Machina::handleEvent(const SDL_Event &ev) {
-    for (auto &l : uiLayers)
-        if (l.handleEvent(ev)) return true;
-    for (auto &l : sceneLayers)
-        if (l.handleEvent(ev)) return true;
+    std::function<void()> callback;
+
+    for (auto &layer : uiLayers) {
+        if (layer.pickClickHandler(ev, callback)) {
+            if (callback) callback();
+            return true;
+        }
+    }
+    for (auto &layer : sceneLayers) {
+        if (layer.pickClickHandler(ev, callback)) {
+            if (callback) callback();
+            return true;
+        }
+    }
     return false;
 }
 
@@ -91,6 +101,10 @@ void Hell_Machina::setFullscreen(bool on) {
     int fw, fh;
     SDL_GetWindowSizeInPixels(sigma->getWindow(), &fw, &fh);
     resize(fw, fh);
+}
+
+void Hell_Machina::setVsync(bool on) {
+    amogus->setVsync(on);
 }
 
 void Hell_Machina::resize(int w, int h) {
@@ -103,5 +117,3 @@ void Hell_Machina::resize(int w, int h) {
     for (auto &l : uiLayers) l.onResize(w, h);
     for (auto &l : sceneLayers) l.onResize(w, h);
 }
-
-

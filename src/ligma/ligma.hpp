@@ -2,7 +2,6 @@
 
 #include <sol/sol.hpp>
 #include <string>
-#include <iostream>
 
 class LigmaEngine {
 public:

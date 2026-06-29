@@ -32,7 +32,7 @@
 
 //static bool fuckCpp = true;
 
-inline bgfx::TextureHandle loadTexture(const char *path) {
+inline bgfx::TextureHandle loadTextureUncached(const char *path) {
     int w, h, n;
     stbi_uc *data = stbi_load(path, &w, &h, &n, STBI_rgb_alpha);
     if (data) {
@@ -79,6 +79,43 @@ inline bgfx::TextureHandle loadTexture(const char *path) {
     }
     return BGFX_INVALID_HANDLE;
 }
+
+class CacheMan {
+    std::unordered_map<std::string, bgfx::TextureHandle> textures;
+public:
+    CacheMan() = default;
+    ~CacheMan() { destroy(); }
+
+    CacheMan(const CacheMan &) = delete;
+    CacheMan &operator=(const CacheMan &) = delete;
+    CacheMan(CacheMan &&) = delete;
+    CacheMan &operator=(CacheMan &&) = delete;
+
+    bgfx::TextureHandle loadTexture(const char *path) {
+        if (!path || *path == '\0') return BGFX_INVALID_HANDLE;
+
+        auto it = textures.find(path);
+        if (it != textures.end() && bgfx::isValid(it->second)) {
+            return it->second;
+        }
+
+        bgfx::TextureHandle tex = loadTextureUncached(path);
+        if (bgfx::isValid(tex)) {
+            textures[std::string(path)] = tex;
+        }
+        return tex;
+    }
+
+    void destroy() {
+        for (auto &[path, tex] : textures) {
+            (void)path;
+            if (bgfx::isValid(tex)) {
+                bgfx::destroy(tex);
+            }
+        }
+        textures.clear();
+    }
+};
 
 struct Kino {
     uint16_t id;
@@ -277,7 +314,7 @@ public:
   virtual ~Skibidi() {}
   virtual void Build() = 0;
   virtual void collect(JohnPork &pork) = 0;
-  virtual void onResize(int pw, int ph) {}
+  virtual void onResize([[maybe_unused]] int pw, [[maybe_unused]] int ph) {}
 
   int32_t zindex;
   bool visible = true;
@@ -825,28 +862,40 @@ struct Layer {
         item->collect(pork);
   }
 
-  bool handleEvent(const SDL_Event &ev) {
+  bool pickClickHandler(const SDL_Event &ev, std::function<void()> &callback) {
     if (!visible) return false;
-    if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN && ev.button.button == SDL_BUTTON_LEFT) {
-        float mx = ev.button.x;
-        float my = ev.button.y;
-        std::sort(items.begin(), items.end(), [](auto &a, auto &b) { return a->zindex < b->zindex; });
-        for (int i = (int)items.size() - 1; i >= 0; --i) {
-            auto &item = items[i];
-            if (item->visible && item->onClick && item->hitTest(mx, my)) {
-                item->onClick();
-                return true;
-            }
-        }
-        for (int i = (int)clickables.size() - 1; i >= 0; --i) {
-            auto &c = clickables[i];
-            if (mx >= c.x && mx < c.x + c.w && my >= c.y && my < c.y + c.h) {
-                if (c.onClick) c.onClick();
-                return true;
-            }
-        }
+    if (ev.type != SDL_EVENT_MOUSE_BUTTON_DOWN || ev.button.button != SDL_BUTTON_LEFT) {
+      return false;
     }
+
+    float mx = ev.button.x;
+    float my = ev.button.y;
+
+    std::sort(items.begin(), items.end(), [](auto &a, auto &b) { return a->zindex < b->zindex; });
+    for (int i = (int)items.size() - 1; i >= 0; --i) {
+      auto &item = items[i];
+      if (item->visible && item->onClick && item->hitTest(mx, my)) {
+        callback = item->onClick;
+        return true;
+      }
+    }
+
+    for (int i = (int)clickables.size() - 1; i >= 0; --i) {
+      auto &c = clickables[i];
+      if (mx >= c.x && mx < c.x + c.w && my >= c.y && my < c.y + c.h) {
+        callback = c.onClick;
+        return static_cast<bool>(callback);
+      }
+    }
+
     return false;
+  }
+
+  bool handleEvent(const SDL_Event &ev) {
+    std::function<void()> callback;
+    if (!pickClickHandler(ev, callback)) return false;
+    callback();
+    return true;
   }
 };
 
@@ -904,6 +953,7 @@ private:
   SDL_Window *buzz = nullptr;
   int x, y;
   bgfx::RendererType::Enum goonerType;
+  uint32_t resetFlags = BGFX_RESET_VSYNC;
 
   Amogus(SDL_Window* buzz, int x, int y, bgfx::RendererType::Enum goonerType)
   : buzz(buzz), x(x), y(y), goonerType(goonerType) {}
@@ -960,17 +1010,26 @@ public:
 
   void frame() {bgfx::touch(0); bgfx::frame();}
   void resize(int w, int h) {
-    bgfx::reset(w, h, BGFX_RESET_VSYNC);
+    bgfx::reset(w, h, resetFlags);
     bgfx::setViewRect(0, 0, 0, (uint16_t)w, (uint16_t)h);
     x = w;
     y = h;
+  }
+
+  void setVsync(bool on) {
+    uint32_t newResetFlags = on ? (resetFlags | BGFX_RESET_VSYNC)
+                                : (resetFlags & ~BGFX_RESET_VSYNC);
+    if (newResetFlags == resetFlags) return;
+    resetFlags = newResetFlags;
+    bgfx::reset(x, y, resetFlags);
+    bgfx::setViewRect(0, 0, 0, (uint16_t)x, (uint16_t)y);
   }
 
   Amogus(const Amogus&) = delete;
   Amogus& operator=(const Amogus&) = delete;
 
   Amogus(Amogus&& other) noexcept
-  : buzz(other.buzz), x(other.x), y(other.y), goonerType(other.goonerType) {
+  : buzz(other.buzz), x(other.x), y(other.y), goonerType(other.goonerType), resetFlags(other.resetFlags) {
       other.buzz = nullptr;
   }
 
@@ -980,6 +1039,7 @@ public:
       x = other.x;
       y = other.y;
       goonerType = other.goonerType;
+      resetFlags = other.resetFlags;
       other.buzz = nullptr;
     }
     return *this;
@@ -994,6 +1054,7 @@ class Hell_Machina {
     TextGooner textGooner;
     RectGooner rectGooner;
     ImageGooner imageGooner;
+    CacheMan cacheMan;
     std::vector<Layer> sceneLayers;
     std::vector<Layer> uiLayers;
 
@@ -1008,6 +1069,7 @@ public:
     void resize(int w, int h);
     bool handleEvent(const SDL_Event &ev);
     void setFullscreen(bool on);
+    void setVsync(bool on);
 
     Layer& addSceneLayer(const char *name);
     Layer& addUILayer(const char *name);
@@ -1022,6 +1084,9 @@ public:
     TextGooner& getTextGooner() { return textGooner; }
     void setFont(const char *path, int size) {
         textGooner.init(path, (float)size);
+    }
+    bgfx::TextureHandle loadTexture(const char *path) {
+        return cacheMan.loadTexture(path);
     }
     RectGooner& getRectGooner() { return rectGooner; }
     ImageGooner& getImageGooner() { return imageGooner; }

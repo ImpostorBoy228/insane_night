@@ -1,4 +1,5 @@
 setFullscreen(false)
+setVsync(true)
 local scenes = {}
 local currentScene = nil
 
