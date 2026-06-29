@@ -104,6 +104,8 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
     luaState.set_function("loadTexture", [&](const char* path) { return engine.loadTexture(path); });
     luaState.set_function("setFullscreen", [&](bool enabled) { engine.setFullscreen(enabled); });
     luaState.set_function("setVsync", [&](bool enabled) { engine.setVsync(enabled); });
+    luaState.set_function("setVolume", [&](float volume) { engine.setVolume(volume); });
+    luaState.set_function("setFrameLimit", [&](int limit) { engine.setFrameLimit(limit); });
 
     // engine-bound helpers
     luaState.set_function("addUILayer",    [&](const char* layerName) -> Layer& { return engine.addUILayer(layerName); });

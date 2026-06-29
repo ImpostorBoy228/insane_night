@@ -9,11 +9,12 @@ local vn = {
 local g = {
     text = getTextGooner(),
     textSmall = getTextGooner("assets/HackRegular-gX84.ttf", 18),
+    textOk = getTextGooner("assets/HackRegular-gX84.ttf", 20),
     rect = getRectGooner(),
     image = getImageGooner()
 }
 
-local story = {
+local script = {
     start = "start",
     nodes = {
         start = {
@@ -56,7 +57,7 @@ local function script()
         return false
     end
 
-    story = data
+    script = data
     return true
 end
 
@@ -65,7 +66,7 @@ local function getNode(id)
         return nil
     end
 
-    return story.nodes[id]
+    return script.nodes[id]
 end
 
 local function background(ui, node)
@@ -108,13 +109,13 @@ local function renderGame(ui)
     -- main dialogue text
     ui:addTextF(g.textSmall, node.text or "", 0.06, 0.85, 0xffffffff, 2)
 
-    -- button background for returning to the main menu
-    local back = ui:addRectF(g.rect, 0.08, 0.08, 0.18, 0.07, 0xffffffff, 0)
-    back:onClick(function()
-        switchTo("menu")
-    end)
+    -- -- button background for returning to the main menu
+    -- local back = ui:addRectF(g.rect, 0.08, 0.08, 0.18, 0.07, 0xffffffff, 0)
+    -- back:onClick(function()
+    --     switchTo("menu")
+    -- end)
     -- back button label
-    ui:addTextF(g.text, "Fuck", 0.135, 0.10, 0xff000000, 1)
+    -- ui:addTextF(g.text, "Fuck", 0.135, 0.10, 0xff000000, 1)
 
     if node.next then
         -- ui:addTextF(g.text, ">", 0.885, 0.86, 0xffd0d0d0, 2)
@@ -136,7 +137,7 @@ register("gay", function(ui)
     script()
     vn.currentBg = nil
     vn.history = {}
-    vn.currentNode = story.start
+    vn.currentNode = script.start
     table.insert(vn.history, vn.currentNode)
     renderGame(ui)
 end)

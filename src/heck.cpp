@@ -97,14 +97,43 @@ bool Hell_Machina::handleEvent(const SDL_Event &ev) {
 
 void Hell_Machina::setFullscreen(bool on) {
     if (sigma->isFullscreen() == on) return;
-    sigma->toggleFullscreen();
-    int fw, fh;
-    SDL_GetWindowSizeInPixels(sigma->getWindow(), &fw, &fh);
-    resize(fw, fh);
+
+    auto now = std::chrono::steady_clock::now();
+    if (lastFullscreenChange.time_since_epoch().count() != 0 &&
+        now - lastFullscreenChange < std::chrono::milliseconds(250)) {
+        return;
+    }
+
+    if (!sigma->setFullscreen(on)) {
+        SDL_Log("SDL_SetWindowFullscreen failed: %s", SDL_GetError());
+        return;
+    }
+
+    if (!SDL_SyncWindow(sigma->getWindow())) {
+        SDL_Log("SDL_SyncWindow failed after fullscreen change: %s", SDL_GetError());
+    }
+
+    int fw = 0;
+    int fh = 0;
+    if (!SDL_GetWindowSizeInPixels(sigma->getWindow(), &fw, &fh)) {
+        SDL_Log("SDL_GetWindowSizeInPixels failed after fullscreen change: %s", SDL_GetError());
+    } else if (fw > 0 && fh > 0) {
+        resize(fw, fh);
+    }
+
+    lastFullscreenChange = std::chrono::steady_clock::now();
 }
 
 void Hell_Machina::setVsync(bool on) {
     amogus->setVsync(on);
+}
+
+void Hell_Machina::setVolume(float volume) {
+    (void)volume;
+}
+
+void Hell_Machina::setFrameLimit(int limit) {
+    frameLimit = std::max(0, limit);
 }
 
 void Hell_Machina::resize(int w, int h) {

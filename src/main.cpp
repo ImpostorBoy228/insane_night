@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <cstdio>
+#include <thread>
 #include "heck.hpp"
 #include "ligma/ligma.hpp"
 #include "ligma/bind.hpp"
@@ -25,6 +26,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     int frames = 0;
 
     while (engine.gooning) {
+      auto frameStart = std::chrono::steady_clock::now();
+
       SDL_Event event;
       while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT or (
@@ -32,7 +35,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
             event.key.key == SDLK_ESCAPE)) {
           engine.gooning = false;
         }
-        if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+        if (event.type == SDL_EVENT_WINDOW_RESIZED ||
+            event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
           engine.resize(event.window.data1, event.window.data2);
         }
         engine.handleEvent(event);
@@ -46,6 +50,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         printf("FPS: %d\n", frames);
         frames = 0;
         lastFpsTime = now;
+      }
+
+      if (engine.frameLimit > 0) {
+        auto targetFrameTime = std::chrono::milliseconds(1000 / engine.frameLimit);
+        auto frameEnd = std::chrono::steady_clock::now();
+        auto frameDuration = frameEnd - frameStart;
+        if (frameDuration < targetFrameTime) {
+          std::this_thread::sleep_for(targetFrameTime - frameDuration);
+        }
       }
     }
 

@@ -7,17 +7,24 @@ register("menu", function(ui)
         ui:addImageF(getImageGooner(), bg, 0, 0, 1, 1, 0xffffffff, -1)
     end
 
-    local r1 = ui:addRectF(getRectGooner(), 0.5 - 0.4/2, 0.3 - 0.07/2, 0.4, 0.07, 0xffffffff, 0)
+    local r1 = ui:addRectF(getRectGooner(), 0.5 - 0.4 / 2, 0.3 - 0.07 / 2, 0.4, 0.07, 0xffffffff, 0)
     r1:onClick(function()
         switchTo("gay")
     end)
-    local t1 = ui:addTextF(getTextGooner(), "Lets fucking go", 0.5 - 0.4/2, 0.29, 0xff000000, 1)
+    local t1 = ui:addTextF(getTextGooner(), "Lets fucking go", 0.5 - 0.4 / 2, 0.29, 0xff000000, 1)
 
-    local r3 = ui:addRectF(getRectGooner(), 0.5 - 0.4/2, 0.4 - 0.07/2, 0.4, 0.07, 0xffffffff, 0)
+    local rS = ui:addRectF(getRectGooner(), 0.5 - 0.4 / 2, 0.4 - 0.07 / 2, 0.4, 0.07, 0xffffffff, 0)
+    rS:onClick(function()
+        switchTo("settings")
+    end)
+    local tS = ui:addTextF(getTextGooner(), "Settings", 0.5 - 0.4 / 2, 0.39, 0xff000000, 1)
+
+
+    local r3 = ui:addRectF(getRectGooner(), 0.5 - 0.4 / 2, 0.5 - 0.07 / 2, 0.4, 0.07, 0xffffffff, 0)
     r3:onClick(function()
         fuckOff()
     end)
-    local t2 = ui:addTextF(getTextGooner(), "FUCK GET ME OUT!!11!", 0.5 - 0.4/2, 0.39, 0xff000000, 1)
+    local t2 = ui:addTextF(getTextGooner(), "FUCK GET ME OUT!!11!", 0.5 - 0.4 / 2, 0.49, 0xff000000, 1)
 
     print("fuck me pls")
 end)

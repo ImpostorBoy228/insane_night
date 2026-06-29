@@ -1,7 +1,25 @@
-setFullscreen(false)
-setVsync(true)
 local scenes = {}
 local currentScene = nil
+
+Settings = {
+    fullscreen = false,
+    volume = 1.0,
+    framelimit = -1
+}
+
+function applySettings()
+    setFullscreen(Settings.fullscreen)
+
+    if Settings.framelimit == -1 then
+        setVsync(true)
+        setFrameLimit(0)
+    else
+        setVsync(false)
+        setFrameLimit(Settings.framelimit)
+    end
+
+    setVolume(Settings.volume)
+end
 
 function register(name, fn)
     scenes[name] = fn
@@ -30,5 +48,9 @@ end
 
 dofile("scripts/sscreen.lua")
 dofile("scripts/game.lua")
+dofile("scripts/settings.lua")
+
+loadSettings()
+applySettings()
 
 switchTo("menu")

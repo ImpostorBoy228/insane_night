@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <functional>
+#include <chrono>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
@@ -915,6 +916,8 @@ public:
     if (!SDL_Init(SDL_INIT_VIDEO))
       throw std::runtime_error(std::string("SDL_Init: ") + SDL_GetError());
 
+    SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS, "1");
+
     SDL_Window *buzz = SDL_CreateWindow(title.data(), x, y, SDL_WINDOW_RESIZABLE);
     if (!buzz) {
       SDL_Quit();
@@ -925,9 +928,11 @@ public:
 
   SDL_Window *getWindow() const { return buzz; }
 
-  void toggleFullscreen() {
-    fullscreen = !fullscreen;
-    SDL_SetWindowFullscreen(buzz, fullscreen);
+  bool setFullscreen(bool on) {
+    if (fullscreen == on) return true;
+    if (!SDL_SetWindowFullscreen(buzz, on)) return false;
+    fullscreen = on;
+    return true;
   }
   bool isFullscreen() const { return fullscreen; }
 
@@ -1066,6 +1071,8 @@ class Hell_Machina {
 public:
     int width = 1280, height = 720;
     bool gooning = true;
+    int frameLimit = 0;
+    std::chrono::steady_clock::time_point lastFullscreenChange{};
 
     Hell_Machina() = default;
 
@@ -1075,6 +1082,8 @@ public:
     bool handleEvent(const SDL_Event &ev);
     void setFullscreen(bool on);
     void setVsync(bool on);
+    void setVolume(float volume);
+    void setFrameLimit(int limit);
 
     Layer& addSceneLayer(const char *name);
     Layer& addUILayer(const char *name);
