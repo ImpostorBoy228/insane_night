@@ -110,7 +110,10 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
     luaState.set_function("addSceneLayer", [&](const char* layerName) -> Layer& { return engine.addSceneLayer(layerName); });
     luaState.set_function("getUILayer",    [&](const char* layerName) -> Layer* { return engine.getUILayer(layerName); });
     luaState.set_function("getSceneLayer", [&](const char* layerName) -> Layer* { return engine.getSceneLayer(layerName); });
-    luaState.set_function("getTextGooner", [&]() -> TextGooner& { return engine.getTextGooner(); });
+    luaState.set_function("getTextGooner", sol::overload(
+        [&]() -> TextGooner& { return engine.getTextGooner(); },
+        [&](const char* path, int size) -> TextGooner& { return engine.getTextGooner(path, size); }
+    ));
     luaState.set_function("getRectGooner", [&]() -> RectGooner& { return engine.getRectGooner(); });
     luaState.set_function("getImageGooner", [&]() -> ImageGooner& { return engine.getImageGooner(); });
     luaState.set_function("setFont", [&](const char* path, int size) { engine.setFont(path, size); });

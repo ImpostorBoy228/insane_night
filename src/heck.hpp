@@ -1052,11 +1052,16 @@ class Hell_Machina {
     Kino scenePass;
     Kino uiPass;
     TextGooner textGooner;
+    std::unordered_map<std::string, std::unique_ptr<TextGooner>> textGooners;
     RectGooner rectGooner;
     ImageGooner imageGooner;
     CacheMan cacheMan;
     std::vector<Layer> sceneLayers;
     std::vector<Layer> uiLayers;
+
+    static std::string makeTextGoonerKey(const char *path, int size) {
+        return std::string(path ? path : "") + '\n' + std::to_string(size);
+    }
 
 public:
     int width = 1280, height = 720;
@@ -1082,6 +1087,26 @@ public:
         return nullptr;
     }
     TextGooner& getTextGooner() { return textGooner; }
+    TextGooner& getTextGooner(const char *path, int size) {
+        if (!path || *path == '\0' || size <= 0) {
+            return textGooner;
+        }
+
+        auto key = makeTextGoonerKey(path, size);
+        auto it = textGooners.find(key);
+        if (it != textGooners.end()) {
+            return *it->second;
+        }
+
+        auto gooner = std::make_unique<TextGooner>();
+        if (!gooner->init(path, (float)size)) {
+            throw std::runtime_error(std::string("Failed to load font: ") + path);
+        }
+
+        TextGooner &ref = *gooner;
+        textGooners.emplace(std::move(key), std::move(gooner));
+        return ref;
+    }
     void setFont(const char *path, int size) {
         textGooner.init(path, (float)size);
     }

@@ -8,6 +8,7 @@ local vn = {
 
 local g = {
     text = getTextGooner(),
+    textSmall = getTextGooner("assets/HackRegular-gX84.ttf", 18),
     rect = getRectGooner(),
     image = getImageGooner()
 }
@@ -32,7 +33,7 @@ local function readFile(path)
     return content
 end
 
-local function loadStory()
+local function script()
     local raw = readFile("scripts/script.json")
     if not raw then
         print("Could not read scripts/script.json")
@@ -67,7 +68,7 @@ local function getNode(id)
     return story.nodes[id]
 end
 
-local function drawBackground(ui, node)
+local function background(ui, node)
     local bgPath = node.bg or vn.currentBg
     if not bgPath then
         return
@@ -92,40 +93,47 @@ local function renderGame(ui)
         return
     end
 
-    drawBackground(ui, node)
+    background(ui, node)
 
-    ui:addRectF(g.rect, 0.08, 0.72, 0.84, 0.20, 0xcc111111, 0)
+    -- bottom dialogue panel
+    ui:addRectF(g.rect, 0, 0.8, 1, 0.20, 0xcc111111, 0)
 
     if node.speaker and node.speaker ~= "" then
-        ui:addRectF(g.rect, 0.08, 0.66, 0.22, 0.06, 0xffe0e0e0, 1)
-        ui:addTextF(g.text, node.speaker, 0.11, 0.675, 0xff000000, 2)
+        -- speaker nameplate background
+        ui:addRectF(g.rect, 0.06, 0.76, 0.22, 0.04, 0xffe0e0e0, 1)
+        -- speaker name text
+        ui:addTextF(g.text, node.speaker, 0.07, 0.77, 0xff000000, 2)
     end
 
-    ui:addTextF(g.text, node.text or "", 0.12, 0.77, 0xffffffff, 2)
+    -- main dialogue text
+    ui:addTextF(g.textSmall, node.text or "", 0.06, 0.85, 0xffffffff, 2)
 
+    -- button background for returning to the main menu
     local back = ui:addRectF(g.rect, 0.08, 0.08, 0.18, 0.07, 0xffffffff, 0)
     back:onClick(function()
         switchTo("menu")
     end)
-    ui:addTextF(g.text, "Back", 0.135, 0.10, 0xff000000, 1)
+    -- back button label
+    ui:addTextF(g.text, "Fuck", 0.135, 0.10, 0xff000000, 1)
 
     if node.next then
-        ui:addTextF(g.text, ">", 0.885, 0.86, 0xffd0d0d0, 2)
+        -- ui:addTextF(g.text, ">", 0.885, 0.86, 0xffd0d0d0, 2)
 
-        local nextBtn = ui:addRectF(g.rect, 0.08, 0.72, 0.84, 0.20, 0x00000000, 3)
+        -- invisible clickable area to advance the dialogue
+        local nextBtn = ui:addRectF(g.rect, 0, 0.8, 1, 0.20, 0x00000000, 3)
         nextBtn:onClick(function()
             vn.currentNode = node.next
             table.insert(vn.history, vn.currentNode)
             renderGame(ui)
         end)
     else
-        ui:addTextF(g.text, "End", 0.84, 0.86, 0xffd0d0d0, 2)
+        -- ui:addTextF(g.text, "End", 0.84, 0.86, 0xffd0d0d0, 2)
     end
 end
 
 register("gay", function(ui)
     setFont("assets/HackRegular-gX84.ttf", 24)
-    loadStory()
+    script()
     vn.currentBg = nil
     vn.history = {}
     vn.currentNode = story.start
