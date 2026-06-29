@@ -97,7 +97,13 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
         "setHitbox", &Skibidi::setHitbox
     );
 
-    luaState.new_usertype<TextGooner>("TextGooner");
+    luaState.new_usertype<TextGooner>("TextGooner",
+        "measureText", [](TextGooner& self, const char* textValue) {
+            std::string_view text = textValue ? std::string_view(textValue) : std::string_view();
+            return self.measureText(text);
+        },
+        "getLineHeight", &TextGooner::getLineHeight
+    );
     luaState.new_usertype<RectGooner>("RectGooner");
     luaState.new_usertype<ImageGooner>("ImageGooner");
 
@@ -119,5 +125,7 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
     luaState.set_function("getRectGooner", [&]() -> RectGooner& { return engine.getRectGooner(); });
     luaState.set_function("getImageGooner", [&]() -> ImageGooner& { return engine.getImageGooner(); });
     luaState.set_function("setFont", [&](const char* path, int size) { engine.setFont(path, size); });
+    luaState.set_function("getScreenWidth", [&]() { return engine.width; });
+    luaState.set_function("getScreenHeight", [&]() { return engine.height; });
     luaState.set_function("fuckOff", [&]() { engine.gooning = false; });
 }

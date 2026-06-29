@@ -395,6 +395,7 @@ public:
   static constexpr uint32_t MAX_ATLAS_SIZE = 4096;
   static constexpr int PADDING = 2;
   float maxBearingY = 0;
+  float pixelSize = 0.0f;
 
   struct GlyphData {
     float u0, v0, u1, v1;
@@ -410,17 +411,18 @@ public:
   TextGooner(const TextGooner &) = delete;
   TextGooner &operator=(const TextGooner &) = delete;
 
-  bool init(const char *fontPath, float pixelSize) {
+  bool init(const char *fontPath, float pixelSizeValue) {
     destroy();
     atlas = BGFX_INVALID_HANDLE;
     program = BGFX_INVALID_HANDLE;
     s_tex = BGFX_INVALID_HANDLE;
     atlasSize = INITIAL_ATLAS_SIZE;
     maxBearingY = 0;
+    pixelSize = pixelSizeValue;
     glyphs.clear();
     packedGlyphs.clear();
 
-    if (!fontHandler.loadFromFile(fontPath, pixelSize)) return false;
+    if (!fontHandler.loadFromFile(fontPath, pixelSizeValue)) return false;
 
     bgfx::ShaderHandle vsh = bgfx::createShader(bgfx::makeRef(vs_text, sizeof(vs_text)));
     bgfx::ShaderHandle fsh = bgfx::createShader(bgfx::makeRef(fs_text, sizeof(fs_text)));
@@ -446,6 +448,7 @@ public:
     const char *end = ptr + text.size();
     while (ptr < end) {
       uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
+      if (codepoint == '\n' || codepoint == '\r') continue;
       if (seen.insert(codepoint).second && glyphs.find(codepoint) == glyphs.end()) {
         missing.push_back(codepoint);
       }
@@ -463,12 +466,21 @@ public:
     auto it = glyphs.find(codepoint);
     return it == glyphs.end() ? nullptr : &it->second;
   }
+  float measureText(std::string_view text) const {
+    return fontHandler.measureText(text.data(), static_cast<unsigned long>(text.size()));
+  }
+  float getLineHeight() const {
+    if (pixelSize > 0.0f) return pixelSize * 1.35f;
+    if (maxBearingY > 0.0f) return maxBearingY * 1.35f;
+    return 24.0f;
+  }
   float getTextMaxBearingY(std::string_view text) const {
     float textMaxBearingY = 0.0f;
     const char *ptr = text.data();
     const char *end = ptr + text.size();
     while (ptr < end) {
       uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
+      if (codepoint == '\n' || codepoint == '\r') continue;
       const auto *glyph = getGlyph(codepoint);
       if (glyph && glyph->loaded && glyph->bearing_y > textMaxBearingY) {
         textMaxBearingY = glyph->bearing_y;
@@ -492,6 +504,7 @@ public:
     packedGlyphs.clear();
     atlasSize = INITIAL_ATLAS_SIZE;
     maxBearingY = 0;
+    pixelSize = 0.0f;
   }
   float getMaxBearingY() const { return maxBearingY; }
 
@@ -625,11 +638,13 @@ public:
           renderBaselineBias = gooner.getTextMaxBearingY(text);
         }
 
+        const float lineHeight = gooner.getLineHeight();
         const char *ptr = text.data();
         const char *end = ptr + text.size();
         int quads = 0;
         while (ptr < end) {
           uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
+          if (codepoint == '\n' || codepoint == '\r') continue;
           const auto *glyph = gooner.getGlyph(codepoint);
           if (glyph && glyph->loaded) quads++;
         }
@@ -642,15 +657,23 @@ public:
 
         auto *vert = (Vertex *)tvb.data;
         float penX = x;
+        float penY = y;
         ptr = text.data();
 
         while (ptr < end) {
           uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
+          if (codepoint == '\r') continue;
+          if (codepoint == '\n') {
+            penX = x;
+            penY += lineHeight;
+            continue;
+          }
+
           const auto *glyph = gooner.getGlyph(codepoint);
           if (!glyph || !glyph->loaded) continue;
 
           float x0 = penX + glyph->bearing_x;
-          float y0 = y + renderBaselineBias - glyph->bearing_y;
+          float y0 = penY + renderBaselineBias - glyph->bearing_y;
           float x1 = x0 + glyph->width;
           float y1 = y0 + glyph->height;
 
@@ -1073,6 +1096,8 @@ public:
     bool gooning = true;
     int frameLimit = 0;
     std::chrono::steady_clock::time_point lastFullscreenChange{};
+    bool pendingFullscreenChange = false;
+    bool pendingFullscreenValue = false;
 
     Hell_Machina() = default;
 

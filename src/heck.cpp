@@ -64,6 +64,16 @@ void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enu
 }
 
 void Hell_Machina::frame() {
+    if (pendingFullscreenChange) {
+        pendingFullscreenChange = false;
+        if (sigma->setFullscreen(pendingFullscreenValue)) {
+            int fw, fh;
+            if (SDL_GetWindowSizeInPixels(sigma->getWindow(), &fw, &fh) && fw > 0 && fh > 0) {
+                resize(fw, fh);
+            }
+        }
+    }
+
     JohnPork pork;
 
     scenePass.begin();
@@ -100,28 +110,13 @@ void Hell_Machina::setFullscreen(bool on) {
 
     auto now = std::chrono::steady_clock::now();
     if (lastFullscreenChange.time_since_epoch().count() != 0 &&
-        now - lastFullscreenChange < std::chrono::milliseconds(250)) {
+        now - lastFullscreenChange < std::chrono::milliseconds(500)) {
         return;
     }
 
-    if (!sigma->setFullscreen(on)) {
-        SDL_Log("SDL_SetWindowFullscreen failed: %s", SDL_GetError());
-        return;
-    }
-
-    if (!SDL_SyncWindow(sigma->getWindow())) {
-        SDL_Log("SDL_SyncWindow failed after fullscreen change: %s", SDL_GetError());
-    }
-
-    int fw = 0;
-    int fh = 0;
-    if (!SDL_GetWindowSizeInPixels(sigma->getWindow(), &fw, &fh)) {
-        SDL_Log("SDL_GetWindowSizeInPixels failed after fullscreen change: %s", SDL_GetError());
-    } else if (fw > 0 && fh > 0) {
-        resize(fw, fh);
-    }
-
-    lastFullscreenChange = std::chrono::steady_clock::now();
+    pendingFullscreenChange = true;
+    pendingFullscreenValue = on;
+    lastFullscreenChange = now;
 }
 
 void Hell_Machina::setVsync(bool on) {
