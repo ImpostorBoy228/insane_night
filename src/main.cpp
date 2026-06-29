@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <filesystem>
+#include <chrono>
+#include <cstdio>
 #include "heck.hpp"
 #include "ligma/ligma.hpp"
 #include "ligma/bind.hpp"
@@ -19,20 +21,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 
     ligma_bind(lua.get_state(), engine);
 
-    std::string scriptPath = "scripts/main.lua";
-    if (std::filesystem::exists(scriptPath)) {
-        std::cout << "exec " << scriptPath << "\n";
-        lua.ExecuteFile(scriptPath);
-    } else {
-        std::cout << "no " << scriptPath << ", using C++ fallback\n";
-        auto tex = loadTexture("test.png");
-        if (!bgfx::isValid(tex))
-            throw std::runtime_error("failed to load test.png");
-        auto &uiLayer = engine.addUILayer("ui");
-        uiLayer.add<Text>(engine.getTextGooner(), "Hello, world!", 50, 50, 0xffffffff, 0);
-        uiLayer.add<Rectangle>(engine.getRectGooner(), 50, 50, 150, 30, 0xff0000ff, 0);
-        uiLayer.add<Image>(engine.getImageGooner(), tex, 200, 200, 48, 48, 0xffffffff, 0);
-    }
+    lua.ExecuteFile("scripts/main.lua");
+
+    auto lastFpsTime = std::chrono::steady_clock::now();
+    int frames = 0;
 
     while (engine.gooning) {
       SDL_Event event;
@@ -49,6 +41,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
       }
 
       engine.frame();
+
+      frames++;
+      auto now = std::chrono::steady_clock::now();
+      if (now - lastFpsTime >= std::chrono::seconds(1)) {
+        printf("FPS: %d\n", frames);
+        frames = 0;
+        lastFpsTime = now;
+      }
     }
 
     return 0;

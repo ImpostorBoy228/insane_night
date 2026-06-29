@@ -47,6 +47,8 @@ void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enu
     scenePass.clearFlags = BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH;
     scenePass.clearColor = 0x000000ff;
     scenePass.setViewport((uint16_t)w, (uint16_t)h);
+    scenePass.setOrtho(0, (float)w, (float)h, 0);
+    bgfx::setViewMode(scenePass.id, bgfx::ViewMode::Sequential);
 
     uiPass.id = 1;
     uiPass.fb = BGFX_INVALID_HANDLE;
@@ -95,6 +97,7 @@ void Hell_Machina::resize(int w, int h) {
     width = w; height = h;
     amogus->resize(w, h);
     scenePass.setViewport((uint16_t)w, (uint16_t)h);
+    scenePass.setOrtho(0, (float)w, (float)h, 0);
     uiPass.setViewport((uint16_t)w, (uint16_t)h);
     uiPass.setOrtho(0, (float)w, (float)h, 0);
     for (auto &l : uiLayers) l.onResize(w, h);

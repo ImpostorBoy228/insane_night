@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <optional>
 #include <vector>
+#include <unordered_map>
+#include <unordered_set>
 #include "tsfont_wrapper.hpp"
 #include "stb_image.h"
 #include "shaders/vs_text.bin.h"
@@ -129,14 +131,30 @@ public:
 
   TsFontHandler(const TsFontHandler &) = delete;
   TsFontHandler &operator=(const TsFontHandler &) = delete;
-  TsFontHandler(TsFontHandler &&other) noexcept : font(other.font) { other.font = nullptr; }
+  TsFontHandler(TsFontHandler &&other) noexcept
+      : font(other.font), fontBytes(std::move(other.fontBytes)) {
+    other.font = nullptr;
+  }
   TsFontHandler &operator=(TsFontHandler &&other) noexcept {
-    if (this != &other) { destroy(); font = other.font; other.font = nullptr; }
+    if (this != &other) {
+      destroy();
+      font = other.font;
+      fontBytes = std::move(other.fontBytes);
+      other.font = nullptr;
+    }
     return *this;
   }
 
   bool load(const unsigned char *data, unsigned long len, float pixel_size) {
-    destroy(); font = font_load(data, len, pixel_size); return font != nullptr;
+    destroy();
+    if (!data || len == 0) return false;
+    fontBytes.assign(data, data + len);
+    font = font_load(fontBytes.data(), fontBytes.size(), pixel_size);
+    if (!font) {
+      fontBytes.clear();
+      return false;
+    }
+    return true;
   }
 
   bool loadFromFile(const char *path, float pixel_size) {
@@ -149,10 +167,16 @@ public:
     std::fseek(fp, 0, SEEK_SET);
     if (std::fread(buf.get(), 1, sz, fp) != (size_t)sz) { std::fclose(fp); return false; }
     std::fclose(fp);
-    return load(buf.get(), sz, pixel_size);
+    return load(buf.get(), static_cast<unsigned long>(sz), pixel_size);
   }
 
-  void destroy() { if (font) { font_free(font); font = nullptr; } }
+  void destroy() {
+    if (font) {
+      font_free(font);
+      font = nullptr;
+    }
+    fontBytes.clear();
+  }
 
   float measureText(const char *utf8, unsigned long len) const {
     return font ? cock_measure(font, utf8, len) : 0.0f;
@@ -188,6 +212,7 @@ public:
 
 private:
   void *font = nullptr;
+  std::vector<unsigned char> fontBytes;
 };
 
 class TextGooner;
@@ -277,9 +302,59 @@ protected:
   std::string type;
 };
 
+inline uint32_t decodeUtf8Codepoint(const char *&ptr, const char *end) {
+  if (ptr >= end) return 0;
+
+  const unsigned char *s = reinterpret_cast<const unsigned char *>(ptr);
+  const unsigned char *finish = reinterpret_cast<const unsigned char *>(end);
+
+  if ((s[0] & 0x80u) == 0) {
+    ptr += 1;
+    return s[0];
+  }
+  if ((s[0] & 0xE0u) == 0xC0u && s + 1 < finish) {
+    uint32_t cp = ((s[0] & 0x1Fu) << 6) | (s[1] & 0x3Fu);
+    ptr += 2;
+    return cp;
+  }
+  if ((s[0] & 0xF0u) == 0xE0u && s + 2 < finish) {
+    uint32_t cp = ((s[0] & 0x0Fu) << 12) | ((s[1] & 0x3Fu) << 6) | (s[2] & 0x3Fu);
+    ptr += 3;
+    return cp;
+  }
+  if ((s[0] & 0xF8u) == 0xF0u && s + 3 < finish) {
+    uint32_t cp = ((s[0] & 0x07u) << 18) | ((s[1] & 0x3Fu) << 12) |
+                  ((s[2] & 0x3Fu) << 6) | (s[3] & 0x3Fu);
+    ptr += 4;
+    return cp;
+  }
+
+  ptr += 1;
+  return 0xFFFD;
+}
+
+inline void appendUtf8Codepoint(std::string &out, uint32_t codepoint) {
+  if (codepoint <= 0x7Fu) {
+    out.push_back(static_cast<char>(codepoint));
+  } else if (codepoint <= 0x7FFu) {
+    out.push_back(static_cast<char>(0xC0u | (codepoint >> 6)));
+    out.push_back(static_cast<char>(0x80u | (codepoint & 0x3Fu)));
+  } else if (codepoint <= 0xFFFFu) {
+    out.push_back(static_cast<char>(0xE0u | (codepoint >> 12)));
+    out.push_back(static_cast<char>(0x80u | ((codepoint >> 6) & 0x3Fu)));
+    out.push_back(static_cast<char>(0x80u | (codepoint & 0x3Fu)));
+  } else {
+    out.push_back(static_cast<char>(0xF0u | (codepoint >> 18)));
+    out.push_back(static_cast<char>(0x80u | ((codepoint >> 12) & 0x3Fu)));
+    out.push_back(static_cast<char>(0x80u | ((codepoint >> 6) & 0x3Fu)));
+    out.push_back(static_cast<char>(0x80u | (codepoint & 0x3Fu)));
+  }
+}
+
 class TextGooner {
 public:
-  static constexpr uint32_t ATLAS_SIZE = 512;
+  static constexpr uint32_t INITIAL_ATLAS_SIZE = 512;
+  static constexpr uint32_t MAX_ATLAS_SIZE = 4096;
   static constexpr int PADDING = 2;
   float maxBearingY = 0;
 
@@ -298,57 +373,16 @@ public:
   TextGooner &operator=(const TextGooner &) = delete;
 
   bool init(const char *fontPath, float pixelSize) {
+    destroy();
+    atlas = BGFX_INVALID_HANDLE;
+    program = BGFX_INVALID_HANDLE;
+    s_tex = BGFX_INVALID_HANDLE;
+    atlasSize = INITIAL_ATLAS_SIZE;
+    maxBearingY = 0;
+    glyphs.clear();
+    packedGlyphs.clear();
+
     if (!fontHandler.loadFromFile(fontPath, pixelSize)) return false;
-
-    std::string allChars;
-    for (int c = 32; c < 128; c++) allChars += (char)c;
-
-    auto run = fontHandler.rasterize(allChars.c_str(), allChars.size(), 128);
-    if (run.count <= 0) return false;
-
-    std::vector<uint8_t> atlasData(ATLAS_SIZE * ATLAS_SIZE, 0);
-    int curX = PADDING;
-    int curY = PADDING;
-    int rowH = 0;
-
-    for (int i = 0; i < run.count; i++) {
-      auto &info = run.infos[i];
-      int gw = info.bm_width;
-      int gh = info.bm_rows;
-
-      if (curX + gw + PADDING > (int)ATLAS_SIZE) {
-        curX = PADDING;
-        curY += rowH + PADDING;
-        rowH = 0;
-      }
-
-      for (int row = 0; row < gh && curY + row < (int)ATLAS_SIZE; row++)
-        std::memcpy(&atlasData[(curY + row) * ATLAS_SIZE + curX],
-                     &run.bitmap[info.bm_offset + row * info.bm_pitch], gw);
-
-      int c = info.codepoint;
-      if (c >= 0 && c < 256) {
-        auto &g = glyphs[c];
-        g.u0 = (float)curX / ATLAS_SIZE;
-        g.v0 = (float)curY / ATLAS_SIZE;
-        g.u1 = (float)(curX + gw) / ATLAS_SIZE;
-        g.v1 = (float)(curY + gh) / ATLAS_SIZE;
-        g.advance_x  = info.adv_x;
-        g.bearing_x  = info.br_x;
-        g.bearing_y  = info.br_y;
-        g.width  = (float)gw;
-        g.height = (float)gh;
-        g.loaded = true;
-        if (info.br_y > maxBearingY) maxBearingY = info.br_y;
-      }
-
-      curX += gw + PADDING;
-      if (gh > rowH) rowH = gh;
-    }
-
-    const bgfx::Memory *mem = bgfx::copy(atlasData.data(), ATLAS_SIZE * ATLAS_SIZE);
-    atlas = bgfx::createTexture2D(ATLAS_SIZE, ATLAS_SIZE, false, 1,
-      bgfx::TextureFormat::R8, 0, mem);
 
     bgfx::ShaderHandle vsh = bgfx::createShader(bgfx::makeRef(vs_text, sizeof(vs_text)));
     bgfx::ShaderHandle fsh = bgfx::createShader(bgfx::makeRef(fs_text, sizeof(fs_text)));
@@ -362,30 +396,173 @@ public:
       .add(bgfx::Attrib::Color0,    4, bgfx::AttribType::Uint8, true)
       .end();
 
-    return true;
+    return rebuildAtlas({});
+  }
+
+  bool ensureGlyphs(std::string_view text) {
+    if (!fontHandler.isValid()) return false;
+
+    std::vector<uint32_t> missing;
+    std::unordered_set<uint32_t> seen;
+    const char *ptr = text.data();
+    const char *end = ptr + text.size();
+    while (ptr < end) {
+      uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
+      if (seen.insert(codepoint).second && glyphs.find(codepoint) == glyphs.end()) {
+        missing.push_back(codepoint);
+      }
+    }
+
+    if (missing.empty()) return true;
+
+    std::vector<uint32_t> requested = packedGlyphs;
+    requested.insert(requested.end(), missing.begin(), missing.end());
+    return rebuildAtlas(requested);
   }
 
   const bgfx::VertexLayout& getLayout() const { return layout; }
-  const GlyphData* getGlyphs() const { return glyphs.data(); }
+  const GlyphData* getGlyph(uint32_t codepoint) const {
+    auto it = glyphs.find(codepoint);
+    return it == glyphs.end() ? nullptr : &it->second;
+  }
+  float getTextMaxBearingY(std::string_view text) const {
+    float textMaxBearingY = 0.0f;
+    const char *ptr = text.data();
+    const char *end = ptr + text.size();
+    while (ptr < end) {
+      uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
+      const auto *glyph = getGlyph(codepoint);
+      if (glyph && glyph->loaded && glyph->bearing_y > textMaxBearingY) {
+        textMaxBearingY = glyph->bearing_y;
+      }
+    }
+    return textMaxBearingY;
+  }
   bgfx::TextureHandle getAtlas() const { return atlas; }
   bgfx::ProgramHandle getProgram() const { return program; }
   bgfx::UniformHandle getSampler() const { return s_tex; }
 
   void destroy() {
-    if (bgfx::isValid(atlas))   bgfx::destroy(atlas);
+    if (bgfx::isValid(atlas)) bgfx::destroy(atlas);
     if (bgfx::isValid(program)) bgfx::destroy(program);
-    if (bgfx::isValid(s_tex))   bgfx::destroy(s_tex);
+    if (bgfx::isValid(s_tex)) bgfx::destroy(s_tex);
+    atlas = BGFX_INVALID_HANDLE;
+    program = BGFX_INVALID_HANDLE;
+    s_tex = BGFX_INVALID_HANDLE;
     fontHandler.destroy();
+    glyphs.clear();
+    packedGlyphs.clear();
+    atlasSize = INITIAL_ATLAS_SIZE;
+    maxBearingY = 0;
   }
   float getMaxBearingY() const { return maxBearingY; }
 
 private:
+  bool rebuildAtlas(const std::vector<uint32_t> &requestedGlyphs) {
+    std::vector<uint32_t> uniqueGlyphs;
+    uniqueGlyphs.reserve(requestedGlyphs.size());
+    std::unordered_set<uint32_t> seen;
+    for (uint32_t codepoint : requestedGlyphs) {
+      if (seen.insert(codepoint).second) uniqueGlyphs.push_back(codepoint);
+    }
+
+    std::string utf8;
+    for (uint32_t codepoint : uniqueGlyphs) appendUtf8Codepoint(utf8, codepoint);
+
+    TsFontHandler::GlyphRun run;
+    if (!utf8.empty()) {
+      run = fontHandler.rasterize(utf8.c_str(), static_cast<unsigned long>(utf8.size()),
+                                  static_cast<int>(uniqueGlyphs.size()));
+    }
+
+    uint32_t targetSize = atlasSize;
+    std::vector<uint8_t> atlasPixels;
+    std::unordered_map<uint32_t, GlyphData> newGlyphs;
+    std::vector<uint32_t> newPackedGlyphs;
+    bool packed = false;
+
+    while (!packed) {
+      atlasPixels.assign(targetSize * targetSize, 0);
+      newGlyphs.clear();
+      newPackedGlyphs.clear();
+      maxBearingY = 0;
+
+      int curX = PADDING;
+      int curY = PADDING;
+      int rowH = 0;
+      packed = true;
+
+      for (int i = 0; i < run.count; i++) {
+        auto &info = run.infos[i];
+        int gw = info.bm_width;
+        int gh = info.bm_rows;
+
+        if (curX + gw + PADDING > (int)targetSize) {
+          curX = PADDING;
+          curY += rowH + PADDING;
+          rowH = 0;
+        }
+
+        if (curY + gh + PADDING > (int)targetSize) {
+          packed = false;
+          break;
+        }
+
+        for (int row = 0; row < gh && curY + row < (int)targetSize; row++) {
+          std::memcpy(&atlasPixels[(curY + row) * targetSize + curX],
+                      &run.bitmap[info.bm_offset + row * info.bm_pitch], gw);
+        }
+
+        GlyphData glyph;
+        glyph.u0 = (float)curX / targetSize;
+        glyph.v0 = (float)curY / targetSize;
+        glyph.u1 = (float)(curX + gw) / targetSize;
+        glyph.v1 = (float)(curY + gh) / targetSize;
+        glyph.advance_x = info.adv_x;
+        glyph.bearing_x = info.br_x;
+        glyph.bearing_y = info.br_y;
+        glyph.width = (float)gw;
+        glyph.height = (float)gh;
+        glyph.loaded = true;
+        newGlyphs[info.codepoint] = glyph;
+        newPackedGlyphs.push_back(info.codepoint);
+        if (info.br_y > maxBearingY) maxBearingY = info.br_y;
+
+        curX += gw + PADDING;
+        if (gh > rowH) rowH = gh;
+      }
+
+      if (!packed) {
+        if (targetSize >= MAX_ATLAS_SIZE) return false;
+        targetSize = std::min(targetSize * 2, MAX_ATLAS_SIZE);
+      }
+    }
+
+    for (uint32_t codepoint : uniqueGlyphs) {
+      if (newGlyphs.find(codepoint) == newGlyphs.end()) {
+        newGlyphs[codepoint] = GlyphData{};
+      }
+    }
+
+    if (bgfx::isValid(atlas)) bgfx::destroy(atlas);
+    const bgfx::Memory *mem = bgfx::copy(atlasPixels.data(), atlasPixels.size());
+    atlas = bgfx::createTexture2D((uint16_t)targetSize, (uint16_t)targetSize, false, 1,
+                                  bgfx::TextureFormat::R8, 0, mem);
+
+    atlasSize = targetSize;
+    glyphs = std::move(newGlyphs);
+    packedGlyphs = std::move(newPackedGlyphs);
+    return bgfx::isValid(atlas);
+  }
+
   TsFontHandler fontHandler;
-  bgfx::TextureHandle atlas  = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle atlas = BGFX_INVALID_HANDLE;
   bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
-  bgfx::UniformHandle s_tex   = BGFX_INVALID_HANDLE;
+  bgfx::UniformHandle s_tex = BGFX_INVALID_HANDLE;
   bgfx::VertexLayout layout;
-  std::array<GlyphData, 256> glyphs{};
+  std::unordered_map<uint32_t, GlyphData> glyphs;
+  std::vector<uint32_t> packedGlyphs;
+  uint32_t atlasSize = INITIAL_ATLAS_SIZE;
 };
 
 class Text : public Skibidi {
@@ -403,42 +580,49 @@ public:
 
         struct Vertex { float x, y, u, v; uint32_t color; };
 
-        auto *glyphs = gooner.getGlyphs();
         auto &layout = gooner.getLayout();
+        if (!gooner.ensureGlyphs(text)) return;
+        float renderBaselineBias = baselineBias;
+        if (renderBaselineBias == 0.0f) {
+          renderBaselineBias = gooner.getTextMaxBearingY(text);
+        }
 
-    int len = (int)text.size();
-    int quads = 0;
-    for (int i = 0; i < len; i++) {
-      unsigned char c = (unsigned char)text[i];
-      if (c >= 32 && c < 128 && glyphs[c].loaded) quads++;
-    }
-    if (quads == 0) return;
+        const char *ptr = text.data();
+        const char *end = ptr + text.size();
+        int quads = 0;
+        while (ptr < end) {
+          uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
+          const auto *glyph = gooner.getGlyph(codepoint);
+          if (glyph && glyph->loaded) quads++;
+        }
+        if (quads == 0) return;
 
-    bgfx::TransientVertexBuffer tvb;
-    bgfx::TransientIndexBuffer tib;
-    if (!bgfx::allocTransientBuffers(&tvb, layout, quads * 4, &tib, quads * 6))
-      return;
+        bgfx::TransientVertexBuffer tvb;
+        bgfx::TransientIndexBuffer tib;
+        if (!bgfx::allocTransientBuffers(&tvb, layout, quads * 4, &tib, quads * 6))
+          return;
 
-    auto *vert = (Vertex *)tvb.data;
-    float penX = x;
+        auto *vert = (Vertex *)tvb.data;
+        float penX = x;
+        ptr = text.data();
 
-    for (int i = 0; i < len; i++) {
-      unsigned char c = (unsigned char)text[i];
-      if (c < 32 || c >= 128 || !glyphs[c].loaded) continue;
+        while (ptr < end) {
+          uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
+          const auto *glyph = gooner.getGlyph(codepoint);
+          if (!glyph || !glyph->loaded) continue;
 
-      auto &g = glyphs[c];
-      float x0 = penX + g.bearing_x;
-      float y0 = y + baselineBias - g.bearing_y;
-      float x1 = x0 + g.width;
-      float y1 = y0 + g.height;
+          float x0 = penX + glyph->bearing_x;
+          float y0 = y + renderBaselineBias - glyph->bearing_y;
+          float x1 = x0 + glyph->width;
+          float y1 = y0 + glyph->height;
 
-      vert[0] = {x0, y0, g.u0, g.v0, color};
-      vert[1] = {x1, y0, g.u1, g.v0, color};
-      vert[2] = {x1, y1, g.u1, g.v1, color};
-      vert[3] = {x0, y1, g.u0, g.v1, color};
-      vert += 4;
-      penX += g.advance_x;
-    }
+          vert[0] = {x0, y0, glyph->u0, glyph->v0, color};
+          vert[1] = {x1, y0, glyph->u1, glyph->v0, color};
+          vert[2] = {x1, y1, glyph->u1, glyph->v1, color};
+          vert[3] = {x0, y1, glyph->u0, glyph->v1, color};
+          vert += 4;
+          penX += glyph->advance_x;
+        }
 
     auto *idx = (uint16_t *)tib.data;
     for (int i = 0; i < quads; i++) {
@@ -568,8 +752,22 @@ public:
 };
 
 struct Clickable {
-    float x, y, w, h;
+    float x = 0, y = 0, w = 0, h = 0;
     std::function<void()> onClick;
+    bool hasFrac = false;
+    float frx = 0, fry = 0, frw = 0, frh = 0;
+    void setFrac(float rx, float ry, float rw, float rh) {
+        hasFrac = true;
+        frx = rx; fry = ry;
+        frw = rw > 0 ? rw : 1.0f;
+        frh = rh > 0 ? rh : 1.0f;
+    }
+    void updateFrac(int pw, int ph) {
+        if (hasFrac) {
+            x = frx * pw; y = fry * ph;
+            w = frw * pw; h = frh * ph;
+        }
+    }
 };
 
 struct Layer {
@@ -600,11 +798,23 @@ struct Layer {
     }
 
     void addClickable(float x, float y, float w, float h, std::function<void()> cb) {
-        clickables.push_back({x, y, w, h, std::move(cb)});
+        Clickable c;
+        c.x = x; c.y = y; c.w = w; c.h = h;
+        c.onClick = std::move(cb);
+        clickables.push_back(std::move(c));
+    }
+
+    void addClickableF(float rx, float ry, float rw, float rh, int pw, int ph, std::function<void()> cb) {
+        Clickable c;
+        c.setFrac(rx, ry, rw, rh);
+        c.updateFrac(pw, ph);
+        c.onClick = std::move(cb);
+        clickables.push_back(std::move(c));
     }
 
   void onResize(int pw, int ph) {
     for (auto &item : items) item->onResize(pw, ph);
+    for (auto &c : clickables) c.updateFrac(pw, ph);
   }
 
   void collect(JohnPork &pork) {
@@ -810,6 +1020,9 @@ public:
         return nullptr;
     }
     TextGooner& getTextGooner() { return textGooner; }
+    void setFont(const char *path, int size) {
+        textGooner.init(path, (float)size);
+    }
     RectGooner& getRectGooner() { return rectGooner; }
     ImageGooner& getImageGooner() { return imageGooner; }
 };

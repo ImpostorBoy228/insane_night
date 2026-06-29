@@ -15,9 +15,14 @@ inline void ligma_bind(sol::state& L, Hell_Machina& engine) {
         "addClickable", [](Layer& self, float x, float y, float w, float h, sol::function cb) {
             self.addClickable(x, y, w, h, [cb]() { cb(); });
         },
+        "addClickableF", [&](Layer& self, float rx, float ry, float rw, float rh, sol::function cb) {
+            self.addClickableF(rx, ry, rw, rh, engine.width, engine.height, [cb]() { cb(); });
+        },
         "addTextF", [&](Layer& self, TextGooner& g, const char* t, float rx, float ry, uint32_t c, int32_t z) {
             auto *el = self.addText(g, t, rx * engine.width, ry * engine.height, c, z);
-            el->baselineBias = g.getMaxBearingY();
+            if (t && g.ensureGlyphs(t)) {
+                el->baselineBias = g.getTextMaxBearingY(t);
+            }
             el->setFrac(rx, ry, 0, 0);
             return el;
         },
@@ -64,5 +69,6 @@ inline void ligma_bind(sol::state& L, Hell_Machina& engine) {
     L.set_function("getTextGooner", [&]() -> TextGooner& { return engine.getTextGooner(); });
     L.set_function("getRectGooner", [&]() -> RectGooner& { return engine.getRectGooner(); });
     L.set_function("getImageGooner",[&]() -> ImageGooner& { return engine.getImageGooner(); });
+    L.set_function("setFont", [&](const char* path, int size) { engine.setFont(path, size); });
     L.set_function("fuckOff", [&]() { engine.gooning = false; });
 }

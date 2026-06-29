@@ -17,6 +17,7 @@ function switchTo(name)
         ui = addUILayer(layerName)
     end
 
+
     ui:clear()
 
     ui.visible = true
@@ -26,8 +27,7 @@ function switchTo(name)
     if fn then fn(ui) end
 end
 
-
 dofile("scripts/sscreen.lua")
-dofile("scripts/settings.lua")
+dofile("scripts/game.lua")
 
 switchTo("menu")

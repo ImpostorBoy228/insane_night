@@ -4,7 +4,7 @@ MAKEFLAGS += -j16
 COMPDB = compile_commands.json
 CXXFLAGS = -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0
 CFLAGS   = -std=c11 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0
-INCLUDES = -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src
+INCLUDES = -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include
 LDFLAGS  = -lSDL3 -lX11 -lGL -ldl -lpthread -lfreetype
 LIBS     = external/lib/libbgfx.a external/lib/libbx.a external/lib/libbimg.a
 
@@ -37,6 +37,7 @@ clean:
 	rm -f *.o insane_night $(COMPDB)
 	rm -rf gcm.cache
 	rm -f main.s
+	rm -f scripts/embed
 	$(MAKE) -C external/lua-5.4.8/src clean
 
 .PHONY: all clean compdb
