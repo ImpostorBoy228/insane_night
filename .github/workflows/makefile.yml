@@ -2,48 +2,51 @@ name: Makefile CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: install dependencies
-      run: sudo apt-get update && sudo apt-get install -y cmake build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
+      - name: Sync submodules
+        run: git submodule sync --recursive
 
-    - name: Setup Lua
-      run: |
-        curl -L https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz
-        mv lua-5.4.8 external/
-        make -C external/lua-5.4.8/src linux
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
 
-    - name: Get SDL submodule commit
-      id: sdl-commit
-      run: echo "hash=$(git submodule status external/SDL | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+      - name: Setup Lua
+        run: |
+          curl -L https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz
+          mv lua-5.4.8 external/
+          make -C external/lua-5.4.8/src linux
 
-    - name: Cache SDL3 build
-      id: cache-sdl
-      uses: actions/cache@v4
-      with:
-        path: |
-          external/SDL/build
-          /usr/local/lib/libSDL3*
-          /usr/local/include/SDL3
-        key: sdl3-${{ steps.sdl-commit.outputs.hash }}
+      - name: Get SDL submodule commit
+        id: sdl-commit
+        run: echo "hash=$(git submodule status external/SDL | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
-    - name: build SDL3 from source
-      if: steps.cache-sdl.outputs.cache-hit != 'true'
-      run: |
-        cmake -S external/SDL -B external/SDL/build
-        cmake --build external/SDL/build
-        sudo cmake --install external/SDL/build
+      - name: Cache SDL3 build
+        id: cache-sdl
+        uses: actions/cache@v4
+        with:
+          path: |
+            external/SDL/build
+            /usr/local/lib/libSDL3*
+            /usr/local/include/SDL3
+          key: sdl3-${{ steps.sdl-commit.outputs.hash }}
 
-    - name: build from source
-      run: make
+      - name: build SDL3 from source
+        if: steps.cache-sdl.outputs.cache-hit != 'true'
+        run: |
+          cmake -S external/SDL -B external/SDL/build
+          cmake --build external/SDL/build
+          sudo cmake --install external/SDL/build
+
+      - name: build from source
+        run: make clean && make insane_night

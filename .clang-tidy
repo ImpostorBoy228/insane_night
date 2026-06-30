@@ -3,7 +3,6 @@ Checks: >
   clang-analyzer-*,
   bugprone-*,
   performance-*,
-  readability-identifier-length,
   cppcoreguidelines-owning-memory,
   misc-*,
   -misc-include-cleaner,
@@ -67,4 +66,7 @@ Checks: >
   -bugprone-suspicious-stringview-data-usage,
   -bugprone-reserved-identifier,
   -bugprone-macro-parentheses,
-  -bugprone-implicit-widening-of-multiplication-result
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-narrowing-conversions,
+  -performance-noexcept-move-constructor,
+  -misc-redundant-expression

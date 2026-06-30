@@ -1,4 +1,5 @@
 #pragma once
+// NOLINTBEGIN(readability-identifier-length,bugprone-narrowing-conversions,performance-noexcept-move-constructor)
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
 #include <algorithm>
@@ -16,7 +17,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <array>
+
 #include <algorithm>
 #include <cmath>
 #include <optional>
@@ -24,6 +25,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "tsfont_wrapper.hpp"
+#include "audio_unc.hpp"
 #include "stb_image.h"
 #include "shaders/vs_text.bin.h"
 #include "shaders/fs_text.bin.h"
@@ -1087,6 +1089,7 @@ class Hell_Machina {
     RectGooner rectGooner;
     ImageGooner imageGooner;
     CacheMan cacheMan;
+    AudioEngine audioEngine;
     std::vector<Layer> sceneLayers;
     std::vector<Layer> uiLayers;
 
@@ -1153,3 +1156,4 @@ public:
     RectGooner& getRectGooner() { return rectGooner; }
     ImageGooner& getImageGooner() { return imageGooner; }
 };
+// NOLINTEND(readability-identifier-length,bugprone-narrowing-conversions,performance-noexcept-move-constructor)

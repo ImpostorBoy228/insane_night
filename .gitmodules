@@ -12,10 +12,13 @@
 	url = https://github.com/libsdl-org/SDL
 [submodule "external/tsfont"]
 	path = external/tsfont
-	url = git@github.com:ImpostorBoy228/tsfont.git
+	url = https://github.com/ImpostorBoy228/tsfont.git
 [submodule "external/sol2"]
 	path = external/sol2
 	url = https://github.com/ThePhD/sol2.git
 [submodule "external/json"]
 	path = external/json
 	url = https://github.com/nlohmann/json
+[submodule "external/soloud20200207"]
+	path = external/soloud20200207
+	url = https://github.com/jarikomppa/soloud.git

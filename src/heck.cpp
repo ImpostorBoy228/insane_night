@@ -61,6 +61,7 @@ void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enu
     textGooner.init("/usr/share/fonts/TTF/DejaVuSans.ttf", 32);
     rectGooner.init();
     imageGooner.init();
+    audioEngine.init();
 }
 
 void Hell_Machina::frame() {
@@ -124,7 +125,7 @@ void Hell_Machina::setVsync(bool on) {
 }
 
 void Hell_Machina::setVolume(float volume) {
-    (void)volume;
+    audioEngine.setGlobalVolume(volume);
 }
 
 void Hell_Machina::setFrameLimit(int limit) {

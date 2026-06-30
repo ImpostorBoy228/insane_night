@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global, undefined-field
+
 local scenes = {}
 local currentScene = nil
 local currentSceneName = nil

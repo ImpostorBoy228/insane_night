@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global, undefined-field
+
 local g = {
     text = getTextGooner(),
     rect = getRectGooner()

@@ -1,5 +1,7 @@
-local json = dofile("scripts/libs/json.lua")
+---@diagnostic disable: undefined-global, undefined-field
 
+local json = dofile("scripts/libs/json.lua")
+-- TODO: audio, charecters
 local vn = {
     currentNode = nil,
     currentBg = nil,
@@ -239,7 +241,7 @@ function renderGame(ui)
         return
     end
 
-    background(ui, node)
+    image(ui, node.bg, 0, 0, 1, 0.7)
 
     local dialogue = Los_Penguinos_me_la_van_a_Mascar.dialogue
     local panel = dialogue.Kawasaki

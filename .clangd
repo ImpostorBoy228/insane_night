@@ -1,3 +1,20 @@
 CompileFlags:
-  Add: [-Wno-unknown-warning-option, -fno-spell-checking]
+  Add:
+    - -Wno-unknown-warning-option
+    - -fno-spell-checking
+    - -I/home/impostorboy/projects/insane_night/external
+    - -I/home/impostorboy/projects/insane_night/external/bgfx/include
+    - -I/home/impostorboy/projects/insane_night/external/bx/include
+    - -I/home/impostorboy/projects/insane_night/external/bimg/include
+    - -I/home/impostorboy/projects/insane_night/external/SDL/include
+    - -I/home/impostorboy/projects/insane_night/external/tsfont
+    - -I/usr/include/freetype2
+    - -I/home/impostorboy/projects/insane_night/external/sol2/include
+    - -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
+    - -I/home/impostorboy/projects/insane_night/external/json/single_include
+    - -I/home/impostorboy/projects/insane_night/external/soloud20200207/include
+    - -I/home/impostorboy/projects/insane_night/external/soloud20200207/src
   CompilationDatabase: .
+
+Diagnostics:
+  UnusedIncludes: None

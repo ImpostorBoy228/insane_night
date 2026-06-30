@@ -1,22 +1,27 @@
 [
   {
     "directory": "/home/impostorboy/projects/insane_night",
-    "command": "g++ -c src/heck.cpp -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include",
-    "file": "src/heck.cpp"
+    "command": "g++ -c src/heck.cpp -std=c++23 -O2 -DBX_CONFIG_DEBUG=0 -Wall -Wextra -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include -Iexternal/soloud20200207/include -Iexternal/soloud20200207/src",
+    "file": "/home/impostorboy/projects/insane_night/src/heck.cpp"
   },
   {
     "directory": "/home/impostorboy/projects/insane_night",
-    "command": "g++ -c src/main.cpp -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include",
-    "file": "src/main.cpp"
+    "command": "g++ -c src/main.cpp -std=c++23 -O2 -DBX_CONFIG_DEBUG=0 -Wall -Wextra -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include -Iexternal/soloud20200207/include -Iexternal/soloud20200207/src",
+    "file": "/home/impostorboy/projects/insane_night/src/main.cpp"
   },
   {
     "directory": "/home/impostorboy/projects/insane_night",
-    "command": "gcc -c external/tsfont/font_handler.c -std=c11 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include",
-    "file": "external/tsfont/font_handler.c"
+    "command": "gcc -c external/tsfont/font_handler.c -std=c11 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include -Iexternal/soloud20200207/include -Iexternal/soloud20200207/src",
+    "file": "/home/impostorboy/projects/insane_night/external/tsfont/font_handler.c"
   },
   {
     "directory": "/home/impostorboy/projects/insane_night",
-    "command": "g++ -c src/ligma/ligma.cpp -std=c++23 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0 -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include",
-    "file": "src/ligma/ligma.cpp"
+    "command": "g++ -c src/ligma/ligma.cpp -std=c++23 -O2 -DBX_CONFIG_DEBUG=0 -Wall -Wextra -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include -Iexternal/soloud20200207/include -Iexternal/soloud20200207/src",
+    "file": "/home/impostorboy/projects/insane_night/src/ligma/ligma.cpp"
+  },
+  {
+    "directory": "/home/impostorboy/projects/insane_night",
+    "command": "g++ -c src/audio_unc.cpp -std=c++23 -O2 -DBX_CONFIG_DEBUG=0 -Wall -Wextra -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include -Iexternal/soloud20200207/include -Iexternal/soloud20200207/src",
+    "file": "/home/impostorboy/projects/insane_night/src/audio_unc.cpp"
   }
 ]
