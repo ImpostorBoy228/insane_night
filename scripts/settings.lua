@@ -118,8 +118,11 @@ local function nextFrameLimit(value)
 end
 
 local function addButton(ui, x, y, w, h, label, onClick)
+    -- button background
     local button = ui:addRectF(g.rect, x, y, w, h, 0xffffffff, 0)
     button:onClick(onClick)
+
+    -- button label
     ui:addTextF(g.text, label, x + 0.02, y + 0.02, 0xff000000, 1)
     return button
 end
@@ -132,25 +135,30 @@ end
 register("settings", function(ui)
     setFont("assets/HackRegular-gX84.ttf", 24)
 
+    -- settings background
     local bg = loadTexture("assets/background.png")
     if bg.idx ~= 65535 then
         ui:addImageF(getImageGooner(), bg, 0, 0, 1, 1, 0xffffffff, -1)
     end
 
+    -- screen title
     ui:addTextF(g.text, "Settings", 0.38, 0.12, 0xffffffff, 1)
 
+    -- fullscreen button
     addButton(ui, 0.28, 0.26, 0.44, 0.07, "Fullscreen: " .. boolLabel(Settings.fullscreen), function()
         Settings.fullscreen = not Settings.fullscreen
         applyAndSaveSettings()
         switchTo("settings")
     end)
 
+    -- frame limit button
     addButton(ui, 0.28, 0.37, 0.44, 0.07, "Frame limit: " .. frameLimitLabel(Settings.framelimit), function()
         Settings.framelimit = nextFrameLimit(Settings.framelimit)
         applyAndSaveSettings()
         switchTo("settings")
     end)
 
+    -- volume button
     addButton(ui, 0.28, 0.48, 0.44, 0.07, string.format("Volume: %.1f", Settings.volume), function()
         local nextVolume = Settings.volume + 0.1
         if nextVolume > 1.0 then
@@ -162,6 +170,7 @@ register("settings", function(ui)
         switchTo("settings")
     end)
 
+    -- back button
     addButton(ui, 0.28, 0.62, 0.44, 0.07, "Back", function()
         switchTo("menu")
     end)

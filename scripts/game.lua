@@ -7,21 +7,23 @@ local vn = {
     history = {}
 }
 
+local Los_Penguinos_me_la_van_a_Mascar = {
+    dialogue = {
+        Kawasaki = { x = 0, y = 0.7, w = 1, h = 0.3 },
+        topLine = { h = 0.004, color = 0x70ffffff }, -- cancer tech
+        Cago = { x = 0.05, y = 0.75, right = 0.95, bottom = 1 },
+        Krico = { x = 0.07, y = 0.63, h = 0.055, maxWidth = 0.28, paddingPx = 36, textInset = 0.014, textY = 0.638 },
+        Estriper = { x = 0.925, y = 0.905 }
+    }
+}
+
+-- vn ui
 local g = {
     text = getTextGooner(),
     textSmall = getTextGooner("assets/HackRegular-gX84.ttf", 18),
     textOk = getTextGooner("assets/HackRegular-gX84.ttf", 20),
     rect = getRectGooner(),
     image = getImageGooner()
-}
-
-local layout = {
-    dialogue = {
-        panel = { x = 0.04, y = 0.68, w = 0.92, h = 0.28 },
-        nameplate = { x = 0.07, y = 0.63, h = 0.055 },
-        text = { x = 0.075, y = 0.76, right = 0.915, bottom = 0.92 },
-        indicator = { x = 0.90, y = 0.915 }
-    }
 }
 
 local script = {
@@ -33,7 +35,7 @@ local script = {
     }
 }
 
-local function readFile(path)
+local function readlike_book(path)
     local file = io.open(path, "r")
     if not file then
         return nil
@@ -45,7 +47,7 @@ local function readFile(path)
 end
 
 local function script()
-    local raw = readFile("scripts/script.json")
+    local raw = readlike_book("scripts/script.json")
     if not raw then
         print("Could not read scripts/script.json")
         return false
@@ -53,7 +55,7 @@ local function script()
 
     local ok, data = pcall(json.decode, raw)
     if not ok then
-        print("Invalid scripts/script.json: " .. tostring(data))
+        print("Fuck your scripts/script.json: " .. tostring(data))
         return false
     end
 
@@ -63,7 +65,7 @@ local function script()
     end
 
     if type(data.nodes[data.start]) ~= "table" then
-        print("Start node does not exist: " .. tostring(data.start))
+        print("Forgot to define start node: " .. tostring(data.start))
         return false
     end
 
@@ -89,9 +91,22 @@ local function background(ui, node)
 
     local bg = loadTexture(bgPath)
     if bg.idx ~= 65535 then
+        -- scene background
         ui:addImageF(g.image, bg, 0, 0, 1, 1, 0xffffffff, -10)
     else
+        -- fallback background
         ui:addRectF(g.rect, 0, 0, 1, 1, 0xff111111, -10)
+    end
+end
+
+local function image(ui, path, x, y, w, h)
+    local tex = loadTexture(path)
+    if tex.idx ~= 65535 then
+        -- helper image
+        ui:addImageF(g.image, tex, x, y, w, h, 0xffffffff, -10)
+    else
+        -- fallback image block
+        ui:addRectF(g.rect, x, y, w, h, 0xff111111, -10)
     end
 end
 
@@ -179,11 +194,18 @@ local function paginateLines(lines, maxLines)
 end
 
 local function buildDialoguePages(text)
-    local textAreaWidth = (layout.dialogue.text.right - layout.dialogue.text.x) * getScreenWidth()
-    local textAreaHeight = (layout.dialogue.text.bottom - layout.dialogue.text.y) * getScreenHeight()
+    local textBox = Los_Penguinos_me_la_van_a_Mascar.dialogue.Cago
+    local textAreaWidth = (textBox.right - textBox.x) * getScreenWidth()
+    local textAreaHeight = (textBox.bottom - textBox.y) * getScreenHeight()
     local maxLines = math.floor(textAreaHeight / g.textSmall:getLineHeight())
     local wrappedLines = wrapText(g.textSmall, text or "", textAreaWidth)
     return paginateLines(wrappedLines, maxLines)
+end
+
+local function getSpeakerWidth(text)
+    local speaker = Los_Penguinos_me_la_van_a_Mascar.dialogue.Krico
+    local speakerWidthPixels = g.text:measureText(text) + speaker.paddingPx
+    return math.min(speaker.maxWidth, speakerWidthPixels / getScreenWidth())
 end
 
 local function nextNode(ui, nextId)
@@ -197,44 +219,58 @@ local function nextNode(ui, nextId)
     renderGame(ui)
 end
 
+function ginit()
+    setFont("assets/HackRegular-gX84.ttf", 24)
+    script()
+    vn.currentBg = nil
+    vn.currentPage = 1
+    vn.history = {}
+    vn.currentNode = script.start
+    table.insert(vn.history, vn.currentNode)
+end
+
 function renderGame(ui)
     ui:clear()
 
     local node = getNode(vn.currentNode)
     if not node then
-        ui:addTextF(g.text, "Dialogue node not found: " .. tostring(vn.currentNode), 0.1, 0.1, 0xffffffff, 1)
+        -- error text
+        ui:addTextF(g.text, "missing node: " .. tostring(vn.currentNode), 0.1, 0.1, 0xffffffff, 1)
         return
     end
 
     background(ui, node)
 
-    local panel = layout.dialogue.panel
-    local textBox = layout.dialogue.text
-    local nameplate = layout.dialogue.nameplate
+    local dialogue = Los_Penguinos_me_la_van_a_Mascar.dialogue
+    local panel = dialogue.Kawasaki
+    local textBox = dialogue.Cago
+    local speaker = dialogue.Krico
+    local nextHint = dialogue.Estriper
     local pages = buildDialoguePages(node.text or "")
     local currentPage = math.min(vn.currentPage, #pages)
     local speakerText = node.speaker or ""
 
+    -- dialogue panel
     ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0xdd101014, 0)
-    ui:addRectF(g.rect, panel.x, panel.y, panel.w, 0.004, 0x70ffffff, 1)
+
+    -- panel top line
+    -- ui:addRectF(g.rect, panel.x, panel.y, panel.w, dialogue.topLine.h, dialogue.topLine.color, 1)
 
     if speakerText ~= "" then
-        local speakerWidthPixels = g.text:measureText(speakerText) + 36
-        local speakerWidth = math.min(0.28, speakerWidthPixels / getScreenWidth())
-        ui:addRectF(g.rect, nameplate.x, nameplate.y, speakerWidth, nameplate.h, 0xffe8e8e8, 2)
-        ui:addTextF(g.text, speakerText, nameplate.x + 0.014, nameplate.y + 0.008, 0xff101014, 3)
+        local speakerWidth = getSpeakerWidth(speakerText)
+
+        -- speaker plate
+        ui:addRectF(g.rect, speaker.x, speaker.y, speakerWidth, speaker.h, 0xffe8e8e8, 2)
+
+        -- speaker label
+        ui:addTextF(g.text, speakerText, speaker.x + speaker.textInset, speaker.textY, 0xff101014, 3)
     end
 
+    -- dialogue text
     ui:addTextF(g.textSmall, pages[currentPage], textBox.x, textBox.y, 0xffffffff, 3)
 
-    if #pages > 1 then
-        ui:addTextF(g.textOk, string.format("%d/%d", currentPage, #pages), layout.dialogue.indicator.x,
-            layout.dialogue.indicator.y, 0xffd0d0d0, 3)
-    elseif node.next then
-        ui:addTextF(g.textOk, ">", layout.dialogue.indicator.x, layout.dialogue.indicator.y, 0xffd0d0d0, 3)
-    end
-
     if currentPage < #pages or node.next then
+        -- next hitbox
         local nextBtn = ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0x00000000, 10)
         nextBtn:onClick(function()
             if currentPage < #pages then
@@ -248,12 +284,8 @@ function renderGame(ui)
 end
 
 register("gay", function(ui)
-    setFont("assets/HackRegular-gX84.ttf", 24)
-    script()
-    vn.currentBg = nil
-    vn.currentPage = 1
-    vn.history = {}
-    vn.currentNode = script.start
-    table.insert(vn.history, vn.currentNode)
+    if not vn.currentNode then
+        ginit()
+    end
     renderGame(ui)
 end)

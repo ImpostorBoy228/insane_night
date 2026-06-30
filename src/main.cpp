@@ -38,6 +38,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         if (event.type == SDL_EVENT_WINDOW_RESIZED ||
             event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
           engine.resize(event.window.data1, event.window.data2);
+
+          sol::protected_function onResize = lua.get_state()["onResize"];
+          if (onResize.valid()) {
+            sol::protected_function_result result = onResize(engine.width, engine.height);
+            if (!result.valid()) {
+              sol::error error = result;
+              std::cerr << "Lua resize callback error: " << error.what() << '\n';
+            }
+          }
         }
         engine.handleEvent(event);
       }

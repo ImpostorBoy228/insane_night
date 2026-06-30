@@ -1,5 +1,6 @@
 local scenes = {}
 local currentScene = nil
+local currentSceneName = nil
 
 Settings = {
     fullscreen = false,
@@ -25,7 +26,22 @@ function register(name, fn)
     scenes[name] = fn
 end
 
+function scrender()
+    if not currentScene then return end
+    local fn = scenes[currentSceneName]
+    if fn and currentScene then
+        currentScene:clear()
+        fn(currentScene)
+    end
+end
+
+function onResize(width, height)
+    scrender()
+end
+
 function switchTo(name)
+    currentSceneName = name
+
     if currentScene then
         currentScene.visible = false
     end
