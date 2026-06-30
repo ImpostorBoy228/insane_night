@@ -8,17 +8,13 @@ local vn = {
     currentPage = 1,
     currentSound = nil,
     currentSoundId = 0,
-    history = {}
+    currentChar = nil,
 }
 
-local Los_Penguinos_me_la_van_a_Mascar = {
-    dialogue = {
-        Kawasaki = { x = 0, y = 0.7, w = 1, h = 0.3 },
-        topLine = { h = 0.004, color = 0x70ffffff }, -- cancer tech
-        Cago = { x = 0.05, y = 0.75, right = 0.95, bottom = 1 },
-        Krico = { x = 0.07, y = 0.65, h = 0.05, maxWidth = 0.5, paddingPx = 36, textInset = 0.014, textY = 0.65 + (0.05 / 3) },
-        Estriper = { x = 0.925, y = 0.905 }
-    }
+local dialogueCfg = {
+    Kawasaki = { x = 0, y = 0.7, w = 1, h = 0.3 },
+    Cago = { x = 0.05, y = 0.75, right = 0.95, bottom = 1 },
+    Krico = { x = 0.07, y = 0.65, h = 0.05, maxWidth = 0.5, paddingPx = 36, textInset = 0.014, textY = 0.65 + (0.05 / 3) },
 }
 
 -- vn ui
@@ -29,15 +25,6 @@ local g = {
     rect = getRectGooner(),
     image = getImageGooner(),
     audio = getAudioEngine()
-}
-
-local script = {
-    start = "start",
-    nodes = {
-        start = {
-            text = "script.json not loaded"
-        }
-    }
 }
 
 local function readlike_book(path)
@@ -51,7 +38,16 @@ local function readlike_book(path)
     return content
 end
 
-local function script()
+local scriptData = {
+    start = "start",
+    nodes = {
+        start = {
+            text = "script.json not loaded"
+        }
+    }
+}
+
+local function loadScript()
     local raw = readlike_book("scripts/script.json")
     if not raw then
         print("Could not read scripts/script.json")
@@ -74,7 +70,7 @@ local function script()
         return false
     end
 
-    script = data
+    scriptData = data
     return true
 end
 
@@ -83,7 +79,20 @@ local function getNode(id)
         return nil
     end
 
-    return script.nodes[id]
+    return scriptData.nodes[id]
+end
+
+local function image(ui, path, x, y, w, h, z)
+    if not path then
+        return
+    end
+
+    local tex = loadTexture(path)
+    if tex.idx ~= 65535 then
+        ui:addImageF(g.image, tex, x, y, w, h, 0xffffffff, z)
+    else
+        ui:addRectF(g.rect, x, y, w, h, 0xff111111, z)
+    end
 end
 
 local function background(ui, node, x, y, w, h)
@@ -94,26 +103,38 @@ local function background(ui, node, x, y, w, h)
 
     vn.currentBg = bgPath
 
-    local bg = loadTexture(bgPath)
-    if bg.idx ~= 65535 then
-        ui:addImageF(g.image, bg, x, y, w, h, 0xffffffff, -10)
-    else
-        ui:addRectF(g.rect, x, y, w, h, 0xff111111, -10)
-    end
+    image(ui, bgPath, x, y, w, h, -10)
 end
 
-local function image(ui, node, x, y, w, h)
-    local bgPath = node.bg
-    if not bgPath then
+local function character(ui, node, z)
+    local charPath = node.character or vn.currentChar
+    if not charPath then
         return
     end
 
-    local tex = loadTexture(bgPath)
-    if tex.idx ~= 65535 then
-        ui:addImageF(g.image, tex, x, y, w, h, 0xffffffff, -10)
-    else
-        ui:addRectF(g.rect, x, y, w, h, 0xff111111, -10)
+    local place = node.character_place or "right"
+    vn.currentChar = charPath
+
+    local imgW = getImageWidth(charPath)
+    local imgH = getImageHeight(charPath)
+    if imgW == 0 or imgH == 0 then
+        return
     end
+
+    local charH = 0.55
+    local charW = (imgW / imgH) * charH
+
+    local x
+    if place == "right" then
+        x = 1 - charW - 0.02
+    elseif place == "left" then
+        x = 0.02
+    else
+        x = 0.5 - charW / 2
+    end
+
+    local y = 0.7 - charH
+    image(ui, charPath, x, y, charW, charH, z)
 end
 
 local function splitExplicitLines(text)
@@ -200,7 +221,7 @@ local function paginateLines(lines, maxLines)
 end
 
 local function buildDialoguePages(text)
-    local textBox = Los_Penguinos_me_la_van_a_Mascar.dialogue.Cago
+    local textBox = dialogueCfg.Cago
     local textAreaWidth = (textBox.right - textBox.x) * getScreenWidth()
     local textAreaHeight = (textBox.bottom - textBox.y) * getScreenHeight()
     local maxLines = math.floor(textAreaHeight / g.textSmall:getLineHeight())
@@ -209,7 +230,7 @@ local function buildDialoguePages(text)
 end
 
 local function getSpeakerWidth(text)
-    local speaker = Los_Penguinos_me_la_van_a_Mascar.dialogue.Krico
+    local speaker = dialogueCfg.Krico
     local speakerWidthPixels = g.text:measureText(text) + speaker.paddingPx
     return math.min(speaker.maxWidth, speakerWidthPixels / getScreenWidth())
 end
@@ -250,21 +271,35 @@ local function nextNode(ui, nextId)
 
     vn.currentNode = nextId
     vn.currentPage = 1
-    table.insert(vn.history, vn.currentNode)
     renderGame(ui)
 end
 
 function ginit()
     setFont("assets/HackRegular-gX84.ttf", 24)
-    script()
+    loadScript()
     g.audio:stopAllSounds()
     vn.currentBg = nil
     vn.currentPage = 1
     vn.currentSound = nil
     vn.currentSoundId = 0
-    vn.history = {}
-    vn.currentNode = script.start
-    table.insert(vn.history, vn.currentNode)
+    vn.currentNode = scriptData.start
+end
+
+local currentUI = nil
+
+function gameOnKey(key)
+    if key == 32 then -- SDLK_SPACE
+        local node = getNode(vn.currentNode)
+        if not node then return end
+        local pages = buildDialoguePages(node.text or "")
+        local cp = math.min(vn.currentPage, #pages)
+        if cp < #pages then
+            vn.currentPage = cp + 1
+            renderGame(currentUI)
+        else
+            nextNode(currentUI, node.next)
+        end
+    end
 end
 
 function renderGame(ui)
@@ -280,20 +315,17 @@ function renderGame(ui)
     background(ui, node, 0, 0, 1, 0.7)
     syncSound(node)
 
-    local dialogue = Los_Penguinos_me_la_van_a_Mascar.dialogue
-    local panel = dialogue.Kawasaki
-    local textBox = dialogue.Cago
-    local speaker = dialogue.Krico
-    local nextHint = dialogue.Estriper
+    local panel = dialogueCfg.Kawasaki
+    local textBox = dialogueCfg.Cago
+    local speaker = dialogueCfg.Krico
     local pages = buildDialoguePages(node.text or "")
     local currentPage = math.min(vn.currentPage, #pages)
-    local speakerText = node.speaker or node.speaker_name or ""
+    local speakerText = node.speaker or ""
 
     -- dialogue panel
     ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0xdd101014, 0)
 
-    -- panel top line
-    -- ui:addRectF(g.rect, panel.x, panel.y, panel.w, dialogue.topLine.h, dialogue.topLine.color, 1)
+    character(ui, node, 1)
 
     if speakerText ~= "" then
         local speakerWidth = getSpeakerWidth(speakerText)
@@ -323,9 +355,11 @@ function renderGame(ui)
 end
 
 register("gay", function(ui)
+    currentUI = ui
     if not vn.currentNode then
         ginit()
     end
     renderGame(ui)
 end)
---
+
+print("game.lua ended")

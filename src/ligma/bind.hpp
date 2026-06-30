@@ -122,6 +122,8 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
     luaState.set_function("getAudioEngine", [&]() -> AudioEngine& { return engine.getAudioEngine(); });
 
     luaState.set_function("loadTexture", [&](const char* path) { return engine.loadTexture(path); });
+    luaState.set_function("getImageWidth", [&](const char* path) { return engine.getImageWidth(path); });
+    luaState.set_function("getImageHeight", [&](const char* path) { return engine.getImageHeight(path); });
     luaState.set_function("setFullscreen", [&](bool enabled) { engine.setFullscreen(enabled); });
     luaState.set_function("setVsync", [&](bool enabled) { engine.setVsync(enabled); });
     luaState.set_function("setVolume", [&](float volume) { engine.setVolume(volume); });

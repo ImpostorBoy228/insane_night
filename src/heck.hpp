@@ -114,9 +114,15 @@ struct StringViewEqual {
     }
 };
 
+struct CachedTexture {
+    bgfx::TextureHandle handle;
+    int width = 0;
+    int height = 0;
+};
+
 class CacheMan {
     std::deque<std::string> texturePaths;
-    std::unordered_map<std::string_view, bgfx::TextureHandle, StringViewHash, StringViewEqual> textures;
+    std::unordered_map<std::string_view, CachedTexture, StringViewHash, StringViewEqual> textures;
 public:
     CacheMan() = default;
     ~CacheMan() { destroy(); }
@@ -126,28 +132,61 @@ public:
     CacheMan(CacheMan &&) = delete;
     CacheMan &operator=(CacheMan &&) = delete;
 
-    bgfx::TextureHandle loadTexture(const char *path) {
+    bgfx::TextureHandle loadTexture(const char *path, int *outW = nullptr, int *outH = nullptr) {
         if (!path || *path == '\0') return BGFX_INVALID_HANDLE;
 
         auto it = textures.find(std::string_view(path));
-        if (it != textures.end() && bgfx::isValid(it->second)) {
-            return it->second;
+        if (it != textures.end() && bgfx::isValid(it->second.handle)) {
+            if (outW) *outW = it->second.width;
+            if (outH) *outH = it->second.height;
+            return it->second.handle;
         }
 
         bgfx::TextureHandle tex = loadTextureUncached(path);
         if (bgfx::isValid(tex)) {
             texturePaths.emplace_back(path);
             std::string_view key = texturePaths.back();
-            textures.emplace(key, tex);
+            CachedTexture ct;
+            ct.handle = tex;
+
+            int w, h, n;
+            stbi_uc *data = stbi_load(path, &w, &h, &n, STBI_rgb_alpha);
+            if (data) {
+                ct.width = w;
+                ct.height = h;
+                stbi_image_free(data);
+            }
+
+            textures.emplace(key, ct);
+            if (outW) *outW = ct.width;
+            if (outH) *outH = ct.height;
         }
         return tex;
     }
 
+    int getWidth(const char *path) {
+        if (!path) return 0;
+        auto it = textures.find(std::string_view(path));
+        if (it != textures.end()) return it->second.width;
+        loadTexture(path, nullptr, nullptr);
+        it = textures.find(std::string_view(path));
+        return it != textures.end() ? it->second.width : 0;
+    }
+
+    int getHeight(const char *path) {
+        if (!path) return 0;
+        auto it = textures.find(std::string_view(path));
+        if (it != textures.end()) return it->second.height;
+        loadTexture(path, nullptr, nullptr);
+        it = textures.find(std::string_view(path));
+        return it != textures.end() ? it->second.height : 0;
+    }
+
     void destroy() {
-        for (auto &[path, tex] : textures) {
+        for (auto &[path, ct] : textures) {
             (void)path;
-            if (bgfx::isValid(tex)) {
-                bgfx::destroy(tex);
+            if (bgfx::isValid(ct.handle)) {
+                bgfx::destroy(ct.handle);
             }
         }
         textures.clear();
@@ -1340,6 +1379,8 @@ public:
     bgfx::TextureHandle loadTexture(const char *path) {
         return cacheMan.loadTexture(path);
     }
+    int getImageWidth(const char *path) { return cacheMan.getWidth(path); }
+    int getImageHeight(const char *path) { return cacheMan.getHeight(path); }
     RectGooner& getRectGooner() { return rectGooner; }
     ImageGooner& getImageGooner() { return imageGooner; }
 };

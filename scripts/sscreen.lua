@@ -37,6 +37,6 @@ register("menu", function(ui)
 
     -- quit label
     local t2 = ui:addTextF(getTextGooner(), "FUCK GET ME OUT!!11!", 0.5 - 0.4 / 2, 0.49, 0xff000000, 1)
-
-    print("fuck me pls")
 end)
+
+print("fuck me pls")

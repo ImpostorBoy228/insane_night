@@ -35,6 +35,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
             event.key.key == SDLK_ESCAPE)) {
           engine.gooning = false;
         }
+        if (event.type == SDL_EVENT_KEY_DOWN) {
+            sol::protected_function onKeyDown = lua.get_state()["onKeyDown"];
+            if (onKeyDown.valid()) onKeyDown(event.key.key);
+        }
+
         if (event.type == SDL_EVENT_WINDOW_RESIZED ||
             event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
           engine.resize(event.window.data1, event.window.data2);

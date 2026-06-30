@@ -10,6 +10,16 @@ Settings = {
     framelimit = -1
 }
 
+function onKeyDown(key)
+    if currentSceneName == "menu" then
+        if menuOnKey then menuOnKey(key) end
+    elseif currentSceneName == "gay" then
+        if gameOnKey then gameOnKey(key) end
+    elseif currentSceneName == "settings" then
+        if settingsOnKey then settingsOnKey(key) end
+    end
+end
+
 function applySettings()
     setFullscreen(Settings.fullscreen)
 

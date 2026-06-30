@@ -177,3 +177,5 @@ register("settings", function(ui)
         switchTo("menu")
     end)
 end)
+
+print("settings.lua ended")
