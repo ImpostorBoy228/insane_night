@@ -5,7 +5,8 @@
       "bg": "assets/osuback.png",
       "speaker": "Санс",
       "text": "какой прекрасный снаружи денёк.",
-      "next": "2"
+      "next": "2",
+      "sound": "assets/pablo_.mp3"
     },
     "2": {
       "speaker": "Санс",
@@ -21,7 +22,8 @@
       "bg": "assets/sans.jpg",
       "speaker": "Санс",
       "text": "Должны гореть в аду.",
-      "next": "5"
+      "next": "5",
+      "sound": "assets/megalovania.mp3"
     },
     "5": {
       "bg": "assets/background.png",

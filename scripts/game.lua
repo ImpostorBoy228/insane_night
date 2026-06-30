@@ -1,11 +1,13 @@
 ---@diagnostic disable: undefined-global, undefined-field
 
 local json = dofile("scripts/libs/json.lua")
--- TODO: audio, charecters
+
 local vn = {
     currentNode = nil,
     currentBg = nil,
     currentPage = 1,
+    currentSound = nil,
+    currentSoundId = 0,
     history = {}
 }
 
@@ -25,7 +27,8 @@ local g = {
     textSmall = getTextGooner("assets/HackRegular-gX84.ttf", 18),
     textOk = getTextGooner("assets/HackRegular-gX84.ttf", 20),
     rect = getRectGooner(),
-    image = getImageGooner()
+    image = getImageGooner(),
+    audio = getAudioEngine()
 }
 
 local script = {
@@ -211,6 +214,35 @@ local function getSpeakerWidth(text)
     return math.min(speaker.maxWidth, speakerWidthPixels / getScreenWidth())
 end
 
+local function syncSound(node)
+    if node.sound == nil then
+        return
+    end
+
+    local nextSound = node.sound
+    if nextSound == "" then
+        nextSound = nil
+    end
+
+    if vn.currentSound == nextSound then
+        return
+    end
+
+    if vn.currentSoundId and vn.currentSoundId ~= 0 then
+        g.audio:stopSound(vn.currentSoundId)
+        vn.currentSoundId = 0
+    end
+
+    vn.currentSound = nextSound
+    if nextSound then
+        vn.currentSoundId = g.audio:playSound(nextSound, true)
+        if vn.currentSoundId == 0 then
+            print("Could not play sound: " .. tostring(nextSound))
+            vn.currentSound = nil
+        end
+    end
+end
+
 local function nextNode(ui, nextId)
     if not nextId then
         return
@@ -225,8 +257,11 @@ end
 function ginit()
     setFont("assets/HackRegular-gX84.ttf", 24)
     script()
+    g.audio:stopAllSounds()
     vn.currentBg = nil
     vn.currentPage = 1
+    vn.currentSound = nil
+    vn.currentSoundId = 0
     vn.history = {}
     vn.currentNode = script.start
     table.insert(vn.history, vn.currentNode)
@@ -243,6 +278,7 @@ function renderGame(ui)
     end
 
     background(ui, node, 0, 0, 1, 0.7)
+    syncSound(node)
 
     local dialogue = Los_Penguinos_me_la_van_a_Mascar.dialogue
     local panel = dialogue.Kawasaki

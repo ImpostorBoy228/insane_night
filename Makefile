@@ -2,17 +2,22 @@ CC   = gcc
 CXX  = g++
 MAKEFLAGS += -j16
 COMPDB = compile_commands.json
-CXXFLAGS_BASE = -std=c++23 -O2 -DBX_CONFIG_DEBUG=0
+OPTFLAGS = -O2 -g0 -flto
+CXXFLAGS_BASE = -std=c++23 $(OPTFLAGS) -DBX_CONFIG_DEBUG=0
 CXXFLAGS = $(CXXFLAGS_BASE) -Wall -Wextra
 SOLOUD_CXXFLAGS = $(CXXFLAGS_BASE)
-CFLAGS   = -std=c11 -Wall -Wextra -O2 -DBX_CONFIG_DEBUG=0
+CFLAGS   = -std=c11 $(OPTFLAGS) -Wall -Wextra -DBX_CONFIG_DEBUG=0
 INCLUDES = -Iexternal -Iexternal/bgfx/include -Iexternal/bx/include -Iexternal/bimg/include -Iexternal/SDL/include -Iexternal/tsfont -I/usr/include/freetype2 -Iexternal/sol2/include -Iexternal/lua-5.4.8/src -Iexternal/json/single_include -Iexternal/soloud20200207/include -Iexternal/soloud20200207/src
-LDFLAGS  = -lSDL3 -lX11 -lGL -ldl -lpthread -lfreetype
+LDFLAGS  = -flto -s -Wl,--gc-sections -lSDL3 -lX11 -lGL -ldl -lpthread -lfreetype
 LIBS     = external/lib/libbgfx.a external/lib/libbx.a external/lib/libbimg.a
 
 SOLOUD_DEFINES = -DWITH_MINIAUDIO
-SOLOUD_SRCS = $(wildcard external/soloud20200207/src/core/*.cpp) external/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp
-SOLOUD_OBJS = $(SOLOUD_SRCS:.cpp=.o)
+SOLOUD_SRCS = $(wildcard external/soloud20200207/src/core/*.cpp) \
+	external/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp \
+	external/soloud20200207/src/audiosource/wav/dr_impl.cpp \
+	external/soloud20200207/src/audiosource/wav/soloud_wav.cpp
+SOLOUD_C_SRCS = external/soloud20200207/src/audiosource/wav/stb_vorbis.c
+SOLOUD_OBJS = $(SOLOUD_SRCS:.cpp=.o) $(SOLOUD_C_SRCS:.c=.o)
 
 OBJS = main.o heck.o font_handler.o script_engine.o audio_unc.o
 
@@ -40,7 +45,10 @@ script_engine.o: src/ligma/ligma.cpp src/ligma/ligma.hpp
 	$(CXX) -c src/ligma/ligma.cpp $(CXXFLAGS) $(INCLUDES) -o script_engine.o
 
 external/soloud20200207/src/%.o: external/soloud20200207/src/%.cpp
-	$(CXX) -c $< $(SOLOUD_CXXFLAGS) $(INCLUDES) $(SOLOUD_DEFINES) -o $@
+		$(CXX) -c $< $(SOLOUD_CXXFLAGS) $(INCLUDES) $(SOLOUD_DEFINES) -o $@
+
+external/soloud20200207/src/%.o: external/soloud20200207/src/%.c
+		$(CC) -c $< $(CFLAGS) $(INCLUDES) $(SOLOUD_DEFINES) -o $@
 
 $(COMPDB):
 	@printf '[\n  {\n    "directory": "$(CURDIR)",\n    "command": "$(CXX) -c src/heck.cpp $(CXXFLAGS) $(INCLUDES)",\n    "file": "$(CURDIR)/src/heck.cpp"\n  },\n  {\n    "directory": "$(CURDIR)",\n    "command": "$(CXX) -c src/main.cpp $(CXXFLAGS) $(INCLUDES)",\n    "file": "$(CURDIR)/src/main.cpp"\n  },\n  {\n    "directory": "$(CURDIR)",\n    "command": "$(CC) -c external/tsfont/font_handler.c $(CFLAGS) $(INCLUDES)",\n    "file": "$(CURDIR)/external/tsfont/font_handler.c"\n  },\n  {\n    "directory": "$(CURDIR)",\n    "command": "$(CXX) -c src/ligma/ligma.cpp $(CXXFLAGS) $(INCLUDES)",\n    "file": "$(CURDIR)/src/ligma/ligma.cpp"\n  },\n  {\n    "directory": "$(CURDIR)",\n    "command": "$(CXX) -c src/audio_unc.cpp $(CXXFLAGS) $(INCLUDES)",\n    "file": "$(CURDIR)/src/audio_unc.cpp"\n  }\n]\n' > $@

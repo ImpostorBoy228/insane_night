@@ -21,11 +21,20 @@ jobs:
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
 
-      - name: Setup Lua
-        run: |
-          curl -L https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz
-          mv lua-5.4.8 external/
-          make -C external/lua-5.4.8/src linux
+      - name: Cache Lua 5.4.8 build
+        id: cache-lua
+        uses: actions/cache@v4
+        with:
+          path: |
+            external/lua-5.4.8/src/liblua.a
+            external/lua-5.4.8/src/*.o
+            external/lua-5.4.8/src/lua
+            external/lua-5.4.8/src/luac
+          key: lua-5.4.8-${{ runner.os }}-${{ hashFiles('external/lua-5.4.8/src/**', 'external/lua-5.4.8/Makefile') }}
+
+      - name: Build Lua 5.4.8
+        if: steps.cache-lua.outputs.cache-hit != 'true'
+        run: make -C external/lua-5.4.8/src linux
 
       - name: Get SDL submodule commit
         id: sdl-commit
@@ -48,4 +57,8 @@ jobs:
         run: sudo cmake --install external/SDL/build
 
       - name: build from source
-        run: make clean && make insane_night
+        run: |
+          rm -f *.o insane_night compile_commands.json
+          rm -rf gcm.cache
+          rm -f main.s scripts/embed
+          make insane_night

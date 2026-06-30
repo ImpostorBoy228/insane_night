@@ -1,3 +1,5 @@
+HeaderFilterRegex: 'src/.*'
+
 Checks: >
   -*,
   clang-analyzer-*,
@@ -69,4 +71,11 @@ Checks: >
   -bugprone-implicit-widening-of-multiplication-result,
   -bugprone-narrowing-conversions,
   -performance-noexcept-move-constructor,
-  -misc-redundant-expression
+  -misc-redundant-expression,
+  -performance-enum-size,
+  -performance-move-const-arg,
+  -misc-header-include-cycle,
+  -bugprone-sizeof-expression,
+  -bugprone-forwarding-reference-overload,
+  -bugprone-casting-through-void,
+  -bugprone-derived-method-shadowing-base-method

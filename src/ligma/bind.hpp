@@ -107,6 +107,19 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
     );
     luaState.new_usertype<RectGooner>("RectGooner");
     luaState.new_usertype<ImageGooner>("ImageGooner");
+    luaState.new_usertype<AudioEngine>("AudioEngine",
+        "playSound", [](AudioEngine& self, const char* pathValue, const sol::object& singleInstanceValue) {
+            const bool singleInstance = singleInstanceValue.is<bool>() ? singleInstanceValue.as<bool>() : true;
+            std::string_view path = pathValue ? std::string_view(pathValue) : std::string_view();
+            return self.playSound(path, singleInstance);
+        },
+        "stopSound", &AudioEngine::stopSound,
+        "stopAllSounds", &AudioEngine::stopAllSounds,
+        "setVolume", &AudioEngine::setGlobalVolume
+    );
+
+
+    luaState.set_function("getAudioEngine", [&]() -> AudioEngine& { return engine.getAudioEngine(); });
 
     luaState.set_function("loadTexture", [&](const char* path) { return engine.loadTexture(path); });
     luaState.set_function("setFullscreen", [&](bool enabled) { engine.setFullscreen(enabled); });

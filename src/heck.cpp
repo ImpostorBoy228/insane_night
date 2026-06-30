@@ -30,11 +30,17 @@ void Kino::begin() {
 }
 
 Layer& Hell_Machina::addSceneLayer(const char *name) {
-    return sceneLayers.emplace_back(Layer{name, true, {}, {}});
+    auto &layer = sceneLayers.emplace_back();
+    layer.name = name ? name : "";
+    layer.visible = true;
+    return layer;
 }
 
 Layer& Hell_Machina::addUILayer(const char *name) {
-    return uiLayers.emplace_back(Layer{name, true, {}, {}});
+    auto &layer = uiLayers.emplace_back();
+    layer.name = name ? name : "";
+    layer.visible = true;
+    return layer;
 }
 
 void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enum renderer) {
@@ -65,7 +71,7 @@ void Hell_Machina::init(const char *title, int w, int h, bgfx::RendererType::Enu
 }
 
 void Hell_Machina::frame() {
-    if (pendingFullscreenChange) {
+    if (pendingFullscreenChange && sigma) {
         pendingFullscreenChange = false;
         if (sigma->setFullscreen(pendingFullscreenValue)) {
             int fw, fh;
@@ -75,7 +81,11 @@ void Hell_Machina::frame() {
         }
     }
 
-    JohnPork pork;
+    size_t expectedDraws = 0;
+    for (const auto &layer : sceneLayers) expectedDraws += layer.items.size();
+    for (const auto &layer : uiLayers) expectedDraws += layer.items.size();
+    pork.clear();
+    pork.reserve(expectedDraws);
 
     scenePass.begin();
     for (auto &layer : sceneLayers) layer.collect(pork);
@@ -107,7 +117,7 @@ bool Hell_Machina::handleEvent(const SDL_Event &ev) {
 }
 
 void Hell_Machina::setFullscreen(bool on) {
-    if (sigma->isFullscreen() == on) return;
+    if (!sigma || sigma->isFullscreen() == on) return;
 
     auto now = std::chrono::steady_clock::now();
     if (lastFullscreenChange.time_since_epoch().count() != 0 &&
@@ -121,11 +131,15 @@ void Hell_Machina::setFullscreen(bool on) {
 }
 
 void Hell_Machina::setVsync(bool on) {
-    amogus->setVsync(on);
+    if (amogus) amogus->setVsync(on);
 }
 
 void Hell_Machina::setVolume(float volume) {
     audioEngine.setGlobalVolume(volume);
+}
+
+void Hell_Machina::stopSound(uint32_t soundId) {
+    audioEngine.stopSound(soundId);
 }
 
 void Hell_Machina::setFrameLimit(int limit) {
@@ -134,7 +148,7 @@ void Hell_Machina::setFrameLimit(int limit) {
 
 void Hell_Machina::resize(int w, int h) {
     width = w; height = h;
-    amogus->resize(w, h);
+    if (amogus) amogus->resize(w, h);
     scenePass.setViewport((uint16_t)w, (uint16_t)h);
     scenePass.setOrtho(0, (float)w, (float)h, 0);
     uiPass.setViewport((uint16_t)w, (uint16_t)h);

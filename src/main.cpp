@@ -62,11 +62,19 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
       }
 
       if (engine.frameLimit > 0) {
-        auto targetFrameTime = std::chrono::milliseconds(1000 / engine.frameLimit);
-        auto frameEnd = std::chrono::steady_clock::now();
-        auto frameDuration = frameEnd - frameStart;
-        if (frameDuration < targetFrameTime) {
-          std::this_thread::sleep_for(targetFrameTime - frameDuration);
+        const auto targetFrameTime = std::chrono::nanoseconds(1000000000LL / engine.frameLimit);
+        const auto frameDeadline = frameStart + targetFrameTime;
+        auto currentTime = std::chrono::steady_clock::now();
+
+        constexpr auto coarseSleepGuard = std::chrono::milliseconds(2);
+        if (currentTime + coarseSleepGuard < frameDeadline) {
+          const auto sleepTime = std::chrono::duration_cast<std::chrono::nanoseconds>(
+              frameDeadline - currentTime - coarseSleepGuard);
+          SDL_DelayNS(static_cast<Uint64>(sleepTime.count()));
+        }
+
+        while ((currentTime = std::chrono::steady_clock::now()) < frameDeadline) {
+          std::this_thread::yield();
         }
       }
     }
