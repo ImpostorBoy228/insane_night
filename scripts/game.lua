@@ -83,7 +83,7 @@ local function getNode(id)
     return script.nodes[id]
 end
 
-local function background(ui, node)
+local function background(ui, node, x, y, w, h)
     local bgPath = node.bg or vn.currentBg
     if not bgPath then
         return
@@ -93,21 +93,22 @@ local function background(ui, node)
 
     local bg = loadTexture(bgPath)
     if bg.idx ~= 65535 then
-        -- scene background
-        ui:addImageF(g.image, bg, 0, 0, 1, 1, 0xffffffff, -10)
+        ui:addImageF(g.image, bg, x, y, w, h, 0xffffffff, -10)
     else
-        -- fallback background
-        ui:addRectF(g.rect, 0, 0, 1, 1, 0xff111111, -10)
+        ui:addRectF(g.rect, x, y, w, h, 0xff111111, -10)
     end
 end
 
-local function image(ui, path, x, y, w, h)
-    local tex = loadTexture(path)
+local function image(ui, node, x, y, w, h)
+    local bgPath = node.bg
+    if not bgPath then
+        return
+    end
+
+    local tex = loadTexture(bgPath)
     if tex.idx ~= 65535 then
-        -- helper image
         ui:addImageF(g.image, tex, x, y, w, h, 0xffffffff, -10)
     else
-        -- fallback image block
         ui:addRectF(g.rect, x, y, w, h, 0xff111111, -10)
     end
 end
@@ -241,7 +242,7 @@ function renderGame(ui)
         return
     end
 
-    image(ui, node.bg, 0, 0, 1, 0.7)
+    background(ui, node, 0, 0, 1, 0.7)
 
     local dialogue = Los_Penguinos_me_la_van_a_Mascar.dialogue
     local panel = dialogue.Kawasaki
