@@ -250,7 +250,7 @@ function renderGame(ui)
     local nextHint = dialogue.Estriper
     local pages = buildDialoguePages(node.text or "")
     local currentPage = math.min(vn.currentPage, #pages)
-    local speakerText = node.speaker or ""
+    local speakerText = node.speaker or node.speaker_name or ""
 
     -- dialogue panel
     ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0xdd101014, 0)
