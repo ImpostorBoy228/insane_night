@@ -31,22 +31,21 @@ jobs:
         id: sdl-commit
         run: echo "hash=$(git submodule status external/SDL | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
-      - name: Cache SDL3 build
+      - name: Cache SDL3 build directory
         id: cache-sdl
         uses: actions/cache@v4
         with:
-          path: |
-            external/SDL/build
-            /usr/local/lib/libSDL3*
-            /usr/local/include/SDL3
-          key: sdl3-${{ steps.sdl-commit.outputs.hash }}
+          path: external/SDL/build
+          key: sdl3-build-${{ runner.os }}-${{ steps.sdl-commit.outputs.hash }}
 
       - name: build SDL3 from source
         if: steps.cache-sdl.outputs.cache-hit != 'true'
         run: |
-          cmake -S external/SDL -B external/SDL/build
-          cmake --build external/SDL/build
-          sudo cmake --install external/SDL/build
+          cmake -S external/SDL -B external/SDL/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build external/SDL/build --config Release
+
+      - name: install SDL3
+        run: sudo cmake --install external/SDL/build
 
       - name: build from source
         run: make clean && make insane_night
