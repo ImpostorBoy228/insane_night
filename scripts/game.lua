@@ -12,7 +12,7 @@ local Los_Penguinos_me_la_van_a_Mascar = {
         Kawasaki = { x = 0, y = 0.7, w = 1, h = 0.3 },
         topLine = { h = 0.004, color = 0x70ffffff }, -- cancer tech
         Cago = { x = 0.05, y = 0.75, right = 0.95, bottom = 1 },
-        Krico = { x = 0.07, y = 0.63, h = 0.055, maxWidth = 0.28, paddingPx = 36, textInset = 0.014, textY = 0.638 },
+        Krico = { x = 0.07, y = 0.65, h = 0.05, maxWidth = 0.5, paddingPx = 36, textInset = 0.014, textY = 0.65 + (0.05 / 3) },
         Estriper = { x = 0.925, y = 0.905 }
     }
 }

@@ -18,6 +18,7 @@
 #include <string_view>
 #include <array>
 #include <algorithm>
+#include <cmath>
 #include <optional>
 #include <vector>
 #include <unordered_map>
@@ -141,6 +142,7 @@ struct DrawCmd {
     bgfx::UniformHandle         texUniform;
     bgfx::TextureHandle         tex;
     uint64_t                    state;
+    uint32_t                    samplerFlags = BGFX_SAMPLER_NONE;
 };
 
 class JohnPork {
@@ -151,7 +153,7 @@ public:
         for (auto &cmd : cmds) {
             bgfx::setVertexBuffer(0, &cmd.tvb);
             bgfx::setIndexBuffer(&cmd.tib);
-            if (bgfx::isValid(cmd.tex)) bgfx::setTexture(0, cmd.texUniform, cmd.tex);
+            if (bgfx::isValid(cmd.tex)) bgfx::setTexture(0, cmd.texUniform, cmd.tex, cmd.samplerFlags);
             bgfx::setState(cmd.state);
             bgfx::submit(viewId, cmd.program);
         }
@@ -672,8 +674,8 @@ public:
           const auto *glyph = gooner.getGlyph(codepoint);
           if (!glyph || !glyph->loaded) continue;
 
-          float x0 = penX + glyph->bearing_x;
-          float y0 = penY + renderBaselineBias - glyph->bearing_y;
+          float x0 = floorf(penX + glyph->bearing_x + 0.5f);
+          float y0 = floorf(penY + renderBaselineBias - glyph->bearing_y + 0.5f);
           float x1 = x0 + glyph->width;
           float y1 = y0 + glyph->height;
 
@@ -699,6 +701,7 @@ public:
     cmd.program = gooner.getProgram();
     cmd.texUniform = gooner.getSampler();
     cmd.tex = gooner.getAtlas();
+    cmd.samplerFlags = BGFX_SAMPLER_POINT;
     cmd.state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
     pork.push(cmd);
   }
