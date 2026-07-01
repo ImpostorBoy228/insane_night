@@ -33,10 +33,11 @@ jobs:
           key: lua-5.4.8-${{ runner.os }}-${{ hashFiles('external/lua-5.4.8/src/**', 'external/lua-5.4.8/Makefile') }}
 
       - name: Download Lua 5.4.8
-        if: steps.cache-lua.outputs.cache-hit != 'true'
         run: |
-          mkdir -p external
-          curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
+          if [ ! -d external/lua-5.4.8/src ]; then
+            mkdir -p external
+            curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
+          fi
 
       - name: Build Lua 5.4.8
         if: steps.cache-lua.outputs.cache-hit != 'true'

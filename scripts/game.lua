@@ -1,5 +1,5 @@
 ---@diagnostic disable: undefined-global, undefined-field
-
+-- TODO: consider refactoring text plane layout
 local json = dofile("scripts/libs/json.lua")
 
 local vn = {
@@ -121,8 +121,9 @@ local function character(ui, node, z)
         return
     end
 
-    local charH = 0.55
-    local charW = (imgW / imgH) * charH
+    local charH = 0.65
+    local screenAspect = getScreenWidth() / getScreenHeight()
+    local charW = (imgW / imgH) / screenAspect * charH
 
     local x
     if place == "right" then
@@ -325,7 +326,7 @@ function renderGame(ui)
     -- dialogue panel
     ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0xdd101014, 0)
 
-    character(ui, node, 1)
+    character(ui, node, -5)
 
     if speakerText ~= "" then
         local speakerWidth = getSpeakerWidth(speakerText)
