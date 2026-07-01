@@ -5,5 +5,4 @@ external/lua-5.4.8
 insane_night
 main.s
 compile_commands.json
-external/soloud20200207/build
-external/soloud20200207/bin
+external/soloud20200207

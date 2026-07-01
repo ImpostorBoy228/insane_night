@@ -61,6 +61,11 @@ jobs:
       - name: install SDL3
         run: sudo cmake --install external/SDL/build
 
+      - name: Download SoLoud 20200207
+        run: |
+          curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
+          unzip -q -o /tmp/soloud.zip -d external
+
       - name: build from source
         run: |
           rm -f *.o insane_night compile_commands.json

@@ -19,9 +19,6 @@
 [submodule "external/json"]
 	path = external/json
 	url = https://github.com/nlohmann/json
-[submodule "external/soloud20200207"]
-	path = external/soloud20200207
-	url = https://github.com/jarikomppa/soloud.git
 [submodule "external/gen_alpha_dictionary"]
 	path = external/gen_alpha_dictionary
 	url = https://github.com/crnicholson/gen_alpha_dictionary
