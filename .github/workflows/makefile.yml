@@ -18,55 +18,71 @@ jobs:
       - name: Sync submodules
         run: git submodule sync --recursive
 
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
 
-      - name: Cache Lua 5.4.8 build
+      # ── Lua ───────────────────────────────────────────────────
+      - name: Cache Lua 5.4.8
         id: cache-lua
         uses: actions/cache@v4
         with:
-          path: |
-            external/lua-5.4.8/src/liblua.a
-            external/lua-5.4.8/src/*.o
-            external/lua-5.4.8/src/lua
-            external/lua-5.4.8/src/luac
-          key: lua-5.4.8-${{ runner.os }}-${{ hashFiles('external/lua-5.4.8/src/**', 'external/lua-5.4.8/Makefile') }}
+          path: external/lua-5.4.8
+          key: lua-5.4.8-src
 
       - name: Download Lua 5.4.8
+        if: steps.cache-lua.outputs.cache-hit != 'true'
         run: |
           mkdir -p external
           curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
 
-      - name: Build Lua 5.4.8
-        if: steps.cache-lua.outputs.cache-hit != 'true'
-        run: make -C external/lua-5.4.8/src linux
+      # ── SoLoud ────────────────────────────────────────────────
+      - name: Cache SoLoud 20200207
+        id: cache-soloud
+        uses: actions/cache@v4
+        with:
+          path: external/soloud20200207
+          key: soloud-20200207-src
 
+      - name: Download SoLoud 20200207
+        if: steps.cache-soloud.outputs.cache-hit != 'true'
+        run: |
+          curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
+          unzip -q -o /tmp/soloud.zip -d external
+
+      # ── SDL3 ──────────────────────────────────────────────────
       - name: Get SDL submodule commit
         id: sdl-commit
         run: echo "hash=$(git submodule status external/SDL | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
-      - name: Cache SDL3 build directory
+      - name: Cache SDL3 build
         id: cache-sdl
         uses: actions/cache@v4
         with:
           path: external/SDL/build
           key: sdl3-build-${{ runner.os }}-${{ steps.sdl-commit.outputs.hash }}
 
-      - name: build SDL3 from source
+      - name: Build SDL3 from source
         if: steps.cache-sdl.outputs.cache-hit != 'true'
         run: |
           cmake -S external/SDL -B external/SDL/build -DCMAKE_BUILD_TYPE=Release
           cmake --build external/SDL/build --config Release
 
-      - name: install SDL3
+      - name: Install SDL3
         run: sudo cmake --install external/SDL/build
 
-      - name: Download SoLoud 20200207
-        run: |
-          curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
-          unzip -q -o /tmp/soloud.zip -d external
+      # ── Project build ─────────────────────────────────────────
+      - name: Cache CMake build directory
+        id: cache-build
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: ninja-build-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'src/**', 'external/tsfont/**') }}
 
-      - name: build from source
+      - name: Build from source
         run: |
-          make clean
-          make
+          cmake -B build -G Ninja \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_BUILD_TYPE=Release
+          ninja -C build
+          ln -sf build/compile_commands.json compile_commands.json 2>/dev/null; true
