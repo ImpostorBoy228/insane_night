@@ -60,6 +60,7 @@ set(SOURCES
 )
 
 add_executable(insane_night ${SOURCES} $<TARGET_OBJECTS:soloud>)
+set_target_properties(insane_night PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 target_link_libraries(insane_night PRIVATE lua)
 
 target_link_libraries(insane_night PRIVATE

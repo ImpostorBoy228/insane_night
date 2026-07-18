@@ -68,7 +68,5 @@ jobs:
 
       - name: build from source
         run: |
-          rm -f *.o insane_night compile_commands.json
-          rm -rf gcm.cache
-          rm -f main.s scripts/embed
-          make insane_night
+          make clean
+          make
