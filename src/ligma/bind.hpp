@@ -35,7 +35,7 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
         return textValue ? textValue : "";
     };
     luaState.new_usertype<bgfx::TextureHandle>("TextureHandle",
-        "idx", &bgfx::TextureHandle::idx
+        "idx", sol::readonly(&bgfx::TextureHandle::idx)
     );
 
     luaState.new_usertype<Layer>("Layer",
