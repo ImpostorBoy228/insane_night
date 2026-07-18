@@ -16,7 +16,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 
   try {
     Hell_Machina engine;
-    engine.init("heck", 1280, 720, bgfx::RendererType::Vulkan);
+    engine.init("heck", 1280, 720, bgfx::RendererType::Count);
 
     ligma_bind(lua.get_state(), engine);
 
@@ -61,7 +61,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
       frames++;
       auto now = std::chrono::steady_clock::now();
       if (now - lastFpsTime >= std::chrono::seconds(1)) {
-        printf("FPS: %d\n", frames);
+        printf("\rFPS: %d", frames);
+        fflush(stdout);
         frames = 0;
         lastFpsTime = now;
       }

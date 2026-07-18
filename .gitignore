@@ -1,8 +1,12 @@
 /target
 external/bin
 external/lua-5.4.8
+external/soloud20200207
+/build/
 *.o
+*.a
 insane_night
 main.s
 compile_commands.json
-external/soloud20200207
+.cache/
+.tmp
