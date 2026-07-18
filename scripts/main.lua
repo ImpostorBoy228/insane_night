@@ -1,4 +1,4 @@
----@diagnostic disable: undefined-global, undefined-field
+---@diagnostic disable: undefined-global, undefined-field -- shut up the compiler
 
 local scenes = {}
 local currentScene = nil

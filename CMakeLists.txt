@@ -10,9 +10,9 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -flto")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG -flto")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-flto -s -Wl,--gc-sections")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s -Wl,--gc-sections")
 
 add_compile_definitions(BX_CONFIG_DEBUG=0)
 
