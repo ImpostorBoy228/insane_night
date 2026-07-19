@@ -317,7 +317,8 @@ public:
   }
 
   float getKerning(uint32_t prevCodepoint, uint32_t codepoint) const {
-    return font ? cock_kern(font, prevCodepoint, codepoint) : 0.0f;
+    (void)prevCodepoint; (void)codepoint;
+    return 0.0f; // FIXME: implement when tsfont gets cock_kern
   }
 
   struct GlyphRun {

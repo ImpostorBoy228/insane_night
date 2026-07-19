@@ -24,7 +24,6 @@ float cock_measure(void *font, const char *utf8, unsigned long len);
 int   font_fill_glyphs(void *font, const char *utf8, unsigned long len,
                        GlyphInfo *out_infos, int max_glyphs,
                        unsigned char **out_bitmap, unsigned long *out_bitmap_size);
-float cock_kern(void *font, uint32_t prev_cp, uint32_t cp);
 void  free_bitmap_buffer(unsigned char *ptr);
 
 #ifdef __cplusplus
