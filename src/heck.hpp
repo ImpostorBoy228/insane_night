@@ -1315,8 +1315,8 @@ class Hell_Machina {
     CacheMan cacheMan;
     AudioEngine audioEngine;
     JohnPork pork;
-    std::vector<Layer> sceneLayers;
-    std::vector<Layer> uiLayers;
+    std::deque<Layer> sceneLayers;
+    std::deque<Layer> uiLayers;
 
     static std::string makeTextGoonerKey(const char *path, int size) {
         return std::string(path ? path : "") + '\n' + std::to_string(size);

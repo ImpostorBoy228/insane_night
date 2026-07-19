@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string_view>
 #include <sol/sol.hpp>
+#include <unistd.h>
 #include "../heck.hpp"
 
 inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
@@ -120,6 +121,7 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
 
 
     luaState.set_function("getAudioEngine", [&]() -> AudioEngine& { return engine.getAudioEngine(); });
+    luaState.set_function("sllep", [&](int secs) { sleep(secs); });
 
     luaState.set_function("loadTexture", [&](const char* path) { return engine.loadTexture(path); });
     luaState.set_function("getImageWidth", [&](const char* path) { return engine.getImageWidth(path); });

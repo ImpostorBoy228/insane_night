@@ -1,5 +1,5 @@
 ---@diagnostic disable: undefined-global, undefined-field
--- TODO: consider refactoring text plane layout
+-- TODO: consider refactoring text plane layout, add cock_measure() -> related coordinates
 local json = dofile("scripts/libs/json.lua")
 
 local vn = {
@@ -9,6 +9,7 @@ local vn = {
     currentSound = nil,
     currentSoundId = 0,
     currentChar = nil,
+    currentChoices = nil,
 }
 
 local dialogueCfg = {
@@ -287,6 +288,112 @@ function ginit()
 end
 
 local currentUI = nil
+local notifLayer = nil
+local notifTimer = nil
+
+local function notif(text)
+    if not notifLayer then
+        notifLayer = getUILayer("savenotif")
+        if not notifLayer then
+            notifLayer = addUILayer("savenotif")
+        end
+    end
+    local l = notifLayer
+    l:clear()
+    l.visible = true
+    l:addRectF(getRectGooner(), 0.7, 0.005, 0.29, 0.1, 0xffffffff, 0) -- 0xAABBGGRR
+    l:addRectF(getRectGooner(), 0.7, 0.005, 0.29, 0.005, 0xff474747, 1)
+    l:addRectF(getRectGooner(), 0.7, 0.1, 0.29, 0.005, 0xff474747, 1)
+    l:addTextF(getTextGooner(), text, 0.71, 0.035, 0xff2b2b2b, 2) -- I cant properly explain this shit
+end
+
+function onFrame(dt)
+    if notifTimer and os.time() >= notifTimer then
+        if notifLayer then
+            notifLayer:clear()
+            notifLayer.visible = false
+        end
+        notifTimer = nil
+    end
+end
+
+function ssave(slot) -- inflicts segfault(no more)
+    local raw = readlike_book("scripts/state.json")
+    if not raw then
+        print("Fucked up to read scripts/state.json")
+        return
+    end
+
+    local ok, data = pcall(json.decode, raw)
+    if not ok then
+        print("Fucked up to parse scripts/state.json")
+        return
+    end
+
+    data[slot] = {
+        node = vn.currentNode,
+        choices = vn.currentChoices or {}
+    }
+
+    local file = io.open("scripts/state.json", "w")
+    if not file then
+        print("Fucked up to open scripts/state.json for writing")
+        return
+    end
+
+    file:write(json.encode(data))
+    file:close()
+
+    notif("Saving...")
+    notifTimer = os.time() + 0.5
+end
+
+function sload(slot)
+    local raw = readlike_book("scripts/state.json")
+    if not raw then
+        print("Fucked up to read scripts/state.json")
+        return
+    end
+
+    local ok, data = pcall(json.decode, raw)
+    if not ok then
+        print("Fucked up to parse scripts/state.json")
+        return
+    end
+
+    local saved = data[slot]
+    if not saved then
+        print("Slot " .. tostring(slot) .. " is fucking empty")
+        return
+    end
+
+    vn.currentNode = saved.node
+    vn.currentChoices = saved.choices or {}
+    vn.currentPage = 1
+    vn.currentSoundId = 0
+    vn.currentBg = nil
+    vn.currentChar = nil
+    vn.currentSound = nil
+
+    local id = scriptData.start
+    while id and id ~= vn.currentNode do
+        local n = getNode(id)
+        if not n then break end
+        if n.bg then vn.currentBg = n.bg end
+        if n.character then vn.currentChar = n.character end
+        if n.sound then vn.currentSound = n.sound end
+        id = n.next
+    end
+
+    local node = getNode(vn.currentNode)
+    if node then
+        if node.bg then vn.currentBg = node.bg end
+        if node.character then vn.currentChar = node.character end
+        if node.sound then vn.currentSound = node.sound end
+    end
+
+    renderGame(currentUI)
+end
 
 function gameOnKey(key)
     if key == 32 then -- SDLK_SPACE
@@ -300,6 +407,13 @@ function gameOnKey(key)
         else
             nextNode(currentUI, node.next)
         end
+    end
+    if key == 1073741884 then -- SDLK_F3
+        switchTo("saveScreen")
+        -- ssave("slot1")
+    end
+    if key == 1073741883 then -- SDLK_F2
+        sload("slot1")
     end
 end
 

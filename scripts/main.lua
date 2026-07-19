@@ -77,6 +77,7 @@ end
 dofile("scripts/sscreen.lua")
 dofile("scripts/game.lua")
 dofile("scripts/settings.lua")
+dofile("scripts/saveScreen.lua")
 
 loadSettings()
 applySettings()
