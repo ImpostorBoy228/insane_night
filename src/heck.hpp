@@ -21,7 +21,6 @@
 #include <string>
 #include <string_view>
 
-#include <algorithm>
 #include <cmath>
 #include <optional>
 #include <vector>
@@ -39,10 +38,12 @@
 
 //static bool fuckCpp = true;
 
-inline bgfx::TextureHandle loadTextureUncached(const char *path) {
+inline bgfx::TextureHandle loadTextureUncached(const char *path, int *outW = nullptr, int *outH = nullptr) {
     int w, h, n;
     stbi_uc *data = stbi_load(path, &w, &h, &n, STBI_rgb_alpha);
     if (data) {
+        if (outW) *outW = w;
+        if (outH) *outH = h;
         auto mem = bgfx::copy(data, (uint32_t)(w * h * 4));
         stbi_image_free(data);
         return bgfx::createTexture2D((uint16_t)w, (uint16_t)h, false, 1,
@@ -69,6 +70,8 @@ inline bgfx::TextureHandle loadTextureUncached(const char *path) {
             auto *conv = bimg::imageConvert(&alloc, bimg::TextureFormat::RGBA8, img);
             if (conv) {
                 bimg::imageFree(&img);
+                if (outW) *outW = conv->m_width;
+                if (outH) *outH = conv->m_height;
                 auto mem = bgfx::copy(conv->m_data, conv->m_size);
                 auto tex = bgfx::createTexture2D(
                     conv->m_width, conv->m_height, false, 1,
@@ -77,6 +80,8 @@ inline bgfx::TextureHandle loadTextureUncached(const char *path) {
                 return tex;
             }
         }
+        if (outW) *outW = img.m_width;
+        if (outH) *outH = img.m_height;
         auto mem = bgfx::copy(img.m_data, img.m_size);
         auto tex = bgfx::createTexture2D(
             img.m_width, img.m_height, false, 1,
@@ -87,34 +92,6 @@ inline bgfx::TextureHandle loadTextureUncached(const char *path) {
     return BGFX_INVALID_HANDLE;
 }
 
-struct StringViewHash {
-    using is_transparent = void;
-
-    size_t operator()(std::string_view value) const noexcept {
-        return std::hash<std::string_view>{}(value);
-    }
-
-    size_t operator()(const char *value) const noexcept {
-        return value ? (*this)(std::string_view(value)) : 0u;
-    }
-};
-
-struct StringViewEqual {
-    using is_transparent = void;
-
-    bool operator()(std::string_view lhs, std::string_view rhs) const noexcept {
-        return lhs == rhs;
-    }
-
-    bool operator()(const char *lhs, std::string_view rhs) const noexcept {
-        return lhs != nullptr && std::string_view(lhs) == rhs;
-    }
-
-    bool operator()(std::string_view lhs, const char *rhs) const noexcept {
-        return rhs != nullptr && lhs == std::string_view(rhs);
-    }
-};
-
 struct CachedTexture {
     bgfx::TextureHandle handle;
     int width = 0;
@@ -122,10 +99,10 @@ struct CachedTexture {
 };
 
 class CacheMan {
-    std::deque<std::string> texturePaths;
-    std::unordered_map<std::string_view, CachedTexture, StringViewHash, StringViewEqual> textures;
+    std::vector<std::string> texturePaths;
+    std::unordered_map<std::string, CachedTexture> textures;
 public:
-    CacheMan() = default;
+    CacheMan() { texturePaths.reserve(64); }
     ~CacheMan() { destroy(); }
 
     CacheMan(const CacheMan &) = delete;
@@ -136,29 +113,19 @@ public:
     bgfx::TextureHandle loadTexture(const char *path, int *outW = nullptr, int *outH = nullptr) {
         if (!path || *path == '\0') return BGFX_INVALID_HANDLE;
 
-        auto it = textures.find(std::string_view(path));
+        auto it = textures.find(path);
         if (it != textures.end() && bgfx::isValid(it->second.handle)) {
             if (outW) *outW = it->second.width;
             if (outH) *outH = it->second.height;
             return it->second.handle;
         }
 
-        bgfx::TextureHandle tex = loadTextureUncached(path);
+        CachedTexture ct;
+        bgfx::TextureHandle tex = loadTextureUncached(path, &ct.width, &ct.height);
         if (bgfx::isValid(tex)) {
-            texturePaths.emplace_back(path);
-            std::string_view key = texturePaths.back();
-            CachedTexture ct;
             ct.handle = tex;
-
-            int w, h, n;
-            stbi_uc *data = stbi_load(path, &w, &h, &n, STBI_rgb_alpha);
-            if (data) {
-                ct.width = w;
-                ct.height = h;
-                stbi_image_free(data);
-            }
-
-            textures.emplace(key, ct);
+            texturePaths.emplace_back(path);
+            textures.emplace(texturePaths.back(), ct);
             if (outW) *outW = ct.width;
             if (outH) *outH = ct.height;
         }
@@ -167,19 +134,19 @@ public:
 
     int getWidth(const char *path) {
         if (!path) return 0;
-        auto it = textures.find(std::string_view(path));
+        auto it = textures.find(path);
         if (it != textures.end()) return it->second.width;
         loadTexture(path, nullptr, nullptr);
-        it = textures.find(std::string_view(path));
+        it = textures.find(path);
         return it != textures.end() ? it->second.width : 0;
     }
 
     int getHeight(const char *path) {
         if (!path) return 0;
-        auto it = textures.find(std::string_view(path));
+        auto it = textures.find(path);
         if (it != textures.end()) return it->second.height;
         loadTexture(path, nullptr, nullptr);
-        it = textures.find(std::string_view(path));
+        it = textures.find(path);
         return it != textures.end() ? it->second.height : 0;
     }
 
@@ -211,35 +178,82 @@ struct Kino {
     void begin();
 };
 
-struct DrawCmd {
-    bgfx::TransientVertexBuffer tvb;
-    bgfx::TransientIndexBuffer  tib;
+struct BatchKey {
     bgfx::ProgramHandle         program;
     bgfx::UniformHandle         texUniform;
     bgfx::TextureHandle         tex;
+    const bgfx::VertexLayout   *layout;
     uint64_t                    state;
     uint32_t                    samplerFlags = BGFX_SAMPLER_NONE;
 };
 
 class JohnPork {
-    std::vector<DrawCmd> cmds;
-public:
-    void reserve(size_t count) {
-        if (cmds.capacity() < count) cmds.reserve(count);
+    struct Batch {
+        BatchKey key;
+        std::vector<uint8_t> vertices;
+        std::vector<uint16_t> indices;
+        uint32_t vertexCount = 0;
+    };
+    std::vector<Batch> batches;
+
+    Batch* getOrCreate(const BatchKey &key) {
+        for (auto &b : batches)
+            if (b.key.program.idx    == key.program.idx    &&
+                b.key.texUniform.idx == key.texUniform.idx &&
+                b.key.tex.idx        == key.tex.idx        &&
+                b.key.layout         == key.layout         &&
+                b.key.state          == key.state          &&
+                b.key.samplerFlags   == key.samplerFlags)
+                return &b;
+        return &batches.emplace_back();
     }
 
-    void push(const DrawCmd &cmd) { cmds.push_back(cmd); }
-    void flush(uint16_t viewId) {
-        for (auto &cmd : cmds) {
-            bgfx::setVertexBuffer(0, &cmd.tvb);
-            bgfx::setIndexBuffer(&cmd.tib);
-            if (bgfx::isValid(cmd.tex)) bgfx::setTexture(0, cmd.texUniform, cmd.tex, cmd.samplerFlags);
-            bgfx::setState(cmd.state);
-            bgfx::submit(viewId, cmd.program);
-        }
-        cmds.clear();
+public:
+    void reserve(size_t count) {
+        if (batches.capacity() < count) batches.reserve(count);
     }
-    void clear() { cmds.clear(); }
+
+    void pushGeometry(const BatchKey &key,
+                      const void *vertData, uint16_t vertCount, uint16_t vertStride,
+                      const uint16_t *idxData, uint16_t idxCount) {
+        auto *batch = getOrCreate(key);
+        if (batch->vertices.empty()) batch->key = key;
+
+        uint16_t base = batch->vertexCount;
+        for (uint16_t i = 0; i < idxCount; ++i)
+            batch->indices.push_back(base + idxData[i]);
+
+        const uint8_t *src = static_cast<const uint8_t*>(vertData);
+        batch->vertices.insert(batch->vertices.end(), src, src + vertCount * vertStride);
+        batch->vertexCount += vertCount;
+    }
+
+    void flush(uint16_t viewId) {
+        for (auto &batch : batches) {
+            if (batch.vertices.empty()) continue;
+
+            uint16_t vertCount = batch.vertexCount;
+            uint32_t idxCount  = static_cast<uint32_t>(batch.indices.size());
+
+            bgfx::TransientVertexBuffer tvb;
+            bgfx::TransientIndexBuffer tib;
+            if (!bgfx::allocTransientBuffers(&tvb, *batch.key.layout, vertCount, &tib, idxCount))
+                continue;
+
+            std::memcpy(tvb.data, batch.vertices.data(), batch.vertices.size());
+            std::memcpy(tib.data, batch.indices.data(), idxCount * sizeof(uint16_t));
+
+            bgfx::setVertexBuffer(0, &tvb);
+            bgfx::setIndexBuffer(&tib);
+            if (bgfx::isValid(batch.key.tex))
+                bgfx::setTexture(0, batch.key.texUniform, batch.key.tex, batch.key.samplerFlags);
+            bgfx::setState(batch.key.state);
+            bgfx::submit(viewId, batch.key.program);
+        }
+        batches.clear();
+    }
+
+    void clear() { batches.clear(); }
 };
 
 class Hell_Machina;
@@ -300,6 +314,10 @@ public:
 
   float measureText(const char *utf8, unsigned long len) const {
     return font ? cock_measure(font, utf8, len) : 0.0f;
+  }
+
+  float getKerning(uint32_t prevCodepoint, uint32_t codepoint) const {
+    return font ? cock_kern(font, prevCodepoint, codepoint) : 0.0f;
   }
 
   struct GlyphRun {
@@ -532,13 +550,13 @@ public:
     if (!fontHandler.isValid()) return false;
 
     std::vector<uint32_t> missing;
-    std::unordered_set<uint32_t> seen;
+    seenGlyphs.clear();
     const char *ptr = text.data();
     const char *end = ptr + text.size();
     while (ptr < end) {
       uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
       if (codepoint == '\n' || codepoint == '\r') continue;
-      if (seen.insert(codepoint).second && glyphs.find(codepoint) == glyphs.end()) {
+      if (seenGlyphs.insert(codepoint).second && glyphs.find(codepoint) == glyphs.end()) {
         missing.push_back(codepoint);
       }
     }
@@ -553,7 +571,11 @@ public:
     return it == glyphs.end() ? nullptr : &it->second;
   }
   float measureText(std::string_view text) const {
-    return fontHandler.measureText(text.data(), static_cast<unsigned long>(text.size()));
+    auto it = measureCache.find(std::string(text));
+    if (it != measureCache.end()) return it->second;
+    float w = fontHandler.measureText(text.data(), static_cast<unsigned long>(text.size()));
+    measureCache[std::string(text)] = w;
+    return w;
   }
   float getLineHeight() const {
     if (pixelSize > 0.0f) return pixelSize * 1.35f;
@@ -589,6 +611,7 @@ public:
     fontHandler.destroy();
     glyphs.clear();
     packedGlyphs.clear();
+    measureCache.clear();
     atlasPixels.clear();
     atlasSize = INITIAL_ATLAS_SIZE;
     atlasCursorX = PADDING;
@@ -599,6 +622,10 @@ public:
     pixelSize = 0.0f;
   }
   float getMaxBearingY() const { return maxBearingY; }
+
+  float getKerning(uint32_t prevCodepoint, uint32_t codepoint) const {
+    return fontHandler.getKerning(prevCodepoint, codepoint);
+  }
 
 private:
   void updateGlyphUvs() {
@@ -636,14 +663,13 @@ private:
 
     const uint32_t width = maxX - minX;
     const uint32_t height = maxY - minY;
-    std::vector<uint8_t> region(width * height);
+    const bgfx::Memory *mem = bgfx::alloc(static_cast<uint32_t>(width * height));
     for (uint32_t row = 0; row < height; ++row) {
-      std::memcpy(region.data() + row * width,
+      std::memcpy(mem->data + row * width,
                   atlasPixels.data() + (minY + row) * atlasSize + minX,
                   width);
     }
 
-    const bgfx::Memory *mem = bgfx::copy(region.data(), static_cast<uint32_t>(region.size()));
     bgfx::updateTexture2D(atlas, 0, 0, static_cast<uint16_t>(minX), static_cast<uint16_t>(minY),
                           static_cast<uint16_t>(width), static_cast<uint16_t>(height),
                           mem, static_cast<uint16_t>(width));
@@ -784,6 +810,8 @@ private:
   }
 
   TsFontHandler fontHandler;
+  std::unordered_set<uint32_t> seenGlyphs;
+  mutable std::unordered_map<std::string, float> measureCache;
   bgfx::TextureHandle atlas = BGFX_INVALID_HANDLE;
   bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
   bgfx::UniformHandle s_tex = BGFX_INVALID_HANDLE;
@@ -805,8 +833,8 @@ public:
     uint32_t color;
   };
 
-  Text(TextGooner &gooner, std::string_view text, float x, float y, uint32_t color, int32_t zindex)
-  : Skibidi("text", zindex), gooner(gooner), text(text), x(x), y(y), color(color) {}
+  Text(TextGooner &gooner, const char *text, float x, float y, uint32_t color, int32_t zindex)
+  : Skibidi("text", zindex), gooner(gooner), text(text ? text : ""), x(x), y(y), color(color) {}
     void Build() override {}
 
     void onResize(int pw, int ph) override {
@@ -826,33 +854,23 @@ public:
           geometryDirty = true;
         }
 
-        if (cachedAtlasRevision != gooner.getAtlasRevision() || cachedBaselineBias != baselineBias) {
+        if (cachedAtlasRevision != gooner.getAtlasRevision() || cachedBaselineBias != baselineBias)
           geometryDirty = true;
-        }
 
         if (geometryDirty && !rebuildGeometry()) return;
         if (cachedVertices.empty() || cachedIndices.empty()) return;
 
-        bgfx::TransientVertexBuffer tvb;
-        bgfx::TransientIndexBuffer tib;
-        auto &layout = gooner.getLayout();
-        if (!bgfx::allocTransientBuffers(&tvb, layout, static_cast<uint32_t>(cachedVertices.size()),
-                                         &tib, static_cast<uint32_t>(cachedIndices.size()))) {
-          return;
-        }
+        BatchKey key;
+        key.program       = gooner.getProgram();
+        key.texUniform    = gooner.getSampler();
+        key.tex           = gooner.getAtlas();
+        key.layout        = &gooner.getLayout();
+        key.state         = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
+        key.samplerFlags  = BGFX_SAMPLER_POINT;
 
-        std::memcpy(tvb.data, cachedVertices.data(), cachedVertices.size() * sizeof(Vertex));
-        std::memcpy(tib.data, cachedIndices.data(), cachedIndices.size() * sizeof(uint16_t));
-
-        DrawCmd cmd;
-        cmd.tvb = tvb;
-        cmd.tib = tib;
-        cmd.program = gooner.getProgram();
-        cmd.texUniform = gooner.getSampler();
-        cmd.tex = gooner.getAtlas();
-        cmd.samplerFlags = BGFX_SAMPLER_POINT;
-        cmd.state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
-        pork.push(cmd);
+        pork.pushGeometry(key, cachedVertices.data(),
+                          static_cast<uint16_t>(cachedVertices.size()), sizeof(Vertex),
+                          cachedIndices.data(), static_cast<uint16_t>(cachedIndices.size()));
   }
 
 private:
@@ -874,14 +892,19 @@ private:
     cachedVertices.reserve(text.size() * 4);
     cachedIndices.reserve(text.size() * 6);
 
+    uint32_t prevCodepoint = 0;
     while (ptr < end) {
       uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
       if (codepoint == '\r') continue;
       if (codepoint == '\n') {
         penX = x;
         penY += lineHeight;
+        prevCodepoint = 0;
         continue;
       }
+
+      if (prevCodepoint != 0)
+        penX += gooner.getKerning(prevCodepoint, codepoint);
 
       const auto *glyph = gooner.getGlyph(codepoint);
       if (!glyph || !glyph->loaded) continue;
@@ -905,6 +928,7 @@ private:
       cachedIndices.push_back(base + 2);
 
       penX += glyph->advance_x;
+      prevCodepoint = codepoint;
     }
 
     cachedAtlasRevision = gooner.getAtlasRevision();
@@ -920,7 +944,7 @@ private:
   std::vector<Vertex> cachedVertices;
   std::vector<uint16_t> cachedIndices;
   uint64_t cachedAtlasRevision = std::numeric_limits<uint64_t>::max();
-  float cachedBaselineBias = std::numeric_limits<float>::quiet_NaN();
+    float cachedBaselineBias = std::numeric_limits<float>::max();
   bool geometryDirty = true;
   bool glyphsReady = false;
 
@@ -950,30 +974,22 @@ public:
 
     void collect(JohnPork &pork) override {
         struct Vertex { float x, y; uint32_t color; };
+        Vertex verts[4] = {
+            {x,     y,      color},
+            {x + w, y,      color},
+            {x + w, y + h,  color},
+            {x,     y + h,  color},
+        };
+        uint16_t idxs[6] = {0, 1, 2, 0, 2, 3};
 
-        bgfx::TransientVertexBuffer tvb;
-        bgfx::TransientIndexBuffer tib;
-        if (!bgfx::allocTransientBuffers(&tvb, gooner.getLayout(), 4, &tib, 6))
-            return;
+        BatchKey key;
+        key.program       = gooner.getProgram();
+        key.texUniform    = BGFX_INVALID_HANDLE;
+        key.tex           = BGFX_INVALID_HANDLE;
+        key.layout        = &gooner.getLayout();
+        key.state         = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
 
-        auto *vert = (Vertex *)tvb.data;
-        vert[0] = {x,     y,      color};
-        vert[1] = {x + w, y,      color};
-        vert[2] = {x + w, y + h,  color};
-        vert[3] = {x,     y + h,  color};
-
-        auto *idx = (uint16_t *)tib.data;
-        idx[0] = 0; idx[1] = 1; idx[2] = 2;
-        idx[3] = 0; idx[4] = 2; idx[5] = 3;
-
-        DrawCmd cmd;
-        cmd.tvb = tvb;
-        cmd.tib = tib;
-        cmd.program = gooner.getProgram();
-        cmd.texUniform = BGFX_INVALID_HANDLE;
-        cmd.tex = BGFX_INVALID_HANDLE;
-        cmd.state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
-        pork.push(cmd);
+        pork.pushGeometry(key, verts, 4, sizeof(Vertex), idxs, 6);
     }
 };
 
@@ -1000,30 +1016,22 @@ public:
 
     void collect(JohnPork &pork) override {
         struct Vertex { float x, y, u, v; uint32_t color; };
+        Vertex verts[4] = {
+            {x,     y,      0, 0, color},
+            {x + w, y,      1, 0, color},
+            {x + w, y + h,  1, 1, color},
+            {x,     y + h,  0, 1, color},
+        };
+        uint16_t idxs[6] = {0, 1, 2, 0, 2, 3};
 
-        bgfx::TransientVertexBuffer tvb;
-        bgfx::TransientIndexBuffer tib;
-        if (!bgfx::allocTransientBuffers(&tvb, gooner.getLayout(), 4, &tib, 6))
-            return;
+        BatchKey key;
+        key.program       = gooner.getProgram();
+        key.texUniform    = gooner.getSampler();
+        key.tex           = tex;
+        key.layout        = &gooner.getLayout();
+        key.state         = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
 
-        auto *vert = (Vertex *)tvb.data;
-        vert[0] = {x,     y,      0, 0, color};
-        vert[1] = {x + w, y,      1, 0, color};
-        vert[2] = {x + w, y + h,  1, 1, color};
-        vert[3] = {x,     y + h,  0, 1, color};
-
-        auto *idx = (uint16_t *)tib.data;
-        idx[0] = 0; idx[1] = 1; idx[2] = 2;
-        idx[3] = 0; idx[4] = 2; idx[5] = 3;
-
-        DrawCmd cmd;
-        cmd.tvb = tvb;
-        cmd.tib = tib;
-        cmd.program = gooner.getProgram();
-        cmd.texUniform = gooner.getSampler();
-        cmd.tex = tex;
-        cmd.state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
-        pork.push(cmd);
+        pork.pushGeometry(key, verts, 4, sizeof(Vertex), idxs, 6);
     }
 };
 
@@ -1077,7 +1085,7 @@ struct Layer {
   }
 
     Text* addText(TextGooner& gooner, const char* text, float x, float y, uint32_t color, int32_t zindex) {
-        return add<Text>(gooner, std::string_view(text), x, y, color, zindex);
+        return add<Text>(gooner, text, x, y, color, zindex);
     }
     Rectangle* addRectangle(RectGooner& gooner, float x, float y, float w, float h, uint32_t color, int32_t zindex) {
         return add<Rectangle>(gooner, x, y, w, h, color, zindex);

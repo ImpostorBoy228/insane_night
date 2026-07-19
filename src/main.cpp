@@ -7,6 +7,8 @@
 #include "ligma/bind.hpp"
 // TODO: lazy rendering
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
+  try {
+    Hell_Machina engine;
     LigmaEngine lua;
 
     if (!lua.Init()) {
@@ -14,8 +16,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         return 1;
     }
 
-  try {
-    Hell_Machina engine;
     engine.init("heck", 1280, 720, bgfx::RendererType::Count);
 
     ligma_bind(lua.get_state(), engine);
