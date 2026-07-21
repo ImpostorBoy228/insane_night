@@ -25,16 +25,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 
     lua.ExecuteFile("scripts/main.lua");
 
-    auto lastFpsTime = std::chrono::steady_clock::now();
-    auto lastFrameTime = std::chrono::steady_clock::now();
-    int frames = 0;
+    auto dt = 0.0f;
+    auto prevFrame = std::chrono::steady_clock::now();
 
     while (engine.gooning) {
       auto frameStart = std::chrono::steady_clock::now();
-
-      float dt = std::chrono::duration<float>(frameStart - lastFrameTime).count();
-      lastFrameTime = frameStart;
-
+      dt = std::chrono::duration<float>(frameStart - prevFrame).count();
+      prevFrame = frameStart;
       SDL_Event event;
       while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT or (
@@ -74,15 +71,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
             std::cerr << "Lua onFrame error: " << error.what() << '\n';
           }
         }
-      }
-
-      frames++;
-      auto now = std::chrono::steady_clock::now();
-      if (now - lastFpsTime >= std::chrono::seconds(1)) {
-        printf("\rFPS: %d", frames);
-        fflush(stdout);
-        frames = 0;
-        lastFpsTime = now;
       }
 
       if (engine.frameLimit > 0) {
