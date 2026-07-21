@@ -16,7 +16,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         return 1;
     }
 
-    engine.init("heck", 1280, 720, bgfx::RendererType::Vulkan);
+    engine.init("heck", 1280, 720, bgfx::RendererType::OpenGL);
+
+    engine.preloadTextures("assets");
+    engine.preloadSounds("assets");
 
     ligma_bind(lua.get_state(), engine);
 

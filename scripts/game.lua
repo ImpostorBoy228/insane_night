@@ -88,6 +88,28 @@ local function getNode(id)
     return scriptData.nodes[id]
 end
 
+local prof = { buf = {}, enabled = false }
+function prof.start()
+    prof.enabled = true
+end
+function prof.mark(name)
+    if not prof.enabled then return end
+    prof.buf[#prof.buf + 1] = { name, os.clock() }
+end
+function prof.flush()
+    if not prof.enabled or #prof.buf < 2 then return end
+    local parts = {}
+    for i = 2, #prof.buf do
+        local dt = (prof.buf[i][2] - prof.buf[i - 1][2]) * 1000
+        if dt > 0.1 then
+            parts[#parts + 1] = string.format("%s:%.1fms", prof.buf[i][1], dt)
+        end
+    end
+    if #parts > 0 then print(table.concat(parts, "  ")) end
+    prof.buf = {}
+    prof.enabled = false
+end
+
 local function image(ui, path, x, y, w, h, z)
     if not path then
         return
@@ -243,16 +265,18 @@ local function getSpeakerWidth(text)
 end
 
 local function syncSound(node)
+    local nextSound
     if node.sound == nil then
-        return
+        if not vn.currentSound or vn.currentSoundId ~= 0 then
+            return
+        end
+        nextSound = vn.currentSound
+    else
+        nextSound = node.sound
+        if nextSound == "" then nextSound = nil end
     end
 
-    local nextSound = node.sound
-    if nextSound == "" then
-        nextSound = nil
-    end
-
-    if vn.currentSound == nextSound then
+    if vn.currentSound == nextSound and vn.currentSoundId ~= 0 then
         return
     end
 
@@ -422,45 +446,46 @@ function gameOnKey(key)
 end
 
 function renderGame(ui)
+    prof.start()
     ui:clear()
+    prof.mark("clear")
 
     local node = getNode(vn.currentNode)
     if not node then
-        -- error text
         ui:addTextF(g.text, "missing node: " .. tostring(vn.currentNode), 0.1, 0.1, 0xffffffff, 1)
         return
     end
 
     background(ui, node, 0, 0, 1, 0.7)
+    prof.mark("bg")
     syncSound(node)
+    prof.mark("sound")
 
     local panel = dialogueCfg.Kawasaki
     local textBox = dialogueCfg.Cago
     local speaker = dialogueCfg.Krico
     local pages = buildDialoguePages(node.text or "")
+    prof.mark("wrap")
     local currentPage = math.min(vn.currentPage, #pages)
     local speakerText = node.speaker or ""
 
-    -- dialogue panel
     ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0xdd101014, 0)
 
     character(ui, node, -5)
+    prof.mark("char")
 
     if speakerText ~= "" then
         local speakerWidth = getSpeakerWidth(speakerText)
 
-        -- speaker plate
         ui:addRectF(g.rect, speaker.x, speaker.y, speakerWidth, speaker.h, 0xffe8e8e8, 2)
 
-        -- speaker label
         ui:addTextF(g.text, speakerText, speaker.x + speaker.textInset, speaker.textY, 0xff101014, 3)
     end
 
-    -- dialogue text
     ui:addTextF(g.textSmall, pages[currentPage], textBox.x, textBox.y, 0xffffffff, 3)
+    prof.mark("text")
 
     if currentPage < #pages or node.next then
-        -- next hitbox
         local nextBtn = ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0x00000000, 10)
         nextBtn:onClick(function()
             if currentPage < #pages then
@@ -471,6 +496,8 @@ function renderGame(ui)
             end
         end)
     end
+    prof.mark("btn")
+    prof.flush()
 end
 
 function initSload()

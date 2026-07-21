@@ -24,6 +24,7 @@ public:
     uint32_t playSound(std::string_view path, bool singleInstance = true);
     void stopSound(uint32_t soundId);
     void stopAllSounds();
+    void preloadSounds(const std::string &dir);
 
 private:
     SoLoud::Wav* getOrLoadSound(std::string_view path);

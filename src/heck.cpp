@@ -81,7 +81,11 @@ void Hell_Machina::frame() {
         }
     }
 
+    size_t expectedDraws = 0;
+    for (const auto &layer : sceneLayers) expectedDraws += layer.items.size();
+    for (const auto &layer : uiLayers) expectedDraws += layer.items.size();
     pork.clear();
+    pork.reserve(expectedDraws);
 
     scenePass.begin();
     for (auto &layer : sceneLayers) layer.collect(pork);

@@ -22,6 +22,8 @@
 #include <string_view>
 
 #include <cmath>
+#include <filesystem>
+#include <future>
 #include <optional>
 #include <vector>
 #include <unordered_map>
@@ -159,6 +161,51 @@ public:
         }
         textures.clear();
         texturePaths.clear();
+    }
+
+    void preloadTextures(const std::string &dir) {
+        static constexpr const char *exts[] = {".png", ".jpg", ".jpeg", ".tga", ".bmp"};
+        std::vector<std::string> files;
+        if (!std::filesystem::exists(dir)) return;
+        for (auto &entry : std::filesystem::recursive_directory_iterator(dir)) {
+            if (!entry.is_regular_file()) continue;
+            auto ext = entry.path().extension().string();
+            for (auto *e : exts) {
+                if (ext == e) { files.push_back(entry.path().string()); break; }
+            }
+        }
+
+        struct Decoded {
+            std::string path;
+            int w = 0, h = 0;
+            std::vector<uint8_t> pixels;
+        };
+        std::vector<std::future<Decoded>> futures;
+        for (auto &f : files) {
+            futures.push_back(std::async(std::launch::async, [f]() -> Decoded {
+                int w, h, n;
+                stbi_uc *data = stbi_load(f.c_str(), &w, &h, &n, STBI_rgb_alpha);
+                if (!data) return Decoded{f};
+                Decoded d{f, w, h, {data, data + (size_t)w * h * 4}};
+                stbi_image_free(data);
+                return d;
+            }));
+        }
+        int loaded = 0;
+        for (auto &f : futures) {
+            auto d = f.get();
+            if (d.pixels.empty()) continue;
+            auto mem = bgfx::copy(d.pixels.data(), (uint32_t)d.pixels.size());
+            auto tex = bgfx::createTexture2D((uint16_t)d.w, (uint16_t)d.h, false, 1,
+                bgfx::TextureFormat::RGBA8, 0, mem);
+            if (bgfx::isValid(tex)) {
+                CachedTexture ct{tex, d.w, d.h};
+                texturePaths.emplace_back(d.path);
+                textures.emplace(texturePaths.back(), ct);
+                loaded++;
+            }
+        }
+        printf("preloaded %d textures from %s\n", loaded, dir.c_str());
     }
 };
 
@@ -571,11 +618,7 @@ public:
     return it == glyphs.end() ? nullptr : &it->second;
   }
   float measureText(std::string_view text) const {
-    auto it = measureCache.find(std::string(text));
-    if (it != measureCache.end()) return it->second;
-    float w = fontHandler.measureText(text.data(), static_cast<unsigned long>(text.size()));
-    measureCache[std::string(text)] = w;
-    return w;
+    return fontHandler.measureText(text.data(), static_cast<unsigned long>(text.size()));
   }
   float getLineHeight() const {
     if (pixelSize > 0.0f) return pixelSize * 1.35f;
@@ -611,7 +654,6 @@ public:
     fontHandler.destroy();
     glyphs.clear();
     packedGlyphs.clear();
-    measureCache.clear();
     atlasPixels.clear();
     atlasSize = INITIAL_ATLAS_SIZE;
     atlasCursorX = PADDING;
@@ -811,7 +853,6 @@ private:
 
   TsFontHandler fontHandler;
   std::unordered_set<uint32_t> seenGlyphs;
-  mutable std::unordered_map<std::string, float> measureCache;
   bgfx::TextureHandle atlas = BGFX_INVALID_HANDLE;
   bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
   bgfx::UniformHandle s_tex = BGFX_INVALID_HANDLE;
@@ -1390,6 +1431,8 @@ public:
     }
     int getImageWidth(const char *path) { return cacheMan.getWidth(path); }
     int getImageHeight(const char *path) { return cacheMan.getHeight(path); }
+    void preloadTextures(const std::string &dir) { cacheMan.preloadTextures(dir); }
+    void preloadSounds(const std::string &dir) { audioEngine.preloadSounds(dir); }
     RectGooner& getRectGooner() { return rectGooner; }
     ImageGooner& getImageGooner() { return imageGooner; }
 };

@@ -1,6 +1,7 @@
 #include "audio_unc.hpp"
 
 #include <algorithm>
+#include <filesystem>
 
 AudioEngine::~AudioEngine() {
     deinit();
@@ -37,6 +38,23 @@ void AudioEngine::setGlobalVolume(float volume) {
     }
 
     engine.setGlobalVolume(std::clamp(volume, 0.0f, 1.0f));
+}
+
+void AudioEngine::preloadSounds(const std::string &dir) {
+    if (!initialized) return;
+    static constexpr const char *exts[] = {".mp3", ".wav", ".ogg"};
+    int loaded = 0;
+    if (!std::filesystem::exists(dir)) return;
+    for (auto &entry : std::filesystem::recursive_directory_iterator(dir)) {
+        if (!entry.is_regular_file()) continue;
+        auto ext = entry.path().extension().string();
+        for (auto *e : exts) {
+            if (ext != e) continue;
+            if (getOrLoadSound(entry.path().string())) loaded++;
+            break;
+        }
+    }
+    printf("preloaded %d sounds from %s\n", loaded, dir.c_str());
 }
 
 SoLoud::Wav* AudioEngine::getOrLoadSound(std::string_view path) {
