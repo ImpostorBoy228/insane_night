@@ -35,4 +35,7 @@ clean:
 
 rebuild: clean all
 
-.PHONY: all dev clean rebuild compdb
+disassembly: insane_night
+	objdump -d insane_night > insane_night.dis
+
+.PHONY: all dev clean rebuild compdb disassembly

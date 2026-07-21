@@ -10,3 +10,4 @@ main.s
 compile_commands.json
 .cache/
 .tmp
+*.dis

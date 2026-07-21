@@ -347,7 +347,7 @@ function onFrame(dt)
     end
 end
 
-function ssave(slot) -- inflicts segfault(no more)
+function ssave() -- inflicts segfault(no more)
     local raw = readlike_book("scripts/state.json")
     if not raw then
         print("Fucked up to read scripts/state.json")
@@ -360,7 +360,7 @@ function ssave(slot) -- inflicts segfault(no more)
         return
     end
 
-    data[slot] = {
+    data = {
         node = vn.currentNode,
         choices = vn.currentChoices or {}
     }
@@ -378,7 +378,7 @@ function ssave(slot) -- inflicts segfault(no more)
     notifTimer = os.time() + 0.5
 end
 
-function sload(slot)
+function sload()
     local raw = readlike_book("scripts/state.json")
     if not raw then
         print("Fucked up to read scripts/state.json")
@@ -391,9 +391,9 @@ function sload(slot)
         return
     end
 
-    local saved = data[slot]
+    local saved = data
     if not saved then
-        print("Slot " .. tostring(slot) .. " is fucking empty")
+        print("``data`` is fucking empty")
         return
     end
 
@@ -439,11 +439,10 @@ function gameOnKey(key)
         end
     end
     if key == 1073741884 then -- SDLK_F3
-        switchTo("saveScreen")
-        -- ssave("slot1")
+        ssave()
     end
     if key == 1073741883 then -- SDLK_F2
-        sload("slot1")
+        sload()
     end
 end
 

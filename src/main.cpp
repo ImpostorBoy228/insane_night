@@ -5,7 +5,7 @@
 #include "heck.hpp"
 #include "ligma/ligma.hpp"
 #include "ligma/bind.hpp"
-// TODO: lazy rendering
+
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   try {
     Hell_Machina engine;
