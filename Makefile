@@ -41,3 +41,4 @@ shaders:
 clean:
 	rm -rf $(BUILD_DIR) compile_commands.json insane_night
 	rm -f src/shaders/*.bin.h
+	rm -f *.dis *.o

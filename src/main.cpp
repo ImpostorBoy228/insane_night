@@ -18,10 +18,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 
     engine.init("heck", 1280, 720, bgfx::RendererType::OpenGL);
 
+    auto s_preload = std::chrono::high_resolution_clock::now();
     engine.preloadTextures("assets");
     engine.preloadSounds("assets");
 
     ligma_bind(lua.get_state(), engine);
+    auto e_preload = std::chrono::high_resolution_clock::now();
+
+    std::cout << "preload: " << std::chrono::duration<double, std::milli>(e_preload - s_preload).count() << " ms\n";
 
     lua.ExecuteFile("scripts/main.lua");
 
@@ -34,33 +38,55 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
       prevFrame = frameStart;
       SDL_Event event;
       while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_EVENT_QUIT or (
-            event.type == SDL_EVENT_KEY_DOWN and
-            event.key.key == SDLK_ESCAPE)) {
+        switch (event.type) {
+        case SDL_EVENT_QUIT:
+        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
           engine.gooning = false;
-        }
-        if (event.type == SDL_EVENT_KEY_DOWN) {
+          break;
+        case SDL_EVENT_KEY_DOWN:
+          if (event.key.key == SDLK_ESCAPE)
+            engine.gooning = false;
+          {
             sol::protected_function onKeyDown = lua.get_state()["onKeyDown"];
             if (onKeyDown.valid()) onKeyDown(event.key.key);
-        }
-
-        if (event.type == SDL_EVENT_WINDOW_RESIZED ||
-            event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+          }
+          break;
+        case SDL_EVENT_WINDOW_FOCUS_GAINED:
+          engine.windowActive = true;
+          break;
+        case SDL_EVENT_WINDOW_FOCUS_LOST:
+          engine.windowActive = false;
+          break;
+        case SDL_EVENT_WINDOW_RESIZED:
+        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
           engine.resize(event.window.data1, event.window.data2);
-
-          sol::protected_function onResize = lua.get_state()["onResize"];
-          if (onResize.valid()) {
-            sol::protected_function_result result = onResize(engine.width, engine.height);
-            if (!result.valid()) {
-              sol::error error = result;
-              std::cerr << "Lua resize callback error: " << error.what() << '\n';
+          {
+            sol::protected_function onResize = lua.get_state()["onResize"];
+            if (onResize.valid()) {
+              sol::protected_function_result result = onResize(engine.width, engine.height);
+              if (!result.valid()) {
+                sol::error error = result;
+                std::cerr << "Lua resize callback error: " << error.what() << '\n';
+              }
             }
           }
+          break;
+        case SDL_EVENT_WINDOW_MINIMIZED:
+          engine.windowActive = false;
+          break;
+        case SDL_EVENT_WINDOW_RESTORED:
+        case SDL_EVENT_WINDOW_EXPOSED:
+          engine.windowActive = true;
+          break;
         }
         engine.handleEvent(event);
       }
 
-      engine.frame();
+      if (engine.windowActive) {
+        engine.frame();
+      } else {
+        SDL_DelayNS(50'000'000);
+      }
 
       {
         sol::protected_function onFrame = lua.get_state()["onFrame"];

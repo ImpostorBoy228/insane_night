@@ -1374,6 +1374,7 @@ class Hell_Machina {
 public:
     int width = 1280, height = 720;
     bool gooning = true;
+    bool windowActive = true;
     int frameLimit = 0;
     std::chrono::steady_clock::time_point lastFullscreenChange{};
     bool pendingFullscreenChange = false;
