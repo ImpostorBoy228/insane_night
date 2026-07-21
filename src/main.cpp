@@ -16,7 +16,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         return 1;
     }
 
-    engine.init("heck", 1280, 720, bgfx::RendererType::Count);
+    engine.init("heck", 1280, 720, bgfx::RendererType::Vulkan);
 
     ligma_bind(lua.get_state(), engine);
 

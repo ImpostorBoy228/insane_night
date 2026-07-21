@@ -12,7 +12,7 @@ endif()
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s -Wl,--gc-sections")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s")
 
 add_compile_definitions(BX_CONFIG_DEBUG=0)
 
@@ -64,8 +64,10 @@ set_target_properties(insane_night PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_S
 target_link_libraries(insane_night PRIVATE lua)
 
 target_link_libraries(insane_night PRIVATE
+    -Wl,--whole-archive
     ${CMAKE_SOURCE_DIR}/external/lib/libbgfx.a
     ${CMAKE_SOURCE_DIR}/external/lib/libbx.a
     ${CMAKE_SOURCE_DIR}/external/lib/libbimg.a
-    SDL3 X11 GL dl pthread freetype
+    -Wl,--no-whole-archive
+    SDL3 X11 dl pthread freetype vulkan
 )

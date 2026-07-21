@@ -53,32 +53,6 @@ local scriptData = {
     }
 }
 
-function save()
-    local raw = json.encode(saved)
-    local file = io.open("scripts/state.json", "w")
-    if not file then
-        return
-    end
-
-    file:write(raw)
-    file:close()
-end
-
-function load()
-    local raw = readlike_book("scripts/state.json")
-    if not raw then
-        return
-    end
-
-    local ok, data = pcall(json.decode, raw)
-    if not ok then
-        return
-    end
-
-    saved.node = data.node
-    saved.choices = data.choices
-end
-
 local function loadScript()
     local raw = readlike_book("scripts/script.json")
     if not raw then
@@ -309,6 +283,7 @@ end
 
 function ginit()
     setFont("assets/HackRegular-gX84.ttf", 24)
+    loadScript()
     g.audio:stopAllSounds()
     vn.currentBg = nil
     vn.currentPage = 1
@@ -498,15 +473,47 @@ function renderGame(ui)
     end
 end
 
+function initSload()
+    local raw = readlike_book("scripts/state.json")
+    if not raw then return false end
+
+    local ok, data = pcall(json.decode, raw)
+    if not ok or not data then return false end
+
+    vn.currentNode = data.node
+    vn.currentChoices = data.choices or {}
+    vn.currentPage = 1
+    vn.currentSoundId = 0
+    vn.currentBg = nil
+    vn.currentChar = nil
+    vn.currentSound = nil
+
+    local id = scriptData.start
+    while id and id ~= vn.currentNode do
+        local n = getNode(id)
+        if not n then break end
+        if n.bg then vn.currentBg = n.bg end
+        if n.character then vn.currentChar = n.character end
+        if n.sound then vn.currentSound = n.sound end
+        id = n.next
+    end
+
+    local node = getNode(vn.currentNode)
+    if node then
+        if node.bg then vn.currentBg = node.bg end
+        if node.character then vn.currentChar = node.character end
+        if node.sound then vn.currentSound = node.sound end
+    end
+
+    return true
+end
+
 register("gay", function(ui)
     currentUI = ui
     if not loadScript() then
         return
     end
-    load()
-    vn.currentNode = saved.node
-    vn.currentChoices = saved.choices
-    if not vn.currentNode then
+    if not initSload() then
         ginit()
     end
     renderGame(ui)
