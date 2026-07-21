@@ -1227,16 +1227,40 @@ Hell_Machina:   — *звуки работающего промышленног�
 
 ## УЧЁТ ПРОФАНОСТИ: ПОЛНАЯ КАРТИНА
 
+### grep -r по src/ и scripts/ (проектные файлы, без external)
+
 ```
-"fuck"         — 7 (C++: fuckCpp, fuckup, fuckOff / Lua: fucking, fuckOff, FUCK, "fuck me pls")
-"shit"         — 2 (Lua: "this shit", "is fucking empty")
-"ass"          — 0 (ноль. Разработчик стесняется слова "ass"?)
-"dick"         — 0 (тоже ноль. Неожиданно.)
-"bitch"        — 0 (джентльмен)
-"cock_"        — 2 (cock_measure, cock_kern — технически не мат, но...)
-"gooning"      — 2 (gooning, TextGooner/RectGooner/ImageGooner ×3)
-" fucking "    — 2 ("we are fucking removing save slots", "Lets fucking go")
-"fuckOff()"    — 2 (определение + вызов в sscreen.lua)
+"fuck"         —  8 вхождений:
+                    src/heck.hpp:        1  (fuckCpp)
+                    src/main.cpp:        1  (fuckup)
+                    src/ligma/bind.hpp:   2  (fuckup, fuckOff)
+                    scripts/sscreen.lua: 3  (fucking, fuckOff, "fuck me pls")
+                    scripts/game.lua:    1  ("fucking empty")
+                    TOTAL:               8
+
+"shit"         —  2 вхождения:
+                    scripts/game.lua:    2  ("this shit", "fucking empty")
+                    TOTAL:               2
+
+"cock_"        —  5 вхождений:
+                    src/heck.hpp:        2  (cock_measure, cock_kern)
+                    src/tsfont_wrapper:  2  (declarations)
+                    scripts/game.lua:    1  (TODO comment)
+                    TOTAL:               5
+
+"goon/er/ing"  —  ~40 вхождений:
+                    src/heck.hpp:        ~33 (TextGooner×20, RectGooner×3,
+                                              ImageGooner×5, goonerType×4,
+                                              gooning×1)
+                    src/main.cpp:         3  (engine.gooning)
+                    src/ligma/bind.hpp:    1  (engine.gooning)
+                    scripts/sscreen.lua:  1  (comment "undefinded gooners")
+                    scripts/game.lua:     3  (wrapText gooner params)
+                    TOTAL:              ~41
+
+"ass"          —  0  (ноль. Разработчик стесняется слова "ass"?)
+"dick"         —  0  (тоже ноль. Неожиданно.)
+"bitch"        —  0  (джентльмен)
 ```
 
 Разработчик матерится ровно настолько, чтобы было понятно: он не робот. Но в меру. 7/10 по шкале быдлокодинга.
