@@ -1,3 +1,4 @@
+
 # INSANE NIGHT — ПОЛНАЯ ДОКУМЕНТАЦИЯ ПРОЕКТА
 
 > Внимание: этот файл сгенерирован ИИ. Не читать. Ты предупреждён.
@@ -189,7 +190,6 @@ while (engine.gooning)
   └── frame limiter (если engine.frameLimit > 0)
       ├── SDL_DelayNS (coarse sleep, -2ms guard)
       └── std::this_thread::yield (spin-wait)
-```
   │   │
   │   ├── scenePass.begin();  // view 0
   │   │   └── pork.flush(scenePass.id);
