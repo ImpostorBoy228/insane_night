@@ -12,7 +12,7 @@
 
 # =============================================================================
 # Project: insane_night
-# Configurations: Release
+# Configurations: Debug
 # =============================================================================
 
 #############################################
@@ -24,7 +24,7 @@ ninja_required_version = 1.5
 #############################################
 # Set configuration variable for custom commands.
 
-CONFIGURATION = Release
+CONFIGURATION = Debug
 # =============================================================================
 # Include auxiliary files.
 
@@ -49,11 +49,11 @@ cmake_ninja_workdir = /home/impostorboy/projects/insane_night/.build/
 
 build cmake_object_order_depends_target_tsfont_obj: phony || .
 
-build CMakeFiles/tsfont_obj.dir/external/tsfont/font_handler.c.o: C_COMPILER__tsfont_obj_unscanned_Release /home/impostorboy/projects/insane_night/external/tsfont/font_handler.c || cmake_object_order_depends_target_tsfont_obj
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0
+build CMakeFiles/tsfont_obj.dir/external/tsfont/font_handler.c.o: C_COMPILER__tsfont_obj_unscanned_Debug /home/impostorboy/projects/insane_night/external/tsfont/font_handler.c || cmake_object_order_depends_target_tsfont_obj
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1
   DEP_FILE = CMakeFiles/tsfont_obj.dir/external/tsfont/font_handler.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/tsfont -I/usr/include/freetype2
   OBJECT_DIR = CMakeFiles/tsfont_obj.dir
   OBJECT_FILE_DIR = CMakeFiles/tsfont_obj.dir/external/tsfont
@@ -75,321 +75,321 @@ build tsfont_obj: phony CMakeFiles/tsfont_obj.dir/external/tsfont/font_handler.c
 
 build cmake_object_order_depends_target_lua: phony || .
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lapi.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lapi.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lapi.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lapi.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lapi.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lauxlib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lauxlib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lauxlib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lauxlib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lauxlib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lbaselib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lbaselib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lbaselib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lbaselib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lbaselib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lcode.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lcode.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lcode.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lcode.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lcode.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lcorolib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lcorolib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lcorolib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lcorolib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lcorolib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lctype.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lctype.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lctype.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lctype.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lctype.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/ldblib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ldblib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/ldblib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ldblib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/ldblib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/ldebug.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ldebug.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/ldebug.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ldebug.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/ldebug.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/ldo.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ldo.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/ldo.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ldo.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/ldo.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/ldump.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ldump.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/ldump.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ldump.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/ldump.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lfunc.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lfunc.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lfunc.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lfunc.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lfunc.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lgc.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lgc.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lgc.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lgc.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lgc.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/linit.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/linit.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/linit.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/linit.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/linit.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/liolib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/liolib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/liolib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/liolib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/liolib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/llex.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/llex.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/llex.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/llex.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/llex.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lmathlib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lmathlib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lmathlib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lmathlib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lmathlib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lmem.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lmem.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lmem.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lmem.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lmem.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/loadlib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/loadlib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/loadlib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/loadlib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/loadlib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lobject.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lobject.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lobject.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lobject.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lobject.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lopcodes.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lopcodes.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lopcodes.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lopcodes.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lopcodes.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/loslib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/loslib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/loslib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/loslib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/loslib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lparser.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lparser.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lparser.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lparser.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lparser.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lstate.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lstate.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lstate.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lstate.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lstate.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lstring.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lstring.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lstring.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lstring.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lstring.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lstrlib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lstrlib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lstrlib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lstrlib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lstrlib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/ltable.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ltable.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/ltable.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ltable.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/ltable.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/ltablib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ltablib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/ltablib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ltablib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/ltablib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/ltm.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ltm.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/ltm.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/ltm.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/ltm.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lundump.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lundump.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lundump.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lundump.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lundump.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lutf8lib.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lutf8lib.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lutf8lib.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lutf8lib.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lutf8lib.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lvm.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lvm.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lvm.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lvm.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lvm.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
   TARGET_SUPPORT_DIR = CMakeFiles/lua.dir
 
-build CMakeFiles/lua.dir/external/lua-5.4.8/src/lzio.c.o: C_COMPILER__lua_unscanned_Release /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lzio.c || cmake_object_order_depends_target_lua
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
+build CMakeFiles/lua.dir/external/lua-5.4.8/src/lzio.c.o: C_COMPILER__lua_unscanned_Debug /home/impostorboy/projects/insane_night/external/lua-5.4.8/src/lzio.c || cmake_object_order_depends_target_lua
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DLUA_COMPAT_5_3 -DLUA_USE_LINUX
   DEP_FILE = CMakeFiles/lua.dir/external/lua-5.4.8/src/lzio.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src
   OBJECT_DIR = CMakeFiles/lua.dir
   OBJECT_FILE_DIR = CMakeFiles/lua.dir/external/lua-5.4.8/src
@@ -403,9 +403,9 @@ build CMakeFiles/lua.dir/external/lua-5.4.8/src/lzio.c.o: C_COMPILER__lua_unscan
 #############################################
 # Link the static library liblua.a
 
-build liblua.a: C_STATIC_LIBRARY_LINKER__lua_Release CMakeFiles/lua.dir/external/lua-5.4.8/src/lapi.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lauxlib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lbaselib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lcode.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lcorolib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lctype.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ldblib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ldebug.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ldo.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ldump.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lfunc.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lgc.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/linit.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/liolib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/llex.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lmathlib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lmem.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/loadlib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lobject.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lopcodes.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/loslib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lparser.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lstate.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lstring.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lstrlib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ltable.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ltablib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ltm.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lundump.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lutf8lib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lvm.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lzio.c.o
-  CONFIG = Release
-  LANGUAGE_COMPILE_FLAGS = -O3 -DNDEBUG
+build liblua.a: C_STATIC_LIBRARY_LINKER__lua_Debug CMakeFiles/lua.dir/external/lua-5.4.8/src/lapi.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lauxlib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lbaselib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lcode.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lcorolib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lctype.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ldblib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ldebug.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ldo.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ldump.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lfunc.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lgc.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/linit.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/liolib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/llex.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lmathlib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lmem.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/loadlib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lobject.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lopcodes.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/loslib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lparser.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lstate.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lstring.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lstrlib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ltable.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ltablib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/ltm.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lundump.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lutf8lib.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lvm.c.o CMakeFiles/lua.dir/external/lua-5.4.8/src/lzio.c.o
+  CONFIG = Debug
+  LANGUAGE_COMPILE_FLAGS = -g
   OBJECT_DIR = CMakeFiles/lua.dir
   POST_BUILD = :
   PRE_LINK = :
@@ -422,341 +422,341 @@ build liblua.a: C_STATIC_LIBRARY_LINKER__lua_Release CMakeFiles/lua.dir/external
 
 build cmake_object_order_depends_target_soloud: phony || .
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_audiosource.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_audiosource.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_audiosource.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_audiosource.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_audiosource.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_bus.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_bus.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_bus.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_bus.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_bus.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_3d.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_3d.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_3d.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_3d.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_3d.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_basicops.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_basicops.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_basicops.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_basicops.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_basicops.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_faderops.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_faderops.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_faderops.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_faderops.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_faderops.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_filterops.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_filterops.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_filterops.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_filterops.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_filterops.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_getters.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_getters.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_getters.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_getters.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_getters.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_setters.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_setters.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_setters.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_setters.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_setters.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voicegroup.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_voicegroup.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voicegroup.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_voicegroup.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voicegroup.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voiceops.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_voiceops.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voiceops.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_core_voiceops.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voiceops.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fader.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_fader.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fader.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_fader.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fader.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_fft.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_fft.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft_lut.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_fft_lut.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft_lut.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_fft_lut.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft_lut.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_file.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_file.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_file.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_file.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_file.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_filter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_filter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_filter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_filter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_filter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_misc.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_misc.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_misc.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_misc.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_misc.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_queue.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_queue.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_queue.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_queue.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_queue.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_thread.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_thread.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_thread.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/core/soloud_thread.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_thread.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/core
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/dr_impl.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/audiosource/wav/dr_impl.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/dr_impl.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/audiosource/wav/dr_impl.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/dr_impl.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wav.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/audiosource/wav/soloud_wav.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wav.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/audiosource/wav/soloud_wav.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wav.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wavstream.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/audiosource/wav/soloud_wavstream.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wavstream.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/audiosource/wav/soloud_wavstream.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wavstream.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_bassboostfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_bassboostfilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_bassboostfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_bassboostfilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_bassboostfilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_biquadresonantfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_biquadresonantfilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_biquadresonantfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_biquadresonantfilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_biquadresonantfilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_dcremovalfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_dcremovalfilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_dcremovalfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_dcremovalfilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_dcremovalfilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_echofilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_echofilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_echofilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_echofilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_echofilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_fftfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_fftfilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_fftfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_fftfilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_fftfilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_flangerfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_flangerfilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_flangerfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_flangerfilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_flangerfilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_freeverbfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_freeverbfilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_freeverbfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_freeverbfilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_freeverbfilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_lofifilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_lofifilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_lofifilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_lofifilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_lofifilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_robotizefilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_robotizefilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_robotizefilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_robotizefilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_robotizefilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_waveshaperfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_waveshaperfilter.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_waveshaperfilter.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/filter/soloud_waveshaperfilter.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_waveshaperfilter.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/filter
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/stb_vorbis.c.o: C_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/audiosource/wav/stb_vorbis.c || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/stb_vorbis.c.o: C_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/audiosource/wav/stb_vorbis.c || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/stb_vorbis.c.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu17 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu17 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav
   TARGET_SUPPORT_DIR = CMakeFiles/soloud.dir
 
-build CMakeFiles/soloud.dir/external/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp.o: CXX_COMPILER__soloud_unscanned_Release /home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp || cmake_object_order_depends_target_soloud
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0 -DWITH_MINIAUDIO
+build CMakeFiles/soloud.dir/external/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp.o: CXX_COMPILER__soloud_unscanned_Debug /home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp || cmake_object_order_depends_target_soloud
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1 -DWITH_MINIAUDIO
   DEP_FILE = CMakeFiles/soloud.dir/external/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIC -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIC -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio
   OBJECT_DIR = CMakeFiles/soloud.dir
   OBJECT_FILE_DIR = CMakeFiles/soloud.dir/external/soloud20200207/src/backend/miniaudio
@@ -770,9 +770,9 @@ build CMakeFiles/soloud.dir/external/soloud20200207/src/backend/miniaudio/soloud
 #############################################
 # Link the static library libsoloud.a
 
-build libsoloud.a: CXX_STATIC_LIBRARY_LINKER__soloud_Release CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_audiosource.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_bus.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_3d.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_basicops.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_faderops.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_filterops.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_getters.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_setters.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voicegroup.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voiceops.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fader.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft_lut.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_file.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_filter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_misc.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_queue.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_thread.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/dr_impl.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wav.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wavstream.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_bassboostfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_biquadresonantfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_dcremovalfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_echofilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_fftfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_flangerfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_freeverbfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_lofifilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_robotizefilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_waveshaperfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/stb_vorbis.c.o CMakeFiles/soloud.dir/external/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp.o
-  CONFIG = Release
-  LANGUAGE_COMPILE_FLAGS = -O3 -DNDEBUG
+build libsoloud.a: CXX_STATIC_LIBRARY_LINKER__soloud_Debug CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_audiosource.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_bus.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_3d.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_basicops.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_faderops.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_filterops.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_getters.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_setters.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voicegroup.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_core_voiceops.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fader.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_fft_lut.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_file.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_filter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_misc.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_queue.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/core/soloud_thread.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/dr_impl.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wav.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/soloud_wavstream.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_bassboostfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_biquadresonantfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_dcremovalfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_echofilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_fftfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_flangerfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_freeverbfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_lofifilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_robotizefilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/filter/soloud_waveshaperfilter.cpp.o CMakeFiles/soloud.dir/external/soloud20200207/src/audiosource/wav/stb_vorbis.c.o CMakeFiles/soloud.dir/external/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp.o
+  CONFIG = Debug
+  LANGUAGE_COMPILE_FLAGS = -g
   OBJECT_DIR = CMakeFiles/soloud.dir
   POST_BUILD = :
   PRE_LINK = :
@@ -789,41 +789,41 @@ build libsoloud.a: CXX_STATIC_LIBRARY_LINKER__soloud_Release CMakeFiles/soloud.d
 
 build cmake_object_order_depends_target_insane_night: phony || cmake_object_order_depends_target_lua cmake_object_order_depends_target_soloud cmake_object_order_depends_target_tsfont_obj
 
-build CMakeFiles/insane_night.dir/src/main.cpp.o: CXX_COMPILER__insane_night_unscanned_Release /home/impostorboy/projects/insane_night/src/main.cpp || cmake_object_order_depends_target_insane_night
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0
+build CMakeFiles/insane_night.dir/src/main.cpp.o: CXX_COMPILER__insane_night_unscanned_Debug /home/impostorboy/projects/insane_night/src/main.cpp || cmake_object_order_depends_target_insane_night
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1
   DEP_FILE = CMakeFiles/insane_night.dir/src/main.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIE -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIE -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/src -I/home/impostorboy/projects/insane_night/src/ligma -I/home/impostorboy/projects/insane_night/external -I/home/impostorboy/projects/insane_night/external/tsfont -I/home/impostorboy/projects/insane_night/external/bgfx/include -I/home/impostorboy/projects/insane_night/external/bx/include -I/home/impostorboy/projects/insane_night/external/bimg/include -I/home/impostorboy/projects/insane_night/external/SDL/include -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src -I/home/impostorboy/projects/insane_night/external/sol2/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio -isystem /usr/include/freetype2
   OBJECT_DIR = CMakeFiles/insane_night.dir
   OBJECT_FILE_DIR = CMakeFiles/insane_night.dir/src
   TARGET_SUPPORT_DIR = CMakeFiles/insane_night.dir
 
-build CMakeFiles/insane_night.dir/src/heck.cpp.o: CXX_COMPILER__insane_night_unscanned_Release /home/impostorboy/projects/insane_night/src/heck.cpp || cmake_object_order_depends_target_insane_night
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0
+build CMakeFiles/insane_night.dir/src/heck.cpp.o: CXX_COMPILER__insane_night_unscanned_Debug /home/impostorboy/projects/insane_night/src/heck.cpp || cmake_object_order_depends_target_insane_night
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1
   DEP_FILE = CMakeFiles/insane_night.dir/src/heck.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIE -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIE -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/src -I/home/impostorboy/projects/insane_night/src/ligma -I/home/impostorboy/projects/insane_night/external -I/home/impostorboy/projects/insane_night/external/tsfont -I/home/impostorboy/projects/insane_night/external/bgfx/include -I/home/impostorboy/projects/insane_night/external/bx/include -I/home/impostorboy/projects/insane_night/external/bimg/include -I/home/impostorboy/projects/insane_night/external/SDL/include -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src -I/home/impostorboy/projects/insane_night/external/sol2/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio -isystem /usr/include/freetype2
   OBJECT_DIR = CMakeFiles/insane_night.dir
   OBJECT_FILE_DIR = CMakeFiles/insane_night.dir/src
   TARGET_SUPPORT_DIR = CMakeFiles/insane_night.dir
 
-build CMakeFiles/insane_night.dir/src/audio_unc.cpp.o: CXX_COMPILER__insane_night_unscanned_Release /home/impostorboy/projects/insane_night/src/audio_unc.cpp || cmake_object_order_depends_target_insane_night
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0
+build CMakeFiles/insane_night.dir/src/audio_unc.cpp.o: CXX_COMPILER__insane_night_unscanned_Debug /home/impostorboy/projects/insane_night/src/audio_unc.cpp || cmake_object_order_depends_target_insane_night
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1
   DEP_FILE = CMakeFiles/insane_night.dir/src/audio_unc.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIE -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIE -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/src -I/home/impostorboy/projects/insane_night/src/ligma -I/home/impostorboy/projects/insane_night/external -I/home/impostorboy/projects/insane_night/external/tsfont -I/home/impostorboy/projects/insane_night/external/bgfx/include -I/home/impostorboy/projects/insane_night/external/bx/include -I/home/impostorboy/projects/insane_night/external/bimg/include -I/home/impostorboy/projects/insane_night/external/SDL/include -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src -I/home/impostorboy/projects/insane_night/external/sol2/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio -isystem /usr/include/freetype2
   OBJECT_DIR = CMakeFiles/insane_night.dir
   OBJECT_FILE_DIR = CMakeFiles/insane_night.dir/src
   TARGET_SUPPORT_DIR = CMakeFiles/insane_night.dir
 
-build CMakeFiles/insane_night.dir/src/ligma/ligma.cpp.o: CXX_COMPILER__insane_night_unscanned_Release /home/impostorboy/projects/insane_night/src/ligma/ligma.cpp || cmake_object_order_depends_target_insane_night
-  CONFIG = Release
-  DEFINES = -DBX_CONFIG_DEBUG=0
+build CMakeFiles/insane_night.dir/src/ligma/ligma.cpp.o: CXX_COMPILER__insane_night_unscanned_Debug /home/impostorboy/projects/insane_night/src/ligma/ligma.cpp || cmake_object_order_depends_target_insane_night
+  CONFIG = Debug
+  DEFINES = -DBX_CONFIG_DEBUG=1
   DEP_FILE = CMakeFiles/insane_night.dir/src/ligma/ligma.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fPIE -O3 -DNDEBUG
+  FLAGS = -g -std=gnu++23 -fPIE -O0 -g
   INCLUDES = -I/home/impostorboy/projects/insane_night/src -I/home/impostorboy/projects/insane_night/src/ligma -I/home/impostorboy/projects/insane_night/external -I/home/impostorboy/projects/insane_night/external/tsfont -I/home/impostorboy/projects/insane_night/external/bgfx/include -I/home/impostorboy/projects/insane_night/external/bx/include -I/home/impostorboy/projects/insane_night/external/bimg/include -I/home/impostorboy/projects/insane_night/external/SDL/include -I/home/impostorboy/projects/insane_night/external/lua-5.4.8/src -I/home/impostorboy/projects/insane_night/external/sol2/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/include -I/home/impostorboy/projects/insane_night/external/soloud20200207/src/backend/miniaudio -isystem /usr/include/freetype2
   OBJECT_DIR = CMakeFiles/insane_night.dir
   OBJECT_FILE_DIR = CMakeFiles/insane_night.dir/src/ligma
@@ -837,11 +837,11 @@ build CMakeFiles/insane_night.dir/src/ligma/ligma.cpp.o: CXX_COMPILER__insane_ni
 #############################################
 # Link the executable /home/impostorboy/projects/insane_night/insane_night
 
-build /home/impostorboy/projects/insane_night/insane_night: CXX_EXECUTABLE_LINKER__insane_night_Release CMakeFiles/tsfont_obj.dir/external/tsfont/font_handler.c.o CMakeFiles/insane_night.dir/src/main.cpp.o CMakeFiles/insane_night.dir/src/heck.cpp.o CMakeFiles/insane_night.dir/src/audio_unc.cpp.o CMakeFiles/insane_night.dir/src/ligma/ligma.cpp.o | liblua.a libsoloud.a /home/impostorboy/projects/insane_night/external/lib/libbgfx.a /home/impostorboy/projects/insane_night/external/lib/libbimg.a /home/impostorboy/projects/insane_night/external/lib/libbx.a /usr/lib/libfreetype.so || liblua.a libsoloud.a tsfont_obj
-  CONFIG = Release
+build /home/impostorboy/projects/insane_night/insane_night: CXX_EXECUTABLE_LINKER__insane_night_Debug CMakeFiles/tsfont_obj.dir/external/tsfont/font_handler.c.o CMakeFiles/insane_night.dir/src/main.cpp.o CMakeFiles/insane_night.dir/src/heck.cpp.o CMakeFiles/insane_night.dir/src/audio_unc.cpp.o CMakeFiles/insane_night.dir/src/ligma/ligma.cpp.o | liblua.a libsoloud.a /home/impostorboy/projects/insane_night/external/lib/libbgfx.a /home/impostorboy/projects/insane_night/external/lib/libbimg.a /home/impostorboy/projects/insane_night/external/lib/libbx.a /usr/lib/libfreetype.so || liblua.a libsoloud.a tsfont_obj
+  CONFIG = Debug
   DEP_FILE = CMakeFiles/insane_night.dir/link.d
-  FLAGS = -O3 -DNDEBUG
-  LINK_FLAGS = -flto=auto -s -Wl,--dependency-file=CMakeFiles/insane_night.dir/link.d
+  FLAGS = -g
+  LINK_FLAGS = -Wl,--dependency-file=CMakeFiles/insane_night.dir/link.d
   LINK_LIBRARIES = liblua.a  libsoloud.a  /home/impostorboy/projects/insane_night/external/lib/libbgfx.a  /home/impostorboy/projects/insane_night/external/lib/libbimg.a  /home/impostorboy/projects/insane_night/external/lib/libbx.a  /usr/lib/libfreetype.so  -lSDL3  -lpthread  -ldl  -lm  -lasound
   OBJECT_DIR = CMakeFiles/insane_night.dir
   POST_BUILD = :

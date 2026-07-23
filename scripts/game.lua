@@ -18,9 +18,12 @@ local saved = {
 }
 
 local dialogueCfg = {
-    Kawasaki = { x = 0, y = 0.7, w = 1, h = 0.3 },
-    Cago = { x = 0.05, y = 0.75, right = 0.95, bottom = 1 },
-    Krico = { x = 0.07, y = 0.65, h = 0.05, maxWidth = 0.5, paddingPx = 36, textInset = 0.014, textY = 0.65 + (0.05 / 3) },
+    Kawasaki = { x = 0, y = 0.7, w = 1, h = 0.3 },                                                                          -- 画面下部のダイアログパネル
+    -- panel de diálogo en la parte inferior de la pantalla
+    Cago = { x = 0.05, y = 0.75, right = 0.95, bottom = 1 },                                                                -- テキストの折り返し領域
+    -- área donde se envuelve el texto del diálogo
+    Krico = { x = 0.07, y = 0.65, h = 0.05, maxWidth = 0.5, paddingPx = 36, textInset = 0.014, textY = 0.65 + (0.05 / 3) }, -- 話者名のバッジ
+    -- placa con el nombre del hablante
 }
 
 -- vn ui
@@ -92,10 +95,12 @@ local prof = { buf = {}, enabled = false }
 function prof.start()
     prof.enabled = true
 end
+
 function prof.mark(name)
     if not prof.enabled then return end
     prof.buf[#prof.buf + 1] = { name, os.clock() }
 end
+
 function prof.flush()
     if not prof.enabled or #prof.buf < 2 then return end
     local parts = {}
@@ -347,19 +352,7 @@ function onFrame(dt)
 end
 
 function ssave() -- inflicts segfault(no more)
-    local raw = readlike_book("scripts/state.json")
-    if not raw then
-        print("Fucked up to read scripts/state.json")
-        return
-    end
-
-    local ok, data = pcall(json.decode, raw)
-    if not ok then
-        print("Fucked up to parse scripts/state.json")
-        return
-    end
-
-    data = {
+    local data = {
         node = vn.currentNode,
         choices = vn.currentChoices or {}
     }
@@ -428,6 +421,7 @@ function gameOnKey(key)
     if key == 32 then -- SDLK_SPACE
         local node = getNode(vn.currentNode)
         if not node then return end
+        if node.qu and node.qu ~= "" then return end
         local pages = buildDialoguePages(node.text or "")
         local cp = math.min(vn.currentPage, #pages)
         if cp < #pages then
@@ -442,6 +436,68 @@ function gameOnKey(key)
     end
     if key == 1073741883 then -- SDLK_F2
         sload()
+    end
+end
+
+local function center(elementSize, containerSize)
+    containerSize = containerSize or 1
+    return (containerSize - elementSize) / 2
+end
+
+local function center(elementSize, containerSize)
+    containerSize = containerSize or 1
+    return (containerSize - elementSize) / 2
+end
+
+function finger(node, qu)
+    local k = getUILayer("choice")
+    if not k then
+        k = addUILayer("choice")
+    end
+    if not currentUI then return end
+    k:clear()
+    k.visible = true
+
+    local sw = getScreenWidth()
+    local sh = getScreenHeight()
+    local font = getTextGooner("assets/HackRegular-gX84.ttf", 20)
+
+    local tpad = 0.008
+    local vpad = 0.012
+    local hpad = 0.025
+    local btnHeight = 0.085
+
+    local choices = node.choices or {}
+
+    local questionY = 0.28
+
+    local qw = font:measureText(qu)
+    local qx = center(qw, sw) / sw
+    currentUI:addTextF(font, qu, qx, questionY, 0xffffffff, 3)
+
+    local startY = questionY + 0.09
+
+    for i, choice in ipairs(choices) do
+        local tw = font:measureText(choice)
+        local textW = tw / sw
+
+        local btnW = textW + hpad * 2
+        local btnX = center(btnW, 1)
+
+        local btnY = startY + (btnHeight + vpad) * (i - 1)
+
+        local btn = currentUI:addRectF(getRectGooner(), btnX, btnY, btnW, btnHeight, 0x444444AA, 4)
+
+        local textX = btnX + hpad
+        local textY = btnY + (btnHeight / 2) - 0.008
+
+        currentUI:addTextF(font, choice, textX, textY, 0xffffffff, 5)
+
+        btn:onClick(function()
+            vn.currentChoices = vn.currentChoices or {}
+            table.insert(vn.currentChoices, { node = vn.currentNode, choice = choice })
+            nextNode(currentUI, node.next)
+        end)
     end
 end
 
@@ -481,11 +537,13 @@ function renderGame(ui)
 
         ui:addTextF(g.text, speakerText, speaker.x + speaker.textInset, speaker.textY, 0xff101014, 3)
     end
-
     ui:addTextF(g.textSmall, pages[currentPage], textBox.x, textBox.y, 0xffffffff, 3)
     prof.mark("text")
 
-    if currentPage < #pages or node.next then
+
+    if node.qu and node.qu ~= "" then
+        finger(node, node.qu)
+    elseif currentPage < #pages or node.next then
         local nextBtn = ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0x00000000, 10)
         nextBtn:onClick(function()
             if currentPage < #pages then
@@ -500,7 +558,8 @@ function renderGame(ui)
     prof.flush()
 end
 
-function initSload()
+function initSload() --- copypasta from sload()
+    ---@return boolean
     local raw = readlike_book("scripts/state.json")
     if not raw then return false end
 
@@ -535,13 +594,20 @@ function initSload()
     return true
 end
 
+local gameInitialized = false
+
 register("gay", function(ui)
     currentUI = ui
-    if not loadScript() then
-        return
-    end
-    if not initSload() then
-        ginit()
+    if not gameInitialized then
+        if not loadScript() then
+            return
+        end
+        if not initSload() then
+            ginit()
+        end
+        gameInitialized = true
+    else
+        vn.currentSoundId = 0
     end
     renderGame(ui)
 end)
