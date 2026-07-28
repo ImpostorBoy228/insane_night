@@ -1261,6 +1261,15 @@ struct Layer {
   }
 };
 
+class 3dGooner {
+private:
+
+}
+
+class 3d : Sigma {
+
+}
+
 class Sigma {
 private:
   Sigma(std::string_view title, int x, int y, SDL_Window *buzz)
