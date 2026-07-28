@@ -422,6 +422,10 @@ function gameOnKey(key)
         local node = getNode(vn.currentNode)
         if not node then return end
         if node.qu and node.qu ~= "" then return end
+        if vn.textEl and vn.textEl:isRevealing() then
+            vn.textEl:showAll()
+            return
+        end
         local pages = buildDialoguePages(node.text or "")
         local cp = math.min(vn.currentPage, #pages)
         if cp < #pages then
@@ -462,10 +466,12 @@ function finger(node, qu)
     local sh = getScreenHeight()
     local font = getTextGooner("assets/HackRegular-gX84.ttf", 20)
 
+    local lol = currentUI:addRectF(getRectGooner(), 0, 0, 1, 1, 0xff000000, -11)
+
     local tpad = 0.008
     local vpad = 0.012
     local hpad = 0.025
-    local btnHeight = 0.085
+    local btnHeight = 0.05
 
     local choices = node.choices or {}
 
@@ -537,7 +543,8 @@ function renderGame(ui)
 
         ui:addTextF(g.text, speakerText, speaker.x + speaker.textInset, speaker.textY, 0xff101014, 3)
     end
-    ui:addTextF(g.textSmall, pages[currentPage], textBox.x, textBox.y, 0xffffffff, 3)
+    vn.textEl = ui:addTextF(g.textSmall, pages[currentPage], textBox.x, textBox.y, 0xffffffff, 3)
+    vn.textEl:reveal(40)
     prof.mark("text")
 
 
@@ -546,7 +553,9 @@ function renderGame(ui)
     elseif currentPage < #pages or node.next then
         local nextBtn = ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0x00000000, 10)
         nextBtn:onClick(function()
-            if currentPage < #pages then
+            if vn.textEl and vn.textEl:isRevealing() then
+                vn.textEl:showAll()
+            elseif currentPage < #pages then
                 vn.currentPage = currentPage + 1
                 renderGame(ui)
             else

@@ -96,7 +96,11 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
         "onClick",   [&](Text& self, const sol::protected_function& callback) {
             self.onClick = bind_click_callback(callback);
         },
-        "setHitbox", &Skibidi::setHitbox
+        "setHitbox", &Skibidi::setHitbox,
+        "reveal",    [](Text& self, float speed) { self.startReveal(speed); },
+        "showAll",   [](Text& self) { self.showAll(); },
+        "isRevealing", [](Text& self) { return self.isRevealing(); },
+        "setRevealCount", [](Text& self, int n) { self.setRevealCount(n); }
     );
 
     luaState.new_usertype<TextGooner>("TextGooner",

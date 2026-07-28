@@ -83,6 +83,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
       }
 
       if (engine.windowActive) {
+        engine.update(dt);
         engine.frame();
       } else {
         SDL_DelayNS(50'000'000);

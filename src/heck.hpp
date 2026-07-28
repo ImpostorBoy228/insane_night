@@ -1,5 +1,6 @@
 #pragma once
 // shut up the compiler
+// TODO: add 3d models support
 // NOLINTBEGIN(readability-identifier-length,bugprone-narrowing-conversions,performance-noexcept-move-constructor)
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
@@ -463,6 +464,7 @@ public:
   virtual void Build() = 0;
   virtual void collect(JohnPork &pork) = 0;
   virtual void onResize([[maybe_unused]] int pw, [[maybe_unused]] int ph) {}
+  virtual void update(float dt) {}
 
   int32_t zindex;
   bool visible = true;
@@ -886,6 +888,23 @@ public:
         }
     }
 
+    void update(float dt) override {
+        if (!revealing || revealCount < 0) return;
+        if (totalGlyphs == 0) return;
+        if (revealCount >= totalGlyphs) {
+            revealing = false;
+            return;
+        }
+        revealAccum += dt;
+        int steps = 0;
+        while (revealAccum >= 1.0f / revealSpeed && revealCount < totalGlyphs) {
+            revealAccum -= 1.0f / revealSpeed;
+            revealCount++;
+            steps++;
+        }
+        if (steps > 0) geometryDirty = true;
+    }
+
     void collect(JohnPork &pork) override {
         if (!visible || text.empty()) return;
 
@@ -912,7 +931,30 @@ public:
         pork.pushGeometry(key, cachedVertices.data(),
                           static_cast<uint16_t>(cachedVertices.size()), sizeof(Vertex),
                           cachedIndices.data(), static_cast<uint16_t>(cachedIndices.size()));
-  }
+    }
+
+    void startReveal(float speed) {
+        revealSpeed = speed;
+        revealCount = 1;
+        revealAccum = 0;
+        revealing = true;
+        geometryDirty = true;
+    }
+
+    void showAll() {
+        revealing = false;
+        revealCount = -1;
+        revealAccum = 0;
+        geometryDirty = true;
+    }
+
+    bool isRevealing() const { return revealing; }
+
+    void setRevealCount(int n) {
+        revealCount = n;
+        if (revealCount < 0 || revealCount >= totalGlyphs) revealing = false;
+        geometryDirty = true;
+    }
 
 private:
   bool rebuildGeometry() {
@@ -934,6 +976,7 @@ private:
     cachedIndices.reserve(text.size() * 6);
 
     uint32_t prevCodepoint = 0;
+    int glyphsShown = 0;
     while (ptr < end) {
       uint32_t codepoint = decodeUtf8Codepoint(ptr, end);
       if (codepoint == '\r') continue;
@@ -948,29 +991,38 @@ private:
         penX += gooner.getKerning(prevCodepoint, codepoint);
 
       const auto *glyph = gooner.getGlyph(codepoint);
-      if (!glyph || !glyph->loaded) continue;
+      if (!glyph || !glyph->loaded) {
+          prevCodepoint = codepoint;
+          continue;
+      }
 
-      const uint16_t base = static_cast<uint16_t>(cachedVertices.size());
-      float x0 = floorf(penX + glyph->bearing_x + 0.5f);
-      float y0 = floorf(penY + renderBaselineBias - glyph->bearing_y + 0.5f);
-      float x1 = x0 + glyph->width;
-      float y1 = y0 + glyph->height;
+      if (revealCount < 0 || glyphsShown < revealCount) {
+        const uint16_t base = static_cast<uint16_t>(cachedVertices.size());
+        float x0 = floorf(penX + glyph->bearing_x + 0.5f);
+        float y0 = floorf(penY + renderBaselineBias - glyph->bearing_y + 0.5f);
+        float x1 = x0 + glyph->width;
+        float y1 = y0 + glyph->height;
 
-      cachedVertices.push_back({x0, y0, glyph->u0, glyph->v0, color});
-      cachedVertices.push_back({x1, y0, glyph->u1, glyph->v0, color});
-      cachedVertices.push_back({x1, y1, glyph->u1, glyph->v1, color});
-      cachedVertices.push_back({x0, y1, glyph->u0, glyph->v1, color});
+        cachedVertices.push_back({x0, y0, glyph->u0, glyph->v0, color});
+        cachedVertices.push_back({x1, y0, glyph->u1, glyph->v0, color});
+        cachedVertices.push_back({x1, y1, glyph->u1, glyph->v1, color});
+        cachedVertices.push_back({x0, y1, glyph->u0, glyph->v1, color});
 
-      cachedIndices.push_back(base);
-      cachedIndices.push_back(base + 2);
-      cachedIndices.push_back(base + 1);
-      cachedIndices.push_back(base);
-      cachedIndices.push_back(base + 3);
-      cachedIndices.push_back(base + 2);
+        cachedIndices.push_back(base);
+        cachedIndices.push_back(base + 2);
+        cachedIndices.push_back(base + 1);
+        cachedIndices.push_back(base);
+        cachedIndices.push_back(base + 3);
+        cachedIndices.push_back(base + 2);
+      }
 
       penX += glyph->advance_x;
       prevCodepoint = codepoint;
+      glyphsShown++;
     }
+
+    totalGlyphs = glyphsShown;
+    if (revealing && revealCount >= totalGlyphs) revealing = false;
 
     cachedAtlasRevision = gooner.getAtlasRevision();
     cachedBaselineBias = baselineBias;
@@ -988,6 +1040,12 @@ private:
     float cachedBaselineBias = std::numeric_limits<float>::max();
   bool geometryDirty = true;
   bool glyphsReady = false;
+
+  int revealCount = -1;
+  float revealAccum = 0.0f;
+  float revealSpeed = 40.0f;
+  int totalGlyphs = 0;
+  bool revealing = false;
 
 public:
   float baselineBias = 0;
@@ -1197,6 +1255,9 @@ struct Layer {
     if (!pickClickHandler(ev, callback)) return false;
     callback();
     return true;
+  }
+  void update(float dt) {
+      for (auto &item : items) item->update(dt);
   }
 };
 
@@ -1436,5 +1497,10 @@ public:
     void preloadSounds(const std::string &dir) { audioEngine.preloadSounds(dir); }
     RectGooner& getRectGooner() { return rectGooner; }
     ImageGooner& getImageGooner() { return imageGooner; }
+    void update(float dt) {
+        for (auto &l : sceneLayers) l.update(dt);
+        for (auto &l : uiLayers) l.update(dt);
+    }
+
 };
 // NOLINTEND(readability-identifier-length,bugprone-narrowing-conversions,performance-noexcept-move-constructor)
