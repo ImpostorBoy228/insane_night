@@ -6,11 +6,6 @@ void Kino::setViewport(uint16_t w, uint16_t h) {
     dirty = true;
 }
 
-void Kino::setViewport(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-    viewX = x; viewY = y; viewW = w; viewH = h;
-    dirty = true;
-}
-
 void Kino::setOrtho(float left, float right, float bottom, float top) {
     bx::mtxOrtho(ortho, left, right, bottom, top, 0.0f, 1.0f, 0.0f, false);
     useOrtho = true;
@@ -95,23 +90,16 @@ void Hell_Machina::frame() {
     for (auto &layer : uiLayers) layer.collect(pork);
     pork.flush(uiPass.id);
 
-    bgfx::frame();
+    if (amogus) amogus->frame();
+    else bgfx::frame();
 }
 
 bool Hell_Machina::handleEvent(const SDL_Event &ev) {
-    std::function<void()> callback;
-
     for (auto &layer : uiLayers) {
-        if (layer.pickClickHandler(ev, callback)) {
-            if (callback) callback();
-            return true;
-        }
+        if (layer.handleEvent(ev)) return true;
     }
     for (auto &layer : sceneLayers) {
-        if (layer.pickClickHandler(ev, callback)) {
-            if (callback) callback();
-            return true;
-        }
+        if (layer.handleEvent(ev)) return true;
     }
     return false;
 }
@@ -136,10 +124,6 @@ void Hell_Machina::setVsync(bool on) {
 
 void Hell_Machina::setVolume(float volume) {
     audioEngine.setGlobalVolume(volume);
-}
-
-void Hell_Machina::stopSound(uint32_t soundId) {
-    audioEngine.stopSound(soundId);
 }
 
 void Hell_Machina::setFrameLimit(int limit) {

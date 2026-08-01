@@ -221,7 +221,6 @@ struct Kino {
     bool useOrtho = false;
 
     void setViewport(uint16_t w, uint16_t h);
-    void setViewport(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
     void setOrtho(float left, float right, float bottom, float top);
     void begin();
 };
@@ -459,9 +458,8 @@ public:
 
 class Skibidi {
 public:
-  Skibidi(std::string_view type, int32_t zindex) : zindex(zindex), type(type) {}
+  Skibidi(int32_t zindex) : zindex(zindex) {}
   virtual ~Skibidi() {}
-  virtual void Build() = 0;
   virtual void collect(JohnPork &pork) = 0;
   virtual void onResize([[maybe_unused]] int pw, [[maybe_unused]] int ph) {}
   virtual void update(float dt) {}
@@ -485,8 +483,6 @@ public:
     hasFrac = true;
     frx = rx; fry = ry; frw = rw; frh = rh;
   }
-protected:
-  std::string type;
 };
 
 inline uint32_t decodeUtf8Codepoint(const char *&ptr, const char *end) {
@@ -663,8 +659,6 @@ public:
     maxBearingY = 0;
     pixelSize = 0.0f;
   }
-  float getMaxBearingY() const { return maxBearingY; }
-
   float getKerning(uint32_t prevCodepoint, uint32_t codepoint) const {
     return fontHandler.getKerning(prevCodepoint, codepoint);
   }
@@ -873,8 +867,7 @@ public:
   };
 
   Text(TextGooner &gooner, const char *text, float x, float y, uint32_t color, int32_t zindex)
-  : Skibidi("text", zindex), gooner(gooner), text(text ? text : ""), x(x), y(y), color(color) {}
-    void Build() override {}
+  : Skibidi(zindex), gooner(gooner), text(text ? text : ""), x(x), y(y), color(color) {}
 
     void onResize(int pw, int ph) override {
         if (hasFrac) {
@@ -945,12 +938,6 @@ public:
     }
 
     bool isRevealing() const { return revealing; }
-
-    void setRevealCount(int n) {
-        revealCount = n;
-        if (revealCount < 0 || revealCount >= totalGlyphs) revealing = false;
-        geometryDirty = true;
-    }
 
 private:
   bool rebuildGeometry() {
@@ -1053,11 +1040,9 @@ class Rectangle : public Skibidi {
     uint32_t color;
 public:
     Rectangle(RectGooner &gooner, float x, float y, float w, float h, uint32_t color, int32_t zindex)
-    : Skibidi("rect", zindex), gooner(gooner), x(x), y(y), w(w), h(h), color(color) {
+    : Skibidi(zindex), gooner(gooner), x(x), y(y), w(w), h(h), color(color) {
         setHitbox(x, y, w, h);
     }
-
-    void Build() override {}
 
     void onResize(int pw, int ph) override {
         if (hasFrac) {
@@ -1095,11 +1080,9 @@ class Image : public Skibidi {
     uint32_t color;
 public:
     Image(ImageGooner &gooner, bgfx::TextureHandle tex, float x, float y, float w, float h, uint32_t color, int32_t zindex)
-    : Skibidi("image", zindex), gooner(gooner), tex(tex), x(x), y(y), w(w), h(h), color(color) {
+    : Skibidi(zindex), gooner(gooner), tex(tex), x(x), y(y), w(w), h(h), color(color) {
         setHitbox(x, y, w, h);
     }
-
-    void Build() override {}
 
     void onResize(int pw, int ph) override {
         if (hasFrac) {
@@ -1130,35 +1113,14 @@ public:
     }
 };
 
-struct Clickable {
-    float x = 0, y = 0, w = 0, h = 0;
-    std::function<void()> onClick;
-    bool hasFrac = false;
-    float frx = 0, fry = 0, frw = 0, frh = 0;
-    void setFrac(float rx, float ry, float rw, float rh) {
-        hasFrac = true;
-        frx = rx; fry = ry;
-        frw = rw > 0 ? rw : 1.0f;
-        frh = rh > 0 ? rh : 1.0f;
-    }
-    void updateFrac(int pw, int ph) {
-        if (hasFrac) {
-            x = frx * pw; y = fry * ph;
-            w = frw * pw; h = frh * ph;
-        }
-    }
-};
-
 struct Layer {
   std::string name;
   bool visible = true;
   std::vector<std::unique_ptr<Skibidi>> items;
-  std::vector<Clickable> clickables;
   bool sortDirty = false;
 
   void clear() {
     items.clear();
-    clickables.clear();
     sortDirty = false;
   }
 
@@ -1173,7 +1135,6 @@ struct Layer {
   T* add(Args&&... args) {
     auto obj = std::make_unique<T>(std::forward<Args>(args)...);
     T* raw = obj.get();
-    raw->Build();
     items.push_back(std::move(obj));
     sortDirty = true;
     return raw;
@@ -1189,24 +1150,8 @@ struct Layer {
         return add<Image>(gooner, tex, x, y, w, h, color, zindex);
     }
 
-    void addClickable(float x, float y, float w, float h, std::function<void()> cb) {
-        Clickable c;
-        c.x = x; c.y = y; c.w = w; c.h = h;
-        c.onClick = std::move(cb);
-        clickables.push_back(std::move(c));
-    }
-
-    void addClickableF(float rx, float ry, float rw, float rh, int pw, int ph, std::function<void()> cb) {
-        Clickable c;
-        c.setFrac(rx, ry, rw, rh);
-        c.updateFrac(pw, ph);
-        c.onClick = std::move(cb);
-        clickables.push_back(std::move(c));
-    }
-
   void onResize(int pw, int ph) {
     for (auto &item : items) item->onResize(pw, ph);
-    for (auto &c : clickables) c.updateFrac(pw, ph);
   }
 
   void collect(JohnPork &pork) {
@@ -1232,14 +1177,6 @@ struct Layer {
       if (item->visible && item->onClick && item->hitTest(mx, my)) {
         callback = item->onClick;
         return true;
-      }
-    }
-
-    for (int i = (int)clickables.size() - 1; i >= 0; --i) {
-      auto &c = clickables[i];
-      if (mx >= c.x && mx < c.x + c.w && my >= c.y && my < c.y + c.h) {
-        callback = c.onClick;
-        return static_cast<bool>(callback);
       }
     }
 
@@ -1456,7 +1393,6 @@ public:
     void setVsync(bool on);
     void setVolume(float volume);
     void setFrameLimit(int limit);
-    void stopSound(uint32_t soundId);
     AudioEngine& getAudioEngine() { return audioEngine; }
 
     Layer& addSceneLayer(const char *name);

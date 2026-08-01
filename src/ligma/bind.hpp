@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string_view>
 #include <sol/sol.hpp>
-#include <unistd.h>
 #include "../heck.hpp"
 
 inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
@@ -40,19 +39,6 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
     );
 
     luaState.new_usertype<Layer>("Layer",
-        "addText", [&](Layer& self, TextGooner& textGooner, const char* textValue, float posX, float posY, uint32_t colorValue, int32_t zIndex) {
-            auto* element = self.addText(textGooner, safe_text(textValue), posX, posY, colorValue, zIndex);
-            set_text_baseline(element, textGooner, textValue);
-            return element;
-        },
-        "addRectangle", &Layer::addRectangle,
-        "addImage",     &Layer::addImage,
-        "addClickable", [&](Layer& self, float posX, float posY, float width, float height, const sol::protected_function& callback) {
-            self.addClickable(posX, posY, width, height, bind_click_callback(callback));
-        },
-        "addClickableF", [&](Layer& self, float relX, float relY, float relWidth, float relHeight, const sol::protected_function& callback) {
-            self.addClickableF(relX, relY, relWidth, relHeight, engine.width, engine.height, bind_click_callback(callback));
-        },
         "addTextF", [&](Layer& self, TextGooner& textGooner, const char* textValue, float relX, float relY, uint32_t colorValue, int32_t zIndex) {
             const float screenWidth = static_cast<float>(engine.width);
             const float screenHeight = static_cast<float>(engine.height);
@@ -83,24 +69,20 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
     luaState.new_usertype<Rectangle>("Rect",
         "onClick",   [&](Rectangle& self, const sol::protected_function& callback) {
             self.onClick = bind_click_callback(callback);
-        },
-        "setHitbox", &Skibidi::setHitbox
+        }
     );
     luaState.new_usertype<Image>("Img",
         "onClick",   [&](Image& self, const sol::protected_function& callback) {
             self.onClick = bind_click_callback(callback);
-        },
-        "setHitbox", &Skibidi::setHitbox
+        }
     );
     luaState.new_usertype<Text>("Txt",
         "onClick",   [&](Text& self, const sol::protected_function& callback) {
             self.onClick = bind_click_callback(callback);
         },
-        "setHitbox", &Skibidi::setHitbox,
         "reveal",    [](Text& self, float speed) { self.startReveal(speed); },
         "showAll",   [](Text& self) { self.showAll(); },
-        "isRevealing", [](Text& self) { return self.isRevealing(); },
-        "setRevealCount", [](Text& self, int n) { self.setRevealCount(n); }
+        "isRevealing", [](Text& self) { return self.isRevealing(); }
     );
 
     luaState.new_usertype<TextGooner>("TextGooner",
@@ -125,7 +107,6 @@ inline void ligma_bind(sol::state& luaState, Hell_Machina& engine) {
 
 
     luaState.set_function("getAudioEngine", [&]() -> AudioEngine& { return engine.getAudioEngine(); });
-    luaState.set_function("sllep", [&](int secs) { sleep(secs); });
 
     luaState.set_function("loadTexture", [&](const char* path) { return engine.loadTexture(path); });
     luaState.set_function("getImageWidth", [&](const char* path) { return engine.getImageWidth(path); });

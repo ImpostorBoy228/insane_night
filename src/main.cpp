@@ -86,6 +86,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         engine.update(dt);
         engine.frame();
       } else {
+        engine.frame();
         SDL_DelayNS(50'000'000);
       }
 
