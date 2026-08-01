@@ -1,5 +1,4 @@
 #include "audio_unc.hpp"
-
 #include <algorithm>
 #include <filesystem>
 
@@ -29,6 +28,7 @@ void AudioEngine::deinit() {
     stopAllSounds();
     engine.deinit();
     sounds.clear();
+    streams.clear();
     initialized = false;
 }
 
@@ -50,11 +50,21 @@ void AudioEngine::preloadSounds(const std::string &dir) {
         auto ext = entry.path().extension().string();
         for (auto *e : exts) {
             if (ext != e) continue;
-            if (getOrLoadSound(entry.path().string())) loaded++;
+            if (isStreamedFile(entry.path().string())) {
+                if (getOrLoadStream(entry.path().string())) loaded++;
+            } else {
+                if (getOrLoadSound(entry.path().string())) loaded++;
+            }
             break;
         }
     }
     printf("preloaded %d sounds from %s\n", loaded, dir.c_str());
+}
+
+bool AudioEngine::isStreamedFile(std::string_view path) {
+    size_t dot = path.rfind('.');
+    if (dot == std::string_view::npos) return false;
+    return path.substr(dot) == ".mp3";
 }
 
 SoLoud::Wav* AudioEngine::getOrLoadSound(std::string_view path) {
@@ -79,19 +89,46 @@ SoLoud::Wav* AudioEngine::getOrLoadSound(std::string_view path) {
     return raw;
 }
 
+SoLoud::WavStream* AudioEngine::getOrLoadStream(std::string_view path) {
+    if (!initialized || path.empty()) {
+        return nullptr;
+    }
+
+    const std::string key(path);
+    auto it = streams.find(key);
+    if (it != streams.end()) {
+        return it->second.get();
+    }
+
+    auto stream = std::make_unique<SoLoud::WavStream>();
+    if (stream->load(key.c_str()) != SoLoud::SO_NO_ERROR) {
+        return nullptr;
+    }
+
+    stream->setSingleInstance(true);
+    auto* raw = stream.get();
+    streams.emplace(key, std::move(stream));
+    return raw;
+}
+
 uint32_t AudioEngine::playSound(std::string_view path, bool singleInstance) {
     if (!initialized || path.empty()) {
         return 0;
     }
 
-    SoLoud::Wav* sound = getOrLoadSound(path);
-    if (!sound) {
+    SoLoud::AudioSource* source = nullptr;
+    if (isStreamedFile(path)) {
+        source = getOrLoadStream(path);
+    } else {
+        source = getOrLoadSound(path);
+    }
+    if (!source) {
         return 0;
     }
 
-    sound->setSingleInstance(singleInstance);
+    source->setSingleInstance(singleInstance);
 
-    const SoLoud::handle handle = engine.play(*sound);
+    const SoLoud::handle handle = engine.play(*source);
     if (!engine.isValidVoiceHandle(handle)) {
         return 0;
     }

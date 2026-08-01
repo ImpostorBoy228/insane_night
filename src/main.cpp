@@ -8,8 +8,8 @@
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
   try {
-    Hell_Machina engine;
     LigmaEngine lua;
+    Hell_Machina engine;
 
     if (!lua.Init()) {
         std::cerr << "Lua fuckup" << "\n";

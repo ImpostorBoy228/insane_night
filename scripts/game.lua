@@ -448,11 +448,6 @@ local function center(elementSize, containerSize)
     return (containerSize - elementSize) / 2
 end
 
-local function center(elementSize, containerSize)
-    containerSize = containerSize or 1
-    return (containerSize - elementSize) / 2
-end
-
 function finger(node, qu)
     local k = getUILayer("choice")
     if not k then
@@ -466,7 +461,7 @@ function finger(node, qu)
     local sh = getScreenHeight()
     local font = getTextGooner("assets/HackRegular-gX84.ttf", 20)
 
-    local lol = currentUI:addRectF(getRectGooner(), 0, 0, 1, 1, 0xff000000, -11)
+    local lol = currentUI:addRectF(getRectGooner(), 0, 0, 1, 1, 0xff000000, 20)
 
     local tpad = 0.008
     local vpad = 0.012
@@ -479,7 +474,7 @@ function finger(node, qu)
 
     local qw = font:measureText(qu)
     local qx = center(qw, sw) / sw
-    currentUI:addTextF(font, qu, qx, questionY, 0xffffffff, 3)
+    currentUI:addTextF(font, qu, qx, questionY, 0xffffffff, 21)
 
     local startY = questionY + 0.09
 
@@ -492,12 +487,12 @@ function finger(node, qu)
 
         local btnY = startY + (btnHeight + vpad) * (i - 1)
 
-        local btn = currentUI:addRectF(getRectGooner(), btnX, btnY, btnW, btnHeight, 0x444444AA, 4)
+        local btn = currentUI:addRectF(getRectGooner(), btnX, btnY, btnW, btnHeight, 0x444444AA, 22)
 
         local textX = btnX + hpad
         local textY = btnY + (btnHeight / 2) - 0.008
 
-        currentUI:addTextF(font, choice, textX, textY, 0xffffffff, 5)
+        currentUI:addTextF(font, choice, textX, textY, 0xffffffff, 23)
 
         btn:onClick(function()
             vn.currentChoices = vn.currentChoices or {}
@@ -544,7 +539,7 @@ function renderGame(ui)
         ui:addTextF(g.text, speakerText, speaker.x + speaker.textInset, speaker.textY, 0xff101014, 3)
     end
     vn.textEl = ui:addTextF(g.textSmall, pages[currentPage], textBox.x, textBox.y, 0xffffffff, 3)
-    vn.textEl:reveal(40)
+    vn.textEl:reveal(120)
     prof.mark("text")
 
 

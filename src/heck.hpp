@@ -575,7 +575,6 @@ public:
     maxBearingY = 0;
     pixelSize = pixelSizeValue;
     glyphs.clear();
-    packedGlyphs.clear();
     atlasPixels.clear();
 
     if (!fontHandler.loadFromFile(fontPath, pixelSizeValue)) return false;
@@ -655,7 +654,6 @@ public:
     s_tex = BGFX_INVALID_HANDLE;
     fontHandler.destroy();
     glyphs.clear();
-    packedGlyphs.clear();
     atlasPixels.clear();
     atlasSize = INITIAL_ATLAS_SIZE;
     atlasCursorX = PADDING;
@@ -843,7 +841,6 @@ private:
       }
 
       glyphs[info.codepoint] = glyph;
-      packedGlyphs.push_back(info.codepoint);
     }
 
     updateGlyphUvs();
@@ -860,7 +857,6 @@ private:
   bgfx::UniformHandle s_tex = BGFX_INVALID_HANDLE;
   bgfx::VertexLayout layout;
   std::unordered_map<uint32_t, GlyphData> glyphs;
-  std::vector<uint32_t> packedGlyphs;
   std::vector<uint8_t> atlasPixels;
   uint32_t atlasSize = INITIAL_ATLAS_SIZE;
   int atlasCursorX = PADDING;
@@ -1260,15 +1256,15 @@ struct Layer {
       for (auto &item : items) item->update(dt);
   }
 };
-
-class 3dGooner {
-private:
-
-}
-
-class 3d : Sigma {
-
-}
+// TODO
+// class 3dGooner {
+// private:
+//
+// }
+//
+// class 3d : Sigma {
+//
+// }
 
 class Sigma {
 private:
