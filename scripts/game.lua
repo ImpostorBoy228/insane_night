@@ -370,6 +370,7 @@ end
 local currentUI = nil
 local notifLayer = nil
 local notifTimer = nil
+local edgingQu = nil
 
 local function notif(text)
     if not notifLayer then
@@ -394,6 +395,12 @@ function onFrame(dt)
             notifLayer.visible = false
         end
         notifTimer = nil
+    end
+
+    if edgingQu and vn.textEl and not vn.textEl:isRevealing() then
+        local node = edgingQu
+        edgingQu = nil
+        finger(node, node.qu)
     end
 end
 
@@ -467,7 +474,12 @@ function gameOnKey(key)
     if key == 32 then -- SDLK_SPACE
         local node = getNode(vn.currentNode)
         if not node then return end
-        if node.qu and node.qu ~= "" then return end
+        if node.qu and node.qu ~= "" then
+            if vn.textEl and vn.textEl:isRevealing() then
+                vn.textEl:showAll()
+            end
+            return
+        end
         if vn.textEl and vn.textEl:isRevealing() then
             vn.textEl:showAll()
             return
@@ -595,7 +607,13 @@ function renderGame(ui)
 
 
     if node.qu and node.qu ~= "" then
-        finger(node, node.qu)
+        edgingQu = node
+        local nextBtn = ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0x00000000, 10)
+        nextBtn:onClick(function()
+            if vn.textEl and vn.textEl:isRevealing() then
+                vn.textEl:showAll()
+            end
+        end)
     elseif currentPage < #pages or node.next then
         local nextBtn = ui:addRectF(g.rect, panel.x, panel.y, panel.w, panel.h, 0x00000000, 10)
         nextBtn:onClick(function()
