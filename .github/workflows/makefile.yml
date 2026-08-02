@@ -97,4 +97,4 @@ jobs:
         run: |
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
           ninja -C build insane_night_tests
-          BUILD_DIR=build bash tests(vibecoded)/run.sh
+          BUILD_DIR=build bash "tests(vibecoded)/run.sh"
