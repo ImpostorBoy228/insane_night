@@ -91,54 +91,50 @@ local function getNode(id)
     return scriptData.nodes[id]
 end
 
-local function resolveNodeText(node)
-    if not node then
-        return ""
+local function checkIf_script(key)
+    local inner = key:match("^if%((.+)%)$")
+    if not inner then return false end
+
+    local nodePart, condPart = inner:match("^%s*([^,]+)%s*,%s*(.+)$") -- пиздец
+    if not nodePart then return false end
+
+    nodePart = nodePart:match("^%s*(.-)%s*$")
+    condPart = condPart:match("^%s*(.-)%s*$")
+
+    local elseFlag = false
+    local choice = condPart:match("^else%[(.+)%]$")
+    if choice then
+        elseFlag = true
+    else
+        choice = condPart
     end
 
-    local conditions = {}
-    for key, val in pairs(node) do
-        if type(key) == "string" and type(val) == "table" and key:match("^if%(") then
-            conditions[#conditions + 1] = key
-        end
-    end
-
-    table.sort(conditions)
-
-    for _, key in ipairs(conditions) do
-        local val = node[key]
-        local inner = key:match("^if%((.-)%)$")
-        if inner then
-            local nodeId, expr = inner:match("^([^,]+)%s*,%s*(.+)$")
-            if nodeId then
-                nodeId = nodeId:match("^%s*(.-)%s*$")
-                expr = expr:match("^%s*(.-)%s*$")
-
-                local negated = false
-                local value = expr
-                local elseVal = expr:match("^else%[(.-)%]$")
-                if elseVal then
-                    negated = true
-                    value = elseVal
-                end
-
-                local matches = false
-                for _, c in ipairs(vn.currentChoices or {}) do
-                    if tostring(c.node) == tostring(nodeId) then
-                        local eq = tostring(c.choice) == tostring(value)
-                        matches = negated and not eq or eq
-                        break
-                    end
-                end
-
-                if matches then
-                    return val.text or node.text or ""
-                end
+    local chosen = false
+    if vn.currentChoices then
+        for _, c in ipairs(vn.currentChoices) do
+            if tostring(c.node) == nodePart and tostring(c.choice) == choice then
+                chosen = true
+                break
             end
         end
     end
 
-    return node.text or ""
+    if elseFlag then
+        return not chosen
+    end
+    return chosen
+end
+
+local function textProcess(node)
+    local text = node.text or ""
+    for key, value in pairs(node) do
+        if type(key) == "string" and key:match("^if%(") and type(value) == "table" and value.text then
+            if checkIf_script(key) then
+                text = value.text
+            end
+        end
+    end
+    return text
 end
 
 local prof = { buf = {}, enabled = false }
@@ -476,7 +472,7 @@ function gameOnKey(key)
             vn.textEl:showAll()
             return
         end
-        local pages = buildDialoguePages(resolveNodeText(node))
+        local pages = buildDialoguePages(textProcess(node))
         local cp = math.min(vn.currentPage, #pages)
         if cp < #pages then
             vn.currentPage = cp + 1
@@ -546,14 +542,15 @@ function finger(node, qu)
 
         btn:onClick(function()
             vn.currentChoices = vn.currentChoices or {}
+            for i = #vn.currentChoices, 1, -1 do
+                if tostring(vn.currentChoices[i].node) == tostring(vn.currentNode) then
+                    table.remove(vn.currentChoices, i)
+                end
+            end
             table.insert(vn.currentChoices, { node = vn.currentNode, choice = choice })
             nextNode(currentUI, node.next)
         end)
     end
-end
-
-local function ()
-
 end
 
 function renderGame(ui)
@@ -566,7 +563,6 @@ function renderGame(ui)
         ui:addTextF(g.text, "missing node: " .. tostring(vn.currentNode), 0.1, 0.1, 0xffffffff, 1)
         return
     end
-    print(node)
 
     background(ui, node, 0, 0, 1, 0.7)
     prof.mark("bg")
@@ -576,7 +572,7 @@ function renderGame(ui)
     local panel = dialogueCfg.Kawasaki
     local textBox = dialogueCfg.Cago
     local speaker = dialogueCfg.Krico
-    local pages = buildDialoguePages(resolveNodeText(node))
+    local pages = buildDialoguePages(textProcess(node))
     prof.mark("wrap")
     local currentPage = math.min(vn.currentPage, #pages)
     local speakerText = node.speaker or ""
