@@ -4,7 +4,7 @@ NINJA    ?= ninja
 SHADERC  ?= external/bgfx/tools/bin/linux/shaderc
 ROOT     ?= $(realpath $(dir $(firstword $(MAKEFILE_LIST))))
 
-.PHONY: all dev shaders clean
+.PHONY: all dev shaders tests clean
 
 all: release
 
@@ -18,6 +18,13 @@ dev: shaders CMakeLists.txt
 	$(CMAKE) -B $(BUILD_DIR) -G Ninja -DCMAKE_BUILD_TYPE=Debug \
 	  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=$(ROOT)
 	$(NINJA) -C $(BUILD_DIR)
+	ln -sf $(BUILD_DIR)/compile_commands.json compile_commands.json 2>/dev/null || true
+
+tests: shaders CMakeLists.txt
+	$(CMAKE) -B $(BUILD_DIR) -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+	  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=$(ROOT)
+	$(NINJA) -C $(BUILD_DIR) insane_night_tests
+	bash "tests(vibecoded)/run.sh"
 	ln -sf $(BUILD_DIR)/compile_commands.json compile_commands.json 2>/dev/null || true
 
 SHADER_INC     = -i external/bgfx/src

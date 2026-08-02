@@ -11,3 +11,4 @@ compile_commands.json
 .cache/
 .tmp
 *.dis
+insane_night_tests

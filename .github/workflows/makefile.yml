@@ -86,3 +86,15 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release
           ninja -C build
           ln -sf build/compile_commands.json compile_commands.json 2>/dev/null; true
+
+      # ── Tests ────────────────────────────────────────────────
+      - name: Install Lua 5.4
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4
+
+      - name: Build and run tests
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          ninja -C build insane_night_tests
+          BUILD_DIR=build bash tests(vibecoded)/run.sh

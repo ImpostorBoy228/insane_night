@@ -110,3 +110,20 @@ target_link_libraries(insane_night
   ${SDL3_LIBRARIES}
   pthread dl m
 )
+
+# ── Tests (pure-logic, no window/bgfx init) ───────────────────
+add_executable(insane_night_tests
+  "tests(vibecoded)/cpp/test_logic.cpp"
+)
+target_include_directories(insane_night_tests PRIVATE
+  ${PROJECT_INCLUDE_DIRS}
+  ${FREETYPE_INCLUDE_DIRS}
+  ${SDL3_INCLUDE_DIRS}
+)
+target_link_libraries(insane_night_tests
+  Freetype::Freetype
+  ${SDL3_LIBRARIES}
+  pthread dl m
+)
+enable_testing()
+add_test(NAME insane_night_tests COMMAND insane_night_tests)
