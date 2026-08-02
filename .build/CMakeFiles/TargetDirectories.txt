@@ -1,8 +1,0 @@
-/home/impostorboy/projects/insane_night/.build/CMakeFiles/tsfont_obj.dir
-/home/impostorboy/projects/insane_night/.build/CMakeFiles/lua.dir
-/home/impostorboy/projects/insane_night/.build/CMakeFiles/soloud.dir
-/home/impostorboy/projects/insane_night/.build/CMakeFiles/insane_night.dir
-/home/impostorboy/projects/insane_night/.build/CMakeFiles/insane_night_tests.dir
-/home/impostorboy/projects/insane_night/.build/CMakeFiles/test.dir
-/home/impostorboy/projects/insane_night/.build/CMakeFiles/edit_cache.dir
-/home/impostorboy/projects/insane_night/.build/CMakeFiles/rebuild_cache.dir
