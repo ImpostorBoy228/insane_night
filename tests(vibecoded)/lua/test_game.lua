@@ -437,7 +437,11 @@ H.test("renderGame handles qu node by opening choices", function()
   mod.__setCurrentUI(ui)
   mod.renderGame(ui)
   local choiceLayer = M.state.layers["choice"]
-  H.truthy(choiceLayer, "choice layer should exist")
+  H.falsy(choiceLayer, "choice layer should not open while text is revealing")
+  mod.vn.textEl:showAll()
+  mod.onFrame(0.016)
+  choiceLayer = M.state.layers["choice"]
+  H.truthy(choiceLayer, "choice layer should open after reveal finishes")
 end)
 
 H.describe("game.lua nextNode")

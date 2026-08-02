@@ -68,7 +68,9 @@ jobs:
           cmake --build external/SDL/build --config Release
 
       - name: Install SDL3
-        run: sudo cmake --install external/SDL/build
+        run: |
+          sudo cmake --install external/SDL/build
+          sudo ldconfig
 
       # ── Project build ─────────────────────────────────────────
       - name: Cache CMake build directory
