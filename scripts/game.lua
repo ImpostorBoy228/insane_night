@@ -91,6 +91,56 @@ local function getNode(id)
     return scriptData.nodes[id]
 end
 
+local function resolveNodeText(node)
+    if not node then
+        return ""
+    end
+
+    local conditions = {}
+    for key, val in pairs(node) do
+        if type(key) == "string" and type(val) == "table" and key:match("^if%(") then
+            conditions[#conditions + 1] = key
+        end
+    end
+
+    table.sort(conditions)
+
+    for _, key in ipairs(conditions) do
+        local val = node[key]
+        local inner = key:match("^if%((.-)%)$")
+        if inner then
+            local nodeId, expr = inner:match("^([^,]+)%s*,%s*(.+)$")
+            if nodeId then
+                nodeId = nodeId:match("^%s*(.-)%s*$")
+                expr = expr:match("^%s*(.-)%s*$")
+
+                local negated = false
+                local value = expr
+                local elseVal = expr:match("^else%[(.-)%]$")
+                if elseVal then
+                    negated = true
+                    value = elseVal
+                end
+
+                local matches = false
+                for _, c in ipairs(vn.currentChoices or {}) do
+                    if tostring(c.node) == tostring(nodeId) then
+                        local eq = tostring(c.choice) == tostring(value)
+                        matches = negated and not eq or eq
+                        break
+                    end
+                end
+
+                if matches then
+                    return val.text or node.text or ""
+                end
+            end
+        end
+    end
+
+    return node.text or ""
+end
+
 local prof = { buf = {}, enabled = false }
 function prof.start()
     prof.enabled = true
@@ -426,7 +476,7 @@ function gameOnKey(key)
             vn.textEl:showAll()
             return
         end
-        local pages = buildDialoguePages(node.text or "")
+        local pages = buildDialoguePages(resolveNodeText(node))
         local cp = math.min(vn.currentPage, #pages)
         if cp < #pages then
             vn.currentPage = cp + 1
@@ -461,7 +511,7 @@ function finger(node, qu)
     local sh = getScreenHeight()
     local font = getTextGooner("assets/HackRegular-gX84.ttf", 20)
 
-    local lol = currentUI:addRectF(getRectGooner(), 0, 0, 1, 1, 0xff000000, 20)
+    local lol = currentUI:addRectF(getRectGooner(), 0.1, 0.1, 0.8, 0.5, 0xee000003, 20)
 
     local tpad = 0.008
     local vpad = 0.012
@@ -470,7 +520,7 @@ function finger(node, qu)
 
     local choices = node.choices or {}
 
-    local questionY = 0.28
+    local questionY = 0.20
 
     local qw = font:measureText(qu)
     local qx = center(qw, sw) / sw
@@ -487,7 +537,7 @@ function finger(node, qu)
 
         local btnY = startY + (btnHeight + vpad) * (i - 1)
 
-        local btn = currentUI:addRectF(getRectGooner(), btnX, btnY, btnW, btnHeight, 0x444444AA, 22)
+        local btn = currentUI:addRectF(getRectGooner(), btnX, btnY, btnW, btnHeight, 0x44AA4400, 22)
 
         local textX = btnX + hpad
         local textY = btnY + (btnHeight / 2) - 0.008
@@ -502,6 +552,10 @@ function finger(node, qu)
     end
 end
 
+local function ()
+
+end
+
 function renderGame(ui)
     prof.start()
     ui:clear()
@@ -512,6 +566,7 @@ function renderGame(ui)
         ui:addTextF(g.text, "missing node: " .. tostring(vn.currentNode), 0.1, 0.1, 0xffffffff, 1)
         return
     end
+    print(node)
 
     background(ui, node, 0, 0, 1, 0.7)
     prof.mark("bg")
@@ -521,7 +576,7 @@ function renderGame(ui)
     local panel = dialogueCfg.Kawasaki
     local textBox = dialogueCfg.Cago
     local speaker = dialogueCfg.Krico
-    local pages = buildDialoguePages(node.text or "")
+    local pages = buildDialoguePages(resolveNodeText(node))
     prof.mark("wrap")
     local currentPage = math.min(vn.currentPage, #pages)
     local speakerText = node.speaker or ""
