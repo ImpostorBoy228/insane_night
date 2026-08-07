@@ -1,6 +1,7 @@
 ---@diagnostic disable: undefined-global, undefined-field
 -- TODO: consider refactoring text plane layout, add cock_measure() -> related coordinates
 local json = dofile("scripts/libs/json.lua")
+local son = dofile("external/son/src/son.lua")
 
 local vn = {
     currentNode = nil,
@@ -47,40 +48,78 @@ local function readlike_book(path)
     return content
 end
 
+local scriptTree = nil
 local scriptData = {
     start = "start",
     nodes = {
         start = {
-            text = "script.json not loaded"
+            text = "script.son not loaded"
         }
     }
 }
 
-local function loadScript()
-    local raw = readlike_book("scripts/script.json")
-    if not raw then
-        print("Could not read scripts/script.json")
+local function chosen(nodeId, choice)
+    if not vn.currentChoices then
         return false
     end
 
-    local ok, data = pcall(json.decode, raw)
-    if not ok then
-        print("Fuck your scripts/script.json: " .. tostring(data))
+    for _, c in ipairs(vn.currentChoices) do
+        if tostring(c.node) == tostring(nodeId) and tostring(c.choice) == tostring(choice) then
+            return true
+        end
+    end
+    return false
+end
+
+local function sonToTable(obj)
+    if not obj then
+        return nil
+    end
+
+    local t = {}
+    for _, c in ipairs(obj.children or {}) do
+        if c.type == son.CSON_STRING then
+            t[c.key] = c.value
+        elseif c.type == son.CSON_OBJECT then
+            t[c.key] = sonToTable(c)
+        end
+    end
+
+    if type(t.choices) == "string" then
+        local list = {}
+        for s in (t.choices .. ","):gmatch("([^,]*),") do
+            list[#list + 1] = s:match("^%s*(.-)%s*$")
+        end
+        t.choices = list
+    end
+
+    return t
+end
+
+local function evalScript()
+    if not scriptTree then
         return false
     end
 
-    if type(data) ~= "table" or type(data.nodes) ~= "table" or type(data.start) ~= "string" then
-        print("scripts/script.json has invalid format")
+    local ok, ev = pcall(son.eval, scriptTree, { chosen = chosen })
+    if not ok or not ev then
+        print("Fuck your scripts/script.son: " .. tostring(ev))
         return false
     end
 
-    if type(data.nodes[data.start]) ~= "table" then
-        print("Forgot to define start node: " .. tostring(data.start))
-        return false
-    end
-
-    scriptData = data
+    scriptData = sonToTable(ev)
     return true
+end
+
+local function loadScript()
+    local tree, ok = son.parse_file("scripts/script.son")
+    if not ok or not tree then
+        print("Could not read scripts/script.son")
+        return false
+    end
+
+    scriptTree = tree
+    return evalScript()
 end
 
 local function getNode(id)
@@ -91,50 +130,8 @@ local function getNode(id)
     return scriptData.nodes[id]
 end
 
-local function checkIf_script(key)
-    local inner = key:match("^if%((.+)%)$")
-    if not inner then return false end
-
-    local nodePart, condPart = inner:match("^%s*([^,]+)%s*,%s*(.+)$") -- пиздец
-    if not nodePart then return false end
-
-    nodePart = nodePart:match("^%s*(.-)%s*$")
-    condPart = condPart:match("^%s*(.-)%s*$")
-
-    local elseFlag = false
-    local choice = condPart:match("^else%[(.+)%]$")
-    if choice then
-        elseFlag = true
-    else
-        choice = condPart
-    end
-
-    local chosen = false
-    if vn.currentChoices then
-        for _, c in ipairs(vn.currentChoices) do
-            if tostring(c.node) == nodePart and tostring(c.choice) == choice then
-                chosen = true
-                break
-            end
-        end
-    end
-
-    if elseFlag then
-        return not chosen
-    end
-    return chosen
-end
-
 local function textProcess(node)
-    local text = node.text or ""
-    for key, value in pairs(node) do
-        if type(key) == "string" and key:match("^if%(") and type(value) == "table" and value.text then
-            if checkIf_script(key) then
-                text = value.text
-            end
-        end
-    end
-    return text
+    return node.text or ""
 end
 
 local prof = { buf = {}, enabled = false }
@@ -569,6 +566,8 @@ function renderGame(ui)
     prof.start()
     ui:clear()
     prof.mark("clear")
+
+    evalScript()
 
     local node = getNode(vn.currentNode)
     if not node then

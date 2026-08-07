@@ -22,3 +22,6 @@
 [submodule "external/gen_alpha_dictionary"]
 	path = external/gen_alpha_dictionary
 	url = https://github.com/crnicholson/gen_alpha_dictionary
+[submodule "external/son"]
+	path = external/son
+	url = https://github.com/ImpostorBoy228/son
