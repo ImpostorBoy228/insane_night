@@ -96,14 +96,14 @@ H.test("empty string decode errors", function()
   H.falsy(ok)
 end)
 
-H.test("script.json decodes and is a table", function()
-  local f = assert(io.open("scripts/script.json", "r"))
-  local content = f:read("*a")
-  f:close()
-  local ok, data = pcall(json.decode, content)
-  H.truthy(ok, "script.json should parse")
-  H.eq(type(data), "table")
-  H.eq(type(data.nodes), "table")
+H.test("decode large generated object roundtrips", function()
+  local doc = {}
+  for i = 1, 200 do
+    doc["n" .. i] = { text = "node " .. i, next = "n" .. (i + 1) }
+  end
+  local decoded = json.decode(json.encode(doc))
+  H.eq(decoded.n7.text, "node 7")
+  H.eq(decoded.n200.next, "n201")
 end)
 
 H.finish()

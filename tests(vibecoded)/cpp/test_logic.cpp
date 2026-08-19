@@ -148,6 +148,95 @@ static void test_utf8_truncated() {
   CHECK(p == s + 1);
 }
 
+static void test_utf8_overlong() {
+  const char s[] = "\xC0\x80"; // overlong encoding of NUL
+  const char *p = s;
+  const char *end = s + 2;
+  // lenient decoder: masks bits without rejecting overlongs -> NUL
+  CHECK(decodeUtf8Codepoint(p, end) == 0x00);
+  CHECK(p == s + 2);
+}
+
+static void test_utf8_bad_continuation() {
+  // 0xE0 0x41 0x42: continuation bytes are not validated, bits are just masked
+  const char s[] = "\xE0\x41\x42";
+  const char *p = s;
+  const char *end = s + 3;
+  CHECK(decodeUtf8Codepoint(p, end) == 0x42);
+  CHECK(p == s + 3);
+}
+
+static void test_utf8_bad_lead() {
+  const char s[] = "\x80"; // continuation byte used as a lead
+  const char *p = s;
+  const char *end = s + 1;
+  CHECK(decodeUtf8Codepoint(p, end) == 0xFFFD);
+  CHECK(p == s + 1);
+}
+
+static void test_utf8_five_byte_lead() {
+  const char s[] = "\xF8\x80\x80\x80"; // 5-byte lead is unsupported
+  const char *p = s;
+  const char *end = s + 4;
+  CHECK(decodeUtf8Codepoint(p, end) == 0xFFFD);
+  CHECK(p == s + 1);
+}
+
+static void test_utf8_short_2byte() {
+  const char s[] = "\xC2"; // truncated 2-byte seq
+  const char *p = s;
+  const char *end = s + 1;
+  CHECK(decodeUtf8Codepoint(p, end) == 0xFFFD);
+  CHECK(p == s + 1);
+}
+
+static void test_utf8_surrogate_not_rejected() {
+  // U+D800 in UTF-8: lenient decoder accepts it (no surrogate check)
+  const char s[] = "\xED\xA0\x80";
+  const char *p = s;
+  const char *end = s + 3;
+  CHECK(decodeUtf8Codepoint(p, end) == 0xD800);
+  CHECK(p == s + 3);
+}
+
+static void test_utf8_max_codepoint() {
+  const char s[] = "\xF4\x8F\xBF\xBF"; // U+10FFFF
+  const char *p = s;
+  const char *end = s + 4;
+  CHECK(decodeUtf8Codepoint(p, end) == 0x10FFFF);
+  CHECK(p == s + 4);
+}
+
+static void test_append_utf8_boundaries() {
+  const uint32_t cps[] = { 0x7F, 0x80, 0x7FF, 0x800, 0xFFFF, 0x10000, 0x10FFFF };
+  for (uint32_t cp : cps) {
+    std::string out;
+    appendUtf8Codepoint(out, cp);
+    const char *p = out.data();
+    const char *end = out.data() + out.size();
+    CHECK(decodeUtf8Codepoint(p, end) == cp);
+    CHECK(p == end);
+  }
+}
+
+static void test_append_utf8_out_of_range() {
+  // cp > U+10FFFF is not clamped; it round-trips (lenient)
+  std::string out;
+  appendUtf8Codepoint(out, 0x110000);
+  const char *p = out.data();
+  const char *end = out.data() + out.size();
+  CHECK(decodeUtf8Codepoint(p, end) == 0x110000);
+  CHECK(p == end);
+}
+
+static void test_append_utf8_byte_lengths() {
+  std::string out;
+  appendUtf8Codepoint(out, 0x41);    CHECK(out.size() == 1);
+  out.clear(); appendUtf8Codepoint(out, 0xA2);   CHECK(out.size() == 2);
+  out.clear(); appendUtf8Codepoint(out, 0x0924); CHECK(out.size() == 3);
+  out.clear(); appendUtf8Codepoint(out, 0x1F600); CHECK(out.size() == 4);
+}
+
 static void test_append_utf8_roundtrip() {
   const uint32_t cps[] = { 0x41, 0x00A2, 0x0924, 0x1F600, 0x7F, 0x7FF, 0xFFFF };
   for (uint32_t cp : cps) {
@@ -211,8 +300,18 @@ int main() {
   test_utf8_three_byte();
   test_utf8_four_byte();
   test_utf8_truncated();
+  test_utf8_overlong();
+  test_utf8_bad_continuation();
+  test_utf8_bad_lead();
+  test_utf8_five_byte_lead();
+  test_utf8_short_2byte();
+  test_utf8_surrogate_not_rejected();
+  test_utf8_max_codepoint();
   test_append_utf8_roundtrip();
   test_append_utf8_bytes();
+  test_append_utf8_boundaries();
+  test_append_utf8_out_of_range();
+  test_append_utf8_byte_lengths();
   test_hitbox();
   test_hitbox_negative_size();
   test_frac();

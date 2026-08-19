@@ -1,14 +1,36 @@
--- Structural integrity tests for scripts/script.json
+-- Structural integrity tests for scripts/script.son (SON format)
 local H = require("tests(vibecoded)/lua/harness")
 local M = require("tests(vibecoded)/lua/mock")
 
 M.install()
+local son = dofile("external/son/src/son.lua")
 local json = dofile("scripts/libs/json.lua")
 
-local f = assert(io.open("scripts/script.json", "r"))
-local content = f:read("*a")
-f:close()
-local script = assert(json.decode(content), "script.json must be valid JSON")
+local tree, parseOk = son.parse_file("scripts/script.son")
+assert(parseOk, "cannot read scripts/script.son")
+
+-- convert an evaluated SON tree to a plain table (mirrors scripts/game.lua sonToTable)
+local function toTable(obj)
+  local t = {}
+  for _, c in ipairs(obj.children or {}) do
+    if c.type == son.CSON_STRING then
+      t[c.key] = c.value
+    elseif c.type == son.CSON_OBJECT then
+      t[c.key] = toTable(c)
+    end
+  end
+  if type(t.choices) == "string" then
+    local list = {}
+    for s in (t.choices .. ","):gmatch("([^,]*),") do
+      list[#list + 1] = s:match("^%s*(.-)%s*$")
+    end
+    t.choices = list
+  end
+  return t
+end
+
+-- eval with every conditional branch taken so all node bodies are present
+local script = assert(toTable(son.eval(tree, { chosen = function() return true end })))
 
 local function nodeNames()
   local names = {}
@@ -16,7 +38,18 @@ local function nodeNames()
   return names
 end
 
-H.describe("script.json structure")
+-- walk the raw (pre-eval) tree and collect every CSON_IF condition
+local function collectIFs(obj, out)
+  for _, c in ipairs(obj.children or {}) do
+    if c.type == son.CSON_IF then
+      out[#out + 1] = c.value
+    end
+    collectIFs(c, out)
+  end
+  return out
+end
+
+H.describe("script.son structure")
 
 H.test("has start node", function()
   H.eq(type(script.start), "string")
@@ -75,30 +108,24 @@ H.test("choice nodes have non-empty choices", function()
   end
 end)
 
-H.test("if() conditional keys are well formed", function()
-  for id, node in pairs(script.nodes) do
-    for key, sub in pairs(node) do
-      if key:match("^if%(") then
-        local ok = pcall(function()
-          H.eq(type(sub), "table", "if branch must be a table in " .. id)
-          H.truthy(sub.text ~= nil or sub.next ~= nil, "if branch needs text or next in " .. id)
-        end)
-        H.truthy(ok, "malformed if() in node " .. id .. ": " .. key)
-      end
-    end
+H.test("conditional branches are well formed", function()
+  local conds = collectIFs(tree, {})
+  H.truthy(#conds > 0, "script should contain at least one conditional branch")
+  for _, cond in ipairs(conds) do
+    local inner = cond:match("^if%s*%((.*)%)%s*$")
+    H.truthy(inner ~= nil, "malformed if() in: " .. cond)
+    local ok = inner:match("^not%s+chosen%s*%(%s*\"[^\"]+\"%s*,%s*\"[^\"]+\"%s*%)$")
+      or inner:match("^chosen%s*%(%s*\"[^\"]+\"%s*,%s*\"[^\"]+\"%s*%)$")
+    H.truthy(ok ~= nil, "unsupported conditional expression: " .. cond)
   end
 end)
 
-H.test("conditional branch references a real choice node", function()
-  for id, node in pairs(script.nodes) do
-    for key, _ in pairs(node) do
-      if key:match("^if%(") then
-        local nodePart = key:match("^if%(%s*([^,]+)")
-        if nodePart then
-          local trimmed = nodePart:match("^%s*(.-)%s*$")
-          H.truthy(script.nodes[trimmed] ~= nil, "if() in " .. id .. " refs missing node " .. trimmed)
-        end
-      end
+H.test("conditional branches reference a real choice node", function()
+  local names = nodeNames()
+  for _, cond in ipairs(collectIFs(tree, {})) do
+    local refNode = cond:match('chosen%s*%(%s*"([^"]+)"')
+    if refNode then
+      H.truthy(names[refNode], "conditional " .. cond .. " refs missing node " .. refNode)
     end
   end
 end)

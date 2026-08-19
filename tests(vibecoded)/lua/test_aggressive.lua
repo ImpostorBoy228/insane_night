@@ -6,9 +6,9 @@ local M = require("tests(vibecoded)/lua/mock")
 M.install()
 
 local mod = M.load_module("scripts/game.lua", {
-  "vn", "g", "getNode",
+  "vn", "g", "getNode", "loadScript", "evalScript", "chosen",
   "splitExplicitLines", "wrapParagraph", "wrapText", "paginateLines",
-  "buildDialoguePages", "checkIf_script", "textProcess", "syncSound",
+  "buildDialoguePages", "textProcess", "syncSound",
   "renderGame", "gameOnKey", "nextNode", "finger", "ssave", "sload",
   "__setScriptData", "__setChoices", "__setCurrentUI",
 }, [[
@@ -121,62 +121,66 @@ H.test("buildDialoguePages is deterministic for identical input", function()
   H.eq(table.concat(a, "\n"), table.concat(b, "\n"))
 end)
 
-H.describe("game.lua conditional branches (checkIf_script / textProcess)")
+H.describe("game.lua conditional branches (SON chosen() / evalScript)")
 
-H.test("checkIf_script matches recorded choice", function()
+H.test("chosen() matches recorded choice", function()
   mod.__setChoices({ { node = "6", choice = "4" } })
-  H.eq(mod.checkIf_script("if(6, 4)"), true)
-  H.eq(mod.checkIf_script("if(6, 13)"), false)
+  H.eq(mod.chosen("6", "4"), true)
+  H.eq(mod.chosen("6", "13"), false)
 end)
 
-H.test("else[] branch negates the match", function()
+H.test("not chosen() negates the match", function()
   mod.__setChoices({ { node = "6", choice = "4" } })
-  H.eq(mod.checkIf_script("if(6, else[4])"), false)
-  H.eq(mod.checkIf_script("if(6, else[13])"), true)
-end)
-
-H.test("else[] fires when no choices recorded at all", function()
-  mod.__setChoices(nil)
-  H.eq(mod.checkIf_script("if(6, else[4])"), true)
-end)
-
-H.test("textProcess picks matching branch over default", function()
-  mod.__setScriptData({ start = "7", nodes = { ["7"] = { text = "default", next = "8",
-    ["if(6, 4)"] = { text = "you picked four" } } } })
-  mod.__setChoices({ { node = "6", choice = "4" } })
-  H.eq(mod.textProcess(mod.getNode("7")), "you picked four")
-end)
-
-H.test("textProcess returns default when no branch matches", function()
-  mod.__setScriptData({ start = "7", nodes = { ["7"] = { text = "default", next = "8",
-    ["if(6, 4)"] = { text = "you picked four" } } } })
+  H.eq(not mod.chosen("6", "4"), false)
   mod.__setChoices({ { node = "6", choice = "13" } })
-  H.eq(mod.textProcess(mod.getNode("7")), "default")
+  H.eq(not mod.chosen("6", "4"), true)
 end)
 
-H.test("REAL BUG: multiple matching if() branches are order-dependent (nondeterministic)", function()
-  -- Two conditions match simultaneously; textProcess uses pairs() and
-  -- last-write-wins, so the result depends on hash iteration order.
+H.test("not chosen() fires when no choices recorded at all", function()
+  mod.__setChoices(nil)
+  H.eq(not mod.chosen("6", "4"), true)
+  mod.__setChoices({})
+  H.eq(not mod.chosen("6", "4"), true)
+end)
+
+H.test("chosen() is per-node: same choice on another node does not match", function()
+  mod.__setChoices({ { node = "5", choice = "4" } })
+  H.eq(mod.chosen("6", "4"), false)
+end)
+
+H.test("evalScript picks the chosen() branch in the real script", function()
+  mod.__setChoices({ { node = "6", choice = "4" } })
+  mod.loadScript()
+  H.matches(mod.getNode("7").text, "неудачное число")
+end)
+
+H.test("evalScript picks the not-chosen branch when nothing matches", function()
+  mod.__setChoices({ { node = "6", choice = "13" } })
+  mod.loadScript()
+  H.matches(mod.getNode("7").text, "3 буквы")
+end)
+
+H.test("evalScript re-runs after choices change (branch switch)", function()
+  mod.__setChoices({ { node = "6", choice = "4" } })
+  mod.loadScript()
+  H.matches(mod.getNode("7").text, "неудачное число")
+  mod.__setChoices({ { node = "6", choice = "13" } })
+  mod.loadScript()
+  H.matches(mod.getNode("7").text, "3 буквы")
+end)
+
+H.test("evalScript is deterministic for identical choices (no hash-order bug)", function()
+  -- Legacy bug: multiple matching if() branches were picked by pairs() order.
+  -- SON evaluates if(chosen())/if(not chosen()) exclusively, so this must hold.
   local texts = {}
   for i = 1, 30 do
-    mod.__setScriptData({ start = "7", nodes = { ["7"] = { text = "d",
-      ["if(6, 4)"] = { text = "A" },
-      ["if(6, 13)"] = { text = "B" } } } })
-    mod.__setChoices({ { node = "6", choice = "4" }, { node = "6", choice = "13" } })
-    texts[mod.textProcess(mod.getNode("7"))] = true
+    mod.__setChoices({ { node = "6", choice = "4" } })
+    mod.loadScript()
+    texts[mod.getNode("7").text] = true
   end
-  -- A correct implementation must be deterministic. This is a known bug.
   local keys = {}
   for k in pairs(texts) do keys[#keys + 1] = k end
-  H.eq(#keys, 1, "textProcess must be deterministic; got " .. table.concat(keys, ","))
-end)
-
-H.test("if() branch with non-table value is silently ignored", function()
-  -- textProcess requires value.text; a string branch is dropped without warning.
-  mod.__setScriptData({ start = "7", nodes = { ["7"] = { text = "default", next = "8",
-    ["if(6, 4)"] = "misformatted branch" } } })
-  mod.__setChoices({ { node = "6", choice = "4" } })
-  H.eq(mod.textProcess(mod.getNode("7")), "default")
+  H.eq(#keys, 1, "evalScript must be deterministic; got " .. table.concat(keys, ","))
 end)
 
 H.describe("game.lua sound")
@@ -208,16 +212,19 @@ end)
 H.describe("game.lua renderGame / finger layer routing")
 
 H.xfail("finger() draws choices into currentUI, not the ui passed to renderGame", function()
-  -- renderGame(ui) calls finger(node, qu); finger uses the module-global
-  -- `currentUI` instead of the `ui` argument. When they differ, the choice
-  -- panel lands on the wrong layer.
+  -- renderGame(ui) defers choice drawing to onFrame, which calls finger(node, qu);
+  -- finger uses the module-global `currentUI` instead of the `ui` argument.
+  -- When they differ, the choice panel lands on the wrong layer.
   mod.__setScriptData({ start = "6", nodes = { ["6"] = { text = "q", qu = "?", choices = { "4", "13" } } } })
   local uiA = M.layer("gameA")
   local uiB = M.layer("gameB")
   mod.__setCurrentUI(uiB)
   mod.vn.currentNode = "6"
   mod.vn.currentPage = 1
+  mod.vn.textEl = nil
   mod.renderGame(uiA)
+  mod.vn.textEl:showAll()
+  mod.onFrame(0.016)
   local inA = 0
   for _, it in ipairs(uiA.items) do if it.kind == "rect" and it.z == 22 then inA = inA + 1 end end
   H.truthy(inA >= 1, "choice panel should be drawn into the ui passed to renderGame")

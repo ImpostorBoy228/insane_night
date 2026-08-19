@@ -4,10 +4,11 @@ local M = require("tests(vibecoded)/lua/mock")
 M.install()
 
 local json = dofile("scripts/libs/json.lua")
+local son = dofile("external/son/src/son.lua")
 local mod = M.load_module("scripts/game.lua", {
-  "vn", "g", "prof", "getNode", "loadScript",
+  "vn", "g", "prof", "getNode", "loadScript", "evalScript", "chosen",
   "splitExplicitLines", "wrapParagraph", "wrapText", "paginateLines",
-  "buildDialoguePages", "checkIf_script", "textProcess", "syncSound",
+  "buildDialoguePages", "syncSound",
   "renderGame", "gameOnKey", "ssave", "sload", "finger",
   "__setScriptData", "__setChoices", "__setCurrentUI",
   "__getScriptData", "__getCurrentUI",
@@ -45,7 +46,8 @@ end
 
 -- ── real workload data ────────────────────────────────────────
 local long_text = string.rep("word ", 300) .. "\n" .. string.rep("ВК сиськи ", 50) .. "\nend"
-local script_raw = io.open("scripts/script.json"):read("*a")
+local son_raw = io.open("scripts/script.son"):read("*a")
+local settings_raw = io.open("scripts/settings.json"):read("*a")
 local big_json = table.concat({
   '{"nodes":{',
   table.concat((function()
@@ -83,17 +85,18 @@ add("wrapParagraph (30 words)", function()
 end, 20000)
 add("splitExplicitLines", function() mod.splitExplicitLines(long_text) end, 20000)
 add("paginateLines (40 lines)", function() mod.paginateLines(mod.splitExplicitLines(long_text), 8) end, 5000)
-add("checkIf_script (30 choices, miss)", function()
+add("checkIf-style chosen (30 choices, miss)", function()
   mod.__setChoices(choice_data)
-  mod.checkIf_script("if(6, 999)")
+  mod.chosen("6", "999")
 end, 20000)
-add("textProcess (if branch)", function()
-  mod.__setChoices(choice_data)
-  mod.textProcess(mod.getNode("1"))
-end, 5000)
+add("evalScript (real script.son)", function() mod.evalScript() end, 2000)
 add("syncSound (no-op)", function() mod.syncSound({}) end, 50000)
-add("json.encode script.json", function() json.encode(mod.__getScriptData()) end, 2000)
-add("json.decode script.json", function() json.decode(script_raw) end, 2000)
+add("json.encode script.son data", function() json.encode(mod.__getScriptData()) end, 2000)
+add("json.decode settings.json", function() json.decode(settings_raw) end, 2000)
+add("son.parse script.son", function() son.parse(son_raw) end, 2000)
+add("son.eval parsed script.son", function()
+  son.eval(son.parse(son_raw), { chosen = function() return false end })
+end, 2000)
 add("json.decode 200-node doc", function() json.decode(big_json) end, 500)
 add("json.encode 200-node table", function() json.encode(json.decode(big_json)) end, 500)
 add("renderGame (long text)", function() mod.renderGame(mod.__getCurrentUI()) end, 500, 20)

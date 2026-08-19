@@ -6,7 +6,7 @@ M.install()
 
 local mod = M.load_module("scripts/game.lua", {
   "vn", "g", "prof", "dialogueCfg",
-  "getNode", "loadScript", "checkIf_script", "textProcess",
+  "getNode", "loadScript", "evalScript", "chosen", "textProcess",
   "splitExplicitLines", "wrapParagraph", "wrapText", "paginateLines",
   "buildDialoguePages", "getSpeakerWidth", "syncSound", "nextNode",
   "image", "background", "character", "finger",
@@ -180,7 +180,7 @@ end)
 
 H.describe("game.lua loadScript / getNode")
 
-H.test("loadScript succeeds on real script.json", function()
+H.test("loadScript succeeds on real script.son", function()
   H.eq(mod.loadScript(), true)
 end)
 
@@ -205,55 +205,67 @@ H.test("start node has text", function()
   H.eq(type(start.text), "string")
 end)
 
-H.describe("game.lua checkIf_script (conditional branches)")
+H.describe("game.lua conditional branches (SON chosen())")
 
-local function with_choices(choices, fn)
+local function eval_choices(choices)
   mod.vn.currentChoices = choices
-  local ok, err = pcall(fn)
-  mod.vn.currentChoices = nil
-  assert(ok, err)
+  mod.loadScript()
 end
 
-H.test("returns true when a matching choice was made", function()
-  with_choices({ { node = "6", choice = "4" } }, function()
-    H.eq(mod.checkIf_script("if(6, 4)"), true)
-  end)
+H.test("chosen() is true when a matching choice was made", function()
+  eval_choices({ { node = "6", choice = "4" } })
+  H.eq(mod.chosen("6", "4"), true)
 end)
 
-H.test("returns false when choice not made", function()
-  with_choices({ { node = "6", choice = "8" } }, function()
-    H.eq(mod.checkIf_script("if(6, 4)"), false)
-  end)
+H.test("chosen() is false when choice not made", function()
+  eval_choices({ { node = "6", choice = "8" } })
+  H.eq(mod.chosen("6", "4"), false)
 end)
 
-H.test("returns false when no choices recorded", function()
-  with_choices({}, function()
-    H.eq(mod.checkIf_script("if(6, 4)"), false)
-  end)
+H.test("chosen() is false when no choices recorded", function()
+  eval_choices({})
+  H.eq(mod.chosen("6", "4"), false)
 end)
 
-H.test("else[] negates the match", function()
-  with_choices({ { node = "6", choice = "4" } }, function()
-    H.eq(mod.checkIf_script("if(6, else[4])"), false)
-  end)
+H.test("chosen() is false when currentChoices is nil", function()
+  mod.vn.currentChoices = nil
+  H.eq(mod.chosen("6", "4"), false)
 end)
 
-H.test("else[] is true when choice was NOT made", function()
-  with_choices({ { node = "6", choice = "13" } }, function()
-    H.eq(mod.checkIf_script("if(6, else[4])"), true)
-  end)
+H.test("chosen() compares node and choice as strings", function()
+  eval_choices({ { node = 6, choice = 4 } })
+  H.eq(mod.chosen("6", "4"), true)
 end)
 
-H.test("whitespace is tolerated", function()
-  with_choices({ { node = "6", choice = "4" } }, function()
-    H.eq(mod.checkIf_script("if( 6 , 4 )"), true)
-  end)
+H.test("chosen() ignores choices for other nodes", function()
+  eval_choices({ { node = "2", choice = "4" } })
+  H.eq(mod.chosen("6", "4"), false)
 end)
 
-H.test("non-if keys return false", function()
-  with_choices({}, function()
-    H.eq(mod.checkIf_script("iftext(6, 4)"), false)
-  end)
+H.test("evalScript resolves if(chosen()) branch in the real script", function()
+  eval_choices({ { node = "6", choice = "4" } })
+  H.matches(mod.getNode("7").text, "неудачное число")
+end)
+
+H.test("evalScript resolves the not-chosen branch", function()
+  eval_choices({ { node = "6", choice = "13" } })
+  H.matches(mod.getNode("7").text, "3 буквы")
+end)
+
+H.test("evalScript resolves not-chosen branch when no choices", function()
+  eval_choices({})
+  H.matches(mod.getNode("7").text, "3 буквы")
+end)
+
+H.test("evalScript is deterministic for identical choices", function()
+  local texts = {}
+  for _ = 1, 30 do
+    eval_choices({ { node = "6", choice = "4" } })
+    texts[mod.getNode("7").text] = true
+  end
+  local keys = {}
+  for k in pairs(texts) do keys[#keys + 1] = k end
+  H.eq(#keys, 1, "evalScript must be deterministic; got " .. table.concat(keys, ","))
 end)
 
 H.describe("game.lua textProcess")
@@ -266,36 +278,8 @@ H.test("returns empty string for missing text", function()
   H.eq(mod.textProcess({}), "")
 end)
 
-H.test("picks matching if() branch", function()
-  with_choices({ { node = "6", choice = "4" } }, function()
-    local text = mod.textProcess({
-      text = "default",
-      ["if(6, 4)"] = { text = "branch 4" },
-      ["if(6, else[4])"] = { text = "else branch" },
-    })
-    H.eq(text, "branch 4")
-  end)
-end)
-
-H.test("picks else branch when no match", function()
-  with_choices({ { node = "6", choice = "9" } }, function()
-    local text = mod.textProcess({
-      text = "default",
-      ["if(6, 4)"] = { text = "branch 4" },
-      ["if(6, else[4])"] = { text = "else branch" },
-    })
-    H.eq(text, "else branch")
-  end)
-end)
-
-H.test("returns default when branch table has no text", function()
-  with_choices({ { node = "6", choice = "4" } }, function()
-    local text = mod.textProcess({
-      text = "default",
-      ["if(6, 4)"] = { foo = 1 },
-    })
-    H.eq(text, "default")
-  end)
+H.test("empty text and nil node both yield a string", function()
+  H.eq(mod.textProcess({ text = "" }), "")
 end)
 
 H.describe("game.lua syncSound")
@@ -442,6 +426,107 @@ H.test("renderGame handles qu node by opening choices", function()
   mod.onFrame(0.016)
   choiceLayer = M.state.layers["choice"]
   H.truthy(choiceLayer, "choice layer should open after reveal finishes")
+end)
+
+H.describe("game.lua finger (choices) — fresh module instance")
+
+-- A second module load keeps scriptTree == nil so renderGame's evalScript()
+-- does not clobber synthetic __setScriptData payloads.
+local fresh = M.load_module("scripts/game.lua", {
+  "vn", "getNode", "finger", "renderGame", "onFrame",
+  "__setScriptData", "__setCurrentUI",
+}, [[
+  function __setScriptData(t) scriptData = t end
+  function __setCurrentUI(ui) currentUI = ui end
+]])
+
+local function qu_setup()
+  fresh.__setScriptData({
+    start = "6",
+    nodes = {
+      ["6"] = { text = "q", qu = "Сколько букв?", choices = { "4", "13" }, next = "7" },
+      ["7"] = { text = "end" },
+    },
+  })
+  local ui = M.layer("game")
+  fresh.__setCurrentUI(ui)
+  fresh.vn.currentNode = "6"
+  fresh.vn.currentPage = 1
+  fresh.vn.currentChoices = {}
+  return ui
+end
+
+H.test("finger draws the question and one button per choice", function()
+  local ui = qu_setup()
+  fresh.finger(fresh.getNode("6"), "Сколько букв?")
+  local texts = {}
+  for _, it in ipairs(ui.items) do
+    if it.kind == "text" then table.insert(texts, it.text) end
+  end
+  H.matches(table.concat(texts, "|"), "Сколько букв%?")
+  H.matches(table.concat(texts, "|"), "4")
+  H.matches(table.concat(texts, "|"), "13")
+  local buttons = 0
+  for _, it in ipairs(ui.items) do
+    if it.kind == "rect" and it.z == 22 then buttons = buttons + 1 end
+  end
+  H.eq(buttons, 2)
+end)
+
+H.test("clicking a choice records it and advances the node", function()
+  local ui = qu_setup()
+  fresh.finger(fresh.getNode("6"), "?")
+  local buttons = {}
+  for _, it in ipairs(ui.items) do
+    if it.kind == "rect" and it.z == 22 then table.insert(buttons, it) end
+  end
+  buttons[1].click()
+  H.eq(fresh.vn.currentNode, "7")
+  H.eq(#fresh.vn.currentChoices, 1)
+  H.eq(fresh.vn.currentChoices[1].node, "6")
+  H.eq(fresh.vn.currentChoices[1].choice, "4")
+end)
+
+H.test("clicking a different choice replaces the old one for the same node", function()
+  local ui = qu_setup()
+  fresh.vn.currentChoices = { { node = "6", choice = "4" } }
+  fresh.finger(fresh.getNode("6"), "?")
+  local buttons = {}
+  for _, it in ipairs(ui.items) do
+    if it.kind == "rect" and it.z == 22 then table.insert(buttons, it) end
+  end
+  buttons[2].click()
+  H.eq(#fresh.vn.currentChoices, 1)
+  H.eq(fresh.vn.currentChoices[1].choice, "13")
+end)
+
+H.test("clicking a choice keeps choices recorded for other nodes", function()
+  local ui = qu_setup()
+  fresh.vn.currentChoices = { { node = "2", choice = "x" } }
+  fresh.finger(fresh.getNode("6"), "?")
+  local buttons = {}
+  for _, it in ipairs(ui.items) do
+    if it.kind == "rect" and it.z == 22 then table.insert(buttons, it) end
+  end
+  buttons[1].click()
+  H.eq(#fresh.vn.currentChoices, 2)
+end)
+
+H.test("onFrame opens choices only after the text reveal finishes", function()
+  local ui = qu_setup()
+  fresh.renderGame(ui)
+  local before = 0
+  for _, it in ipairs(ui.items) do
+    if it.kind == "rect" and it.z == 22 then before = before + 1 end
+  end
+  H.eq(before, 0, "no choice buttons while the question is revealing")
+  fresh.vn.textEl:showAll()
+  fresh.onFrame(0.016)
+  local after = 0
+  for _, it in ipairs(ui.items) do
+    if it.kind == "rect" and it.z == 22 then after = after + 1 end
+  end
+  H.eq(after, 2, "choice buttons appear once the reveal finishes")
 end)
 
 H.describe("game.lua nextNode")
@@ -626,6 +711,55 @@ H.test("initSload returns false when no state", function()
   restore_file("scripts/state.json", backup)
   H.truthy(ok)
   H.eq(result, false)
+end)
+
+H.test("sload with corrupt state.json does not error", function()
+  local backup = backup_file("scripts/state.json")
+  local ok = pcall(function()
+    local f = io.open("scripts/state.json", "w")
+    f:write("not json {{{")
+    f:close()
+    mod.__setScriptData({ start = "1", nodes = { ["1"] = { text = "a" } } })
+    mod.sload()
+  end)
+  restore_file("scripts/state.json", backup)
+  H.truthy(ok)
+end)
+
+H.test("sload with missing state.json does not error", function()
+  local backup = backup_file("scripts/state.json")
+  os.remove("scripts/state.json")
+  local ok = pcall(mod.sload)
+  restore_file("scripts/state.json", backup)
+  H.truthy(ok)
+end)
+
+H.test("sload with empty state object does not error", function()
+  local backup = backup_file("scripts/state.json")
+  local ok = pcall(function()
+    local f = io.open("scripts/state.json", "w")
+    f:write("{}")
+    f:close()
+    mod.__setScriptData({ start = "1", nodes = { ["1"] = { text = "a" } } })
+    mod.__setCurrentUI(M.layer("game"))
+    mod.vn.currentNode = "1"
+    mod.sload()
+    H.eq(#mod.vn.currentChoices, 0)
+  end)
+  restore_file("scripts/state.json", backup)
+  H.truthy(ok)
+end)
+
+H.test("initSload returns false for corrupt state", function()
+  local backup = backup_file("scripts/state.json")
+  local ok = pcall(function()
+    local f = io.open("scripts/state.json", "w")
+    f:write("garbage{{")
+    f:close()
+    H.eq(mod.initSload(), false)
+  end)
+  restore_file("scripts/state.json", backup)
+  H.truthy(ok)
 end)
 
 H.describe("game.lua prof")
