@@ -18,6 +18,10 @@ jobs:
       - name: Sync submodules
         run: git submodule sync --recursive
 
+      - name: Compute submodule hashes
+        id: submodules
+        run: echo "hash=$(git submodule status | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
 
@@ -60,6 +64,7 @@ jobs:
         with:
           path: external/SDL/build
           key: sdl3-build-${{ runner.os }}-${{ steps.sdl-commit.outputs.hash }}
+          restore-keys: sdl3-build-${{ runner.os }}-
 
       - name: Build SDL3 from source
         if: steps.cache-sdl.outputs.cache-hit != 'true'
@@ -73,12 +78,15 @@ jobs:
           sudo ldconfig
 
       # ── Project build ─────────────────────────────────────────
+      # One build dir, one config (Release+clang) for both the game and tests,
+      # so the cache never flip-flops between Release/clang and Debug/gcc
+      # (which used to cause a full double compile every run).
       - name: Cache CMake build directory
         id: cache-build
         uses: actions/cache@v4
         with:
           path: build
-          key: ninja-build-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'src/**', 'external/tsfont/**') }}
+          key: ninja-build-${{ runner.os }}-${{ steps.submodules.outputs.hash }}-${{ hashFiles('CMakeLists.txt', 'src/**', 'external/lib/**') }}
 
       - name: Build from source
         run: |
@@ -97,6 +105,5 @@ jobs:
 
       - name: Build and run tests
         run: |
-          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
           ninja -C build insane_night_tests
           BUILD_DIR=build bash "tests(vibecoded)/run.sh"
