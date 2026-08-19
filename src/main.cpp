@@ -16,7 +16,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         return 1;
     }
 
-    engine.init("heck", 1920, 1080, bgfx::RendererType::Count);
+    engine.init("heck", 1920, 1080, bgfx::RendererType::OpenGL); // fails on others cuz makefile compiles -p 120
 
     auto s_preload = std::chrono::high_resolution_clock::now();
     engine.preloadTextures("assets");

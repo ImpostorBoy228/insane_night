@@ -386,12 +386,15 @@ local function notif(text)
 end
 
 function onFrame(dt)
-    if notifTimer and os.time() >= notifTimer then
-        if notifLayer then
-            notifLayer:clear()
-            notifLayer.visible = false
+    if notifTimer then
+        notifTimer = notifTimer - dt
+        if notifTimer <= 0 then
+            if notifLayer then
+                notifLayer:clear()
+                notifLayer.visible = false
+            end
+            notifTimer = nil
         end
-        notifTimer = nil
     end
 
     if edgingQu and vn.textEl and not vn.textEl:isRevealing() then
@@ -417,7 +420,7 @@ function ssave() -- inflicts segfault(no more)
     file:close()
 
     notif("Saving...")
-    notifTimer = os.time() + 0.5
+    notifTimer = 0.5
 end
 
 function sload()
