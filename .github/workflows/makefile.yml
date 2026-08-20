@@ -26,11 +26,7 @@ jobs:
         run: |
           sudo sed -i 's|azure\.archive\.ubuntu\.com|archive.ubuntu.com|g' /etc/apt/apt-mirrors.txt 2>/dev/null || true
           sudo sed -i 's|azure\.archive\.ubuntu\.com|archive.ubuntu.com|g' /etc/apt/sources.list 2>/dev/null || true
-          sudo tee /etc/apt/apt.conf.d/99fastfail >/dev/null <<'EOF'
-Acquire::Retries "0";
-Acquire::http::Timeout "10";
-Acquire::ftp::Timeout "10";
-EOF
+          printf 'Acquire::Retries "0";\nAcquire::http::Timeout "10";\nAcquire::ftp::Timeout "10";\n' | sudo tee /etc/apt/apt.conf.d/99fastfail >/dev/null
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev
