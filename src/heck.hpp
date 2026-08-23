@@ -25,10 +25,14 @@
 #include <cmath>
 #include <filesystem>
 #include <future>
+#include <semaphore>
+#include <thread>
 #include <optional>
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <generator>
+#include <experimental/simd>
 #include "tsfont_wrapper.hpp"
 #include "audio_unc.hpp"
 #include "stb_image.h"
@@ -72,7 +76,6 @@ inline bgfx::TextureHandle loadTextureUncached(const char *path, int *outW = nul
             bx::DefaultAllocator alloc;
             auto *conv = bimg::imageConvert(&alloc, bimg::TextureFormat::RGBA8, img);
             if (conv) {
-                bimg::imageFree(&img);
                 if (outW) *outW = conv->m_width;
                 if (outH) *outH = conv->m_height;
                 auto mem = bgfx::copy(conv->m_data, conv->m_size);
@@ -89,7 +92,6 @@ inline bgfx::TextureHandle loadTextureUncached(const char *path, int *outW = nul
         auto tex = bgfx::createTexture2D(
             img.m_width, img.m_height, false, 1,
             bgfx::TextureFormat::RGBA8, 0, mem);
-        bimg::imageFree(&img);
         return tex;
     }
     return BGFX_INVALID_HANDLE;
@@ -182,8 +184,21 @@ public:
             std::vector<uint8_t> pixels;
         };
         std::vector<std::future<Decoded>> futures;
+        futures.reserve(files.size());
+
+        // Bound concurrency: stb decodes in parallel, but launching one thread
+        // per file (potentially hundreds) is both a thread explosion and keeps
+        // every decoded image resident until the upload loop runs. A counting
+        // semaphore caps in-flight decodes.
+        const unsigned kMaxThreads =
+            std::max(1u, std::min(16u, std::thread::hardware_concurrency()));
+        std::counting_semaphore<> gate(kMaxThreads);
+
         for (auto &f : files) {
-            futures.push_back(std::async(std::launch::async, [f]() -> Decoded {
+            gate.acquire();
+            futures.push_back(std::async(std::launch::async, [&gate, f]() -> Decoded {
+                struct GateRelease { std::counting_semaphore<> *g; ~GateRelease() { g->release(); } } rel{&gate};
+                (void)rel;
                 int w, h, n;
                 stbi_uc *data = stbi_load(f.c_str(), &w, &h, &n, STBI_rgb_alpha);
                 if (!data) return Decoded{f};
@@ -234,12 +249,74 @@ struct BatchKey {
     uint32_t                    samplerFlags = BGFX_SAMPLER_NONE;
 };
 
+// Splits a batch's absolute indices into draw-call-sized chunks. Each chunk
+// covers a contiguous run of *whole widgets* (never cuts a widget's triangles)
+// and fits in bgfx's default 16-bit index space, unless a single widget exceeds
+// 65535 vertices — that chunk then uses a 32-bit index buffer with absolute
+// indices. No bgfx dependency, so it is unit-testable in isolation.
+struct BatchChunk {
+    uint32_t vertexOffset = 0;   // start vertex of this chunk within the batch
+    uint32_t vertexCount   = 0;  // number of vertices referenced by this chunk
+    bool     index32       = false;
+    std::vector<uint16_t> indices16;
+    std::vector<uint32_t> indices32;
+};
+
+inline std::vector<BatchChunk> chunkBatch(
+        const std::vector<uint32_t> &indices,
+        uint32_t vertexCount,
+        const std::vector<uint32_t> &widgetBases) {
+    std::vector<BatchChunk> out;
+    if (indices.empty()) return out;
+
+    constexpr uint32_t MAXV = 65535;
+    const size_t n = widgetBases.size();
+    std::vector<uint32_t> widgetEnds(n);
+    for (size_t i = 0; i < n; ++i)
+        widgetEnds[i] = (i + 1 < n) ? widgetBases[i + 1] : vertexCount;
+
+    size_t i = 0;
+    while (i < n) {
+        uint32_t start = widgetBases[i];
+        uint32_t count = 0;
+        size_t j = i;
+        while (j < n) {
+            uint32_t wcount = widgetEnds[j] - widgetBases[j];
+            if (count > 0 && count + wcount > MAXV) break;
+            count += wcount;
+            ++j;
+            if (wcount > MAXV) break; // oversized widget handled alone below
+        }
+
+        BatchChunk ch;
+        ch.vertexOffset = start;
+        ch.vertexCount  = count;
+        if (count > MAXV) {
+            ch.index32 = true;
+            ch.indices32.reserve(indices.size());
+            for (uint32_t idx : indices)
+                if (idx >= start && idx < start + count)
+                    ch.indices32.push_back(idx);
+        } else {
+            ch.indices16.reserve(indices.size());
+            for (uint32_t idx : indices)
+                if (idx >= start && idx < start + count)
+                    ch.indices16.push_back(static_cast<uint16_t>(idx - start));
+        }
+        out.push_back(std::move(ch));
+        i = j;
+    }
+    return out;
+}
+
 class JohnPork {
     struct Batch {
         BatchKey key;
         std::vector<uint8_t> vertices;
-        std::vector<uint16_t> indices;
+        std::vector<uint32_t> indices;
         uint32_t vertexCount = 0;
+        uint32_t vertexStride = 0;
+        std::vector<uint32_t> widgetBases;
     };
     std::vector<Batch> batches;
 
@@ -261,13 +338,17 @@ public:
     }
 
     void pushGeometry(const BatchKey &key,
-                      const void *vertData, uint16_t vertCount, uint16_t vertStride,
-                      const uint16_t *idxData, uint16_t idxCount) {
+                      const void *vertData, uint32_t vertCount, uint32_t vertStride,
+                      const uint16_t *idxData, uint32_t idxCount) {
         auto *batch = getOrCreate(key);
-        if (batch->vertices.empty()) batch->key = key;
+        if (batch->vertices.empty()) {
+            batch->key = key;
+            batch->vertexStride = vertStride;
+        }
 
-        uint16_t base = batch->vertexCount;
-        for (uint16_t i = 0; i < idxCount; ++i)
+        uint32_t base = batch->vertexCount;
+        batch->widgetBases.push_back(base);
+        for (uint32_t i = 0; i < idxCount; ++i)
             batch->indices.push_back(base + idxData[i]);
 
         const uint8_t *src = static_cast<const uint8_t*>(vertData);
@@ -279,23 +360,32 @@ public:
         for (auto &batch : batches) {
             if (batch.vertices.empty()) continue;
 
-            uint16_t vertCount = batch.vertexCount;
-            uint32_t idxCount  = static_cast<uint32_t>(batch.indices.size());
+            auto chunks = chunkBatch(batch.indices, batch.vertexCount, batch.widgetBases);
+            for (auto &ch : chunks) {
+                bgfx::TransientVertexBuffer tvb;
+                bgfx::TransientIndexBuffer tib;
+                const uint32_t idxCount = static_cast<uint32_t>(
+                    ch.index32 ? ch.indices32.size() : ch.indices16.size());
+                if (!bgfx::allocTransientBuffers(&tvb, *batch.key.layout, ch.vertexCount,
+                                                 &tib, idxCount, ch.index32))
+                    continue;
 
-            bgfx::TransientVertexBuffer tvb;
-            bgfx::TransientIndexBuffer tib;
-            if (!bgfx::allocTransientBuffers(&tvb, *batch.key.layout, vertCount, &tib, idxCount))
-                continue;
+                std::memcpy(tvb.data,
+                            batch.vertices.data() + ch.vertexOffset * batch.vertexStride,
+                            ch.vertexCount * batch.vertexStride);
 
-            std::memcpy(tvb.data, batch.vertices.data(), batch.vertices.size());
-            std::memcpy(tib.data, batch.indices.data(), idxCount * sizeof(uint16_t));
+                if (ch.index32)
+                    std::memcpy(tib.data, ch.indices32.data(), ch.indices32.size() * sizeof(uint32_t));
+                else
+                    std::memcpy(tib.data, ch.indices16.data(), ch.indices16.size() * sizeof(uint16_t));
 
-            bgfx::setVertexBuffer(0, &tvb);
-            bgfx::setIndexBuffer(&tib);
-            if (bgfx::isValid(batch.key.tex))
-                bgfx::setTexture(0, batch.key.texUniform, batch.key.tex, batch.key.samplerFlags);
-            bgfx::setState(batch.key.state);
-            bgfx::submit(viewId, batch.key.program);
+                bgfx::setVertexBuffer(0, &tvb);
+                bgfx::setIndexBuffer(&tib);
+                if (bgfx::isValid(batch.key.tex))
+                    bgfx::setTexture(0, batch.key.texUniform, batch.key.tex, batch.key.samplerFlags);
+                bgfx::setState(batch.key.state);
+                bgfx::submit(viewId, batch.key.program);
+            }
         }
         batches.clear();
     }
@@ -534,6 +624,21 @@ inline void appendUtf8Codepoint(std::string &out, uint32_t codepoint) {
   }
 }
 
+// SIMD-accelerated byte copy using std::experimental::simd (C++ parallelisms TS,
+// the available precursor to std::simd). Copies n bytes from src to dst in
+// vector-width chunks, falling back to scalar for the tail. element_aligned
+// keeps it safe on arbitrarily-aligned atlas pointers.
+inline void simdCopyBytes(const uint8_t *src, uint8_t *dst, size_t n) {
+  using namespace std::experimental;
+  using V = simd<uint8_t>;
+  size_t i = 0;
+  for (; i + V::size() <= n; i += V::size()) {
+    V x(&src[i], element_aligned);
+    x.copy_to(&dst[i], element_aligned);
+  }
+  for (; i < n; ++i) dst[i] = src[i];
+}
+
 class TextGooner {
 public:
   static constexpr uint32_t INITIAL_ATLAS_SIZE = 512;
@@ -701,9 +806,9 @@ private:
     const uint32_t height = maxY - minY;
     const bgfx::Memory *mem = bgfx::alloc(static_cast<uint32_t>(width * height));
     for (uint32_t row = 0; row < height; ++row) {
-      std::memcpy(mem->data + row * width,
-                  atlasPixels.data() + (minY + row) * atlasSize + minX,
-                  width);
+      simdCopyBytes(atlasPixels.data() + (minY + row) * atlasSize + minX,
+                    mem->data + row * width,
+                    static_cast<size_t>(width));
     }
 
     bgfx::updateTexture2D(atlas, 0, 0, static_cast<uint16_t>(minX), static_cast<uint16_t>(minY),
@@ -749,9 +854,9 @@ private:
 
     std::vector<uint8_t> newPixels(newSize * newSize, 0);
     for (uint32_t row = 0; row < atlasSize; ++row) {
-      std::memcpy(newPixels.data() + row * newSize,
-                  atlasPixels.data() + row * atlasSize,
-                  atlasSize);
+      simdCopyBytes(atlasPixels.data() + row * atlasSize,
+                    newPixels.data() + row * newSize,
+                    static_cast<size_t>(atlasSize));
     }
 
     atlasPixels.swap(newPixels);
@@ -800,6 +905,13 @@ private:
     uint32_t dirtyMaxY = 0;
     bool hasDirtyPixels = false;
 
+    // Snapshot mutable atlas state so a mid-loop ensureSpace() failure can be
+    // rolled back instead of leaving glyphs half-committed with zero UVs.
+    const int    savedCursorX = atlasCursorX;
+    const int    savedCursorY = atlasCursorY;
+    const int    savedRowH    = atlasRowH;
+    const float  savedMaxBearingY = maxBearingY;
+
     for (int i = 0; i < run.count; ++i) {
       const auto &info = run.infos[i];
       GlyphData glyph;
@@ -813,15 +925,23 @@ private:
       if (info.br_y > maxBearingY) maxBearingY = info.br_y;
 
       if (info.bm_width > 0 && info.bm_rows > 0) {
-        if (!ensureSpace(info.bm_width, info.bm_rows)) return false;
+        if (!ensureSpace(info.bm_width, info.bm_rows)) {
+          atlasCursorX = savedCursorX;
+          atlasCursorY = savedCursorY;
+          atlasRowH    = savedRowH;
+          maxBearingY  = savedMaxBearingY;
+          for (int k = 0; k < run.count; ++k)
+            glyphs.erase(run.infos[k].codepoint);
+          return false;
+        }
 
         glyph.atlasX = static_cast<uint16_t>(atlasCursorX);
         glyph.atlasY = static_cast<uint16_t>(atlasCursorY);
 
         for (int row = 0; row < info.bm_rows; ++row) {
-          std::memcpy(atlasPixels.data() + (atlasCursorY + row) * atlasSize + atlasCursorX,
-                      run.bitmap.data() + info.bm_offset + row * info.bm_pitch,
-                      static_cast<size_t>(info.bm_width));
+          const uint8_t *srcRow = run.bitmap.data() + info.bm_offset + row * info.bm_pitch;
+          uint8_t *dstRow = atlasPixels.data() + (atlasCursorY + row) * atlasSize + atlasCursorX;
+          simdCopyBytes(srcRow, dstRow, static_cast<size_t>(info.bm_width));
         }
 
         dirtyMinX = std::min(dirtyMinX, static_cast<uint32_t>(glyph.atlasX));
@@ -918,8 +1038,8 @@ public:
         key.samplerFlags  = BGFX_SAMPLER_POINT;
 
         pork.pushGeometry(key, cachedVertices.data(),
-                          static_cast<uint16_t>(cachedVertices.size()), sizeof(Vertex),
-                          cachedIndices.data(), static_cast<uint16_t>(cachedIndices.size()));
+                          static_cast<uint32_t>(cachedVertices.size()), sizeof(Vertex),
+                          cachedIndices.data(), static_cast<uint32_t>(cachedIndices.size()));
     }
 
     void startReveal(float speed) {
@@ -1154,12 +1274,12 @@ struct Layer {
     for (auto &item : items) item->onResize(pw, ph);
   }
 
-  void collect(JohnPork &pork) {
-    if (!visible) return;
+  std::generator<Skibidi&> collect() {
+    if (!visible) co_return;
     ensureSorted();
     for (auto &item : items)
       if (item->visible)
-        item->collect(pork);
+        co_yield *item;
   }
 
   bool pickClickHandler(const SDL_Event &ev, std::function<void()> &callback) {

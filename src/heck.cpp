@@ -83,11 +83,15 @@ void Hell_Machina::frame() {
     pork.reserve(expectedDraws);
 
     scenePass.begin();
-    for (auto &layer : sceneLayers) layer.collect(pork);
+    for (auto &layer : sceneLayers)
+      for (auto &item : layer.collect())
+        item.collect(pork);
     pork.flush(scenePass.id);
 
     uiPass.begin();
-    for (auto &layer : uiLayers) layer.collect(pork);
+    for (auto &layer : uiLayers)
+      for (auto &item : layer.collect())
+        item.collect(pork);
     pork.flush(uiPass.id);
 
     if (amogus) amogus->frame();
@@ -95,11 +99,14 @@ void Hell_Machina::frame() {
 }
 
 bool Hell_Machina::handleEvent(const SDL_Event &ev) {
-    for (auto &layer : uiLayers) {
-        if (layer.handleEvent(ev)) return true;
+    // Index-based, not range-for: a click callback may addUILayer()
+    // (emplace_back), which invalidates std::deque iterators but keeps
+    // element references valid, so operator[] stays safe here.
+    for (size_t i = 0; i < uiLayers.size(); ++i) {
+        if (uiLayers[i].handleEvent(ev)) return true;
     }
-    for (auto &layer : sceneLayers) {
-        if (layer.handleEvent(ev)) return true;
+    for (size_t i = 0; i < sceneLayers.size(); ++i) {
+        if (sceneLayers[i].handleEvent(ev)) return true;
     }
     return false;
 }

@@ -568,6 +568,7 @@ end
 function renderGame(ui)
     prof.start()
     ui:clear()
+    edgingQu = nil
     prof.mark("clear")
 
     evalScript()
