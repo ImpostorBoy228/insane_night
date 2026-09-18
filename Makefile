@@ -1,68 +1,105 @@
-BUILD_DIR ?= .build
-CMAKE    ?= cmake
-NINJA    ?= ninja
-SHADERC  ?= external/bgfx/tools/bin/linux/shaderc
-ROOT     ?= $(realpath $(dir $(firstword $(MAKEFILE_LIST))))
+CC      = clang
+CXX     = clang++
+CFLAGS  = -std=c17 -O3 -DNDEBUG -DBX_CONFIG_DEBUG=0
+CXXFLAGS= -std=gnu++26 -O3 -DNDEBUG -DBX_CONFIG_DEBUG=0
 
-export PKG_CONFIG_PATH ?= /usr/local/lib64/pkgconfig
+SRC_DIR = src
+EXT_DIR = external
+TESTS_DIR = "tests(vibecoded)/cpp"
 
-.PHONY: all dev shaders tests clean bgfx sdl3
+INC = -I$(SRC_DIR) \
+      -I$(SRC_DIR)/ligma \
+      -I$(EXT_DIR) \
+      -I$(EXT_DIR)/tsfont \
+      -I$(EXT_DIR)/bgfx/include \
+      -I$(EXT_DIR)/bx/include \
+      -I$(EXT_DIR)/bimg/include \
+      -I$(EXT_DIR)/SDL/include \
+      -I$(EXT_DIR)/lua-5.4.8/src \
+      -I$(EXT_DIR)/sol2/include \
+      -I$(EXT_DIR)/soloud20200207/include \
+      -I$(EXT_DIR)/soloud20200207/src/backend/miniaudio \
+      -I/usr/include/freetype2
 
-all: release
+SDL_LIB   = $(EXT_DIR)/SDL/build/libSDL3.so
+FREETYPE  = -lfreetype
+PTHREAD   = -lpthread
+DL        = -ldl
+M         = -lm
 
-bgfx:
-	$(MAKE) -C external/bgfx/.build/projects/gmake-linux-gcc config=release64 bgfx bx bimg shaderc
-	mkdir -p external/lib
-	cp external/bgfx/.build/linux64_gcc/bin/libbgfxRelease.a external/lib/libbgfx.a
-	cp external/bgfx/.build/linux64_gcc/bin/libbimgRelease.a external/lib/libbimg.a
-	cp external/bgfx/.build/linux64_gcc/bin/libbxRelease.a external/lib/libbx.a
-	cp external/bgfx/.build/linux64_gcc/bin/shadercRelease external/bgfx/tools/bin/linux/shaderc
+LIB_DIR = $(EXT_DIR)/lib
 
-sdl3:
-	mkdir -p external/SDL/build
-	cmake -S external/SDL -B external/SDL/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
-	cmake --build external/SDL/build -j2
-	sudo cmake --install external/SDL/build
-	sudo ldconfig
+MAIN_OBJS = $(SRC_DIR)/main.cpp.o \
+            $(SRC_DIR)/heck.cpp.o \
+            $(SRC_DIR)/audio_unc.cpp.o \
+            $(SRC_DIR)/ligma/ligma.cpp.o \
+            $(EXT_DIR)/tsfont/font_handler.c.o
 
-release: shaders CMakeLists.txt
-	$(CMAKE) -B $(BUILD_DIR) -G Ninja -DCMAKE_BUILD_TYPE=Release \
-	  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=$(ROOT)
-	$(NINJA) -C $(BUILD_DIR)
-	ln -sf $(BUILD_DIR)/compile_commands.json compile_commands.json 2>/dev/null || true
+LDFLAGS = -L$(LIB_DIR) -lbimg -llu -lsoloud \
+          $(SDL_LIB) \
+          $(FREETYPE) $(PTHREAD) $(DL) $(M) \
+          -Wl,-rpath,$(abspath $(SDL_LIB))
 
-dev: shaders CMakeLists.txt
-	$(CMAKE) -B $(BUILD_DIR) -G Ninja -DCMAKE_BUILD_TYPE=Debug \
-	  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=$(ROOT)
-	$(NINJA) -C $(BUILD_DIR)
-	ln -sf $(BUILD_DIR)/compile_commands.json compile_commands.json 2>/dev/null || true
+.PHONY: all clean test deps
 
-tests: shaders CMakeLists.txt
-	$(CMAKE) -B $(BUILD_DIR) -G Ninja -DCMAKE_BUILD_TYPE=Debug \
-	  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=$(ROOT)
-	$(NINJA) -C $(BUILD_DIR) insane_night_tests
-	bash "tests(vibecoded)/run.sh"
-	ln -sf $(BUILD_DIR)/compile_commands.json compile_commands.json 2>/dev/null || true
+all: insane_night insane_night_tests
 
-SHADER_INC     = -i external/bgfx/src
-SHADER_VARYING = --varyingdef src/shaders/varying.def.sc
-SHADER_OPTS    = --platform linux -p 120 -O 3 --bin2c
+deps:
+	git submodule update --init --recursive
+	git submodule sync --recursive
+	mkdir -p $(EXT_DIR)
+	curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C $(EXT_DIR)
+	curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
+	unzip -q -o /tmp/soloud.zip -d $(EXT_DIR)
+	rm -f /tmp/soloud.zip
 
-shaders:
-	@for f in src/shaders/*.sc; do \
-	  name=$$(basename "$$f" .sc); \
-	  case "$$name" in \
-	    fs_*) type=fragment ;; \
-	    vs_*) type=vertex   ;; \
-	    *) echo "SKIP unknown type: $$name"; continue ;; \
-	  esac; \
-	  echo "  SHADERC $$name"; \
-	  $(SHADERC) -f "$$f" -o "src/shaders/$$name.bin.h" \
-	    $(SHADER_INC) $(SHADER_VARYING) \
-	    --type "$$type" $(SHADER_OPTS); \
+insane_night: $(MAIN_OBJS) $(LIB_DIR)/liblua.a $(LIB_DIR)/libsoloud.a $(LIB_DIR)/libtsfont.a
+	$(CXX) $(CXXFLAGS) $^ -L$(LIB_DIR) -lbimg -lbgfx -llu -lsoloud $(SDL_LIB) $(FREETYPE) $(PTHREAD) $(DL) $(M) -Wl,-rpath,$(abspath $(SDL_LIB)) -o $@
+
+insane_night_tests: $(TESTS_DIR)/test_logic.cpp.o
+	$(CXX) $(CXXFLAGS) $(INC) $^ $(SDL_LIB) $(FREETYPE) $(PTHREAD) $(DL) $(M) -o $@
+
+%.cpp.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
+
+%.c.o: %.c
+	$(CC) $(CFLAGS) $(INC) -c $< -o $@
+
+$(LIB_DIR)/liblua.a: $(wildcard $(EXT_DIR)/lua-5.4.8/src/*.c)
+	@mkdir -p $(LIB_DIR)
+	@for f in $$(ls $(EXT_DIR)/lua-5.4.8/src/*.c | grep -v /lua.c | grep -v /luac.c); do \
+		$(CC) $(CFLAGS) -I$(EXT_DIR)/lua-5.4.8/src -DLUA_COMPAT_5_3 -DLUA_USE_LINUX -c $$f -o $${f%.c}.o; \
 	done
+	ar rcs $@ $$(ls $(EXT_DIR)/lua-5.4.8/src/*.o | grep -v /lua.c | grep -v /luac.c)
+
+$(LIB_DIR)/libsoloud.a:
+	@mkdir -p $(LIB_DIR)
+	SOLOUDEPS=""; \
+	for f in \
+	         $(EXT_DIR)/soloud20200207/src/core/*.cpp \
+	         $(EXT_DIR)/soloud20200207/src/audiosource/wav/*.cpp \
+	         $(EXT_DIR)/soloud20200207/src/filter/*.cpp \
+	         $(EXT_DIR)/soloud20200207/src/audiosource/wav/stb_vorbis.c \
+	         $(EXT_DIR)/soloud20200207/src/backend/miniaudio/soloud_miniaudio.cpp; do \
+		if [[ $$f == *.c ]]; then \
+			OBJ=$${f%.c}.c.o; \
+			$(CC) $(CFLAGS) -I$(EXT_DIR)/soloud20200207/include -I$(EXT_DIR)/soloud20200207/src/backend/miniaudio -DWITH_MINIAUDIO -c $$f -o $$OBJ; \
+		else \
+			OBJ=$${f%.cpp}.cpp.o; \
+			$(CXX) $(CXXFLAGS) -I$(EXT_DIR)/soloud20200207/include -I$(EXT_DIR)/soloud20200207/src/backend/miniaudio -DWITH_MINIAUDIO -c $$f -o $$OBJ; \
+		fi; \
+		SOLOUDEPS="$$SOLOUDEPS $$OBJ"; \
+	done; \
+	ar rcs $@ $$SOLOUDEPS
+
+$(LIB_DIR)/libtsfont.a: $(EXT_DIR)/tsfont/font_handler.c
+	$(CC) $(CFLAGS) -I$(EXT_DIR)/tsfont -I/usr/include/freetype2 -c $< -o $(EXT_DIR)/tsfont/font_handler.c.o
+	ar rcs $@ $(EXT_DIR)/tsfont/font_handler.c.o
+
+test: insane_night_tests
+	./insane_night_tests
 
 clean:
-	rm -rf $(BUILD_DIR) compile_commands.json insane_night
-	rm -f src/shaders/*.bin.h
-	rm -f *.dis *.o
+	rm -f $(SRC_DIR)/*.o $(SRC_DIR)/ligma/*.o $(TESTS_DIR)/*.o
+	rm -f $(EXT_DIR)/lua-5.4.8/src/*.o $(EXT_DIR)/soloud20200207/src/**/*.o $(EXT_DIR)/soloud20200207/src/**/*.c.o $(EXT_DIR)/tsfont/*.o
+	rm -f insane_night insane_night_tests
