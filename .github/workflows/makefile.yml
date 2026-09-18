@@ -22,21 +22,27 @@ jobs:
         id: submodules
         run: echo "hash=$(git submodule status | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
-      - name: Fix apt mirrors (avoid hanging on unreachable azure mirror)
+      - name: Fix apt mirrors
         run: |
           sudo sed -i 's|azure\.archive\.ubuntu\.com|archive.ubuntu.com|g' /etc/apt/apt-mirrors.txt 2>/dev/null || true
           sudo sed -i 's|azure\.archive\.ubuntu\.com|archive.ubuntu.com|g' /etc/apt/sources.list 2>/dev/null || true
           printf 'Acquire::Retries "0";\nAcquire::http::Timeout "10";\nAcquire::ftp::Timeout "10";\n' | sudo tee /etc/apt/apt.conf.d/99fastfail >/dev/null
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev curl unzip
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev libgl1-mesa-dev curl unzip libxcb1-dev
 
-      - name: Cache Lua 5.4.8
+      - name: Cache lua
         id: cache-lua
         uses: actions/cache@v4
         with:
           path: external/lua-5.4.8
           key: lua-5.4.8-src
+
+      - name: Download Lua 5.4.8
+        if: steps.cache-lua.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p external
+          curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
 
       - name: Cache SoLoud 20200207
         id: cache-soloud
@@ -44,6 +50,13 @@ jobs:
         with:
           path: external/soloud20200207
           key: soloud-20200207-src
+
+      - name: Download SoLoud 20200207
+        if: steps.cache-soloud.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p external
+          curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
+          unzip -q -o /tmp/soloud.zip -d external
 
       - name: Cache depfetch binary
         id: cache-depfetch
@@ -54,70 +67,47 @@ jobs:
 
       - name: Build depfetch
         if: steps.cache-depfetch.outputs.cache-hit != 'true'
-        run: |
-          cd depfetch && cargo build --release
-
-      - name: Download Lua 5.4.8
-        if: steps.cache-lua.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p external
-          curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
-
-      - name: Download SoLoud 20200207
-        if: steps.cache-soloud.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p external
-          curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
-          unzip -q -o /tmp/soloud.zip -d external
+        run: cd depfetch && cargo build --release
 
       - name: Run depfetch (fetch submodules)
         run: ./depfetch/target/release/depfetch
 
-      - name: Get SDL submodule commit
-        id: sdl-commit
-        run: echo "hash=$(git submodule status external/SDL | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+      - name: Build bgfx/bimg/bx/shaderc
+        run: make bgfx
 
       - name: Cache SDL3 build
         id: cache-sdl
         uses: actions/cache@v4
         with:
           path: external/SDL/build
-          key: sdl3-build-${{ runner.os }}-${{ steps.sdl-commit.outputs.hash }}
+          key: sdl3-build-${{ runner.os }}-${{ steps.submodules.outputs.hash }}
           restore-keys: sdl3-build-${{ runner.os }}-
 
       - name: Build SDL3 from source
         if: steps.cache-sdl.outputs.cache-hit != 'true'
         run: |
-          cmake -S external/SDL -B external/SDL/build -DCMAKE_BUILD_TYPE=Release
-          cmake --build external/SDL/build --config Release
+          cmake -S external/SDL -B external/SDL/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+          cmake --build external/SDL/build -j2
 
       - name: Install SDL3
         run: |
           sudo cmake --install external/SDL/build
           sudo ldconfig
 
-      - name: Cache CMake build directory
-        id: cache-build
-        uses: actions/cache@v4
-        with:
-          path: build
-          key: ninja-build-${{ runner.os }}-${{ steps.submodules.outputs.hash }}-${{ hashFiles('CMakeLists.txt', 'src/**', 'external/lib/**') }}
+      - name: Compile shaders
+        run: make shaders
 
-      - name: Build from source
+      - name: Build project
         run: |
+          export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig:$PKG_CONFIG_PATH
           cmake -B build -G Ninja \
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_BUILD_TYPE=Release
           ninja -C build
-          ln -sf build/compile_commands.json compile_commands.json 2>/dev/null; true
+          ln -sf build/compile_commands.json compile_commands.json 2>/dev/null || true
 
-      - name: Install Lua 5.4
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lua5.4
-
-      - name: Build and run tests
+      - name: Run tests
         run: |
           ninja -C build insane_night_tests
           BUILD_DIR=build bash "tests(vibecoded)/run.sh"

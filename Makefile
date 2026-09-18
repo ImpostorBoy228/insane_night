@@ -6,9 +6,24 @@ ROOT     ?= $(realpath $(dir $(firstword $(MAKEFILE_LIST))))
 
 export PKG_CONFIG_PATH ?= /usr/local/lib64/pkgconfig
 
-.PHONY: all dev shaders tests clean
+.PHONY: all dev shaders tests clean bgfx sdl3
 
 all: release
+
+bgfx:
+	$(MAKE) -C external/bgfx/.build/projects/gmake-linux-gcc config=release64 bgfx bx bimg shaderc
+	mkdir -p external/lib
+	cp external/bgfx/.build/linux64_gcc/bin/libbgfxRelease.a external/lib/libbgfx.a
+	cp external/bgfx/.build/linux64_gcc/bin/libbimgRelease.a external/lib/libbimg.a
+	cp external/bgfx/.build/linux64_gcc/bin/libbxRelease.a external/lib/libbx.a
+	cp external/bgfx/.build/linux64_gcc/bin/shadercRelease external/bgfx/tools/bin/linux/shaderc
+
+sdl3:
+	mkdir -p external/SDL/build
+	cmake -S external/SDL -B external/SDL/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+	cmake --build external/SDL/build -j2
+	sudo cmake --install external/SDL/build
+	sudo ldconfig
 
 release: shaders CMakeLists.txt
 	$(CMAKE) -B $(BUILD_DIR) -G Ninja -DCMAKE_BUILD_TYPE=Release \
