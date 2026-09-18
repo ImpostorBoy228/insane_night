@@ -27,19 +27,44 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev libgl1-mesa-dev curl unzip libxcb1-dev g++-15
 
+      - name: Cache Lua/SoLoud downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            external/lua-5.4.8
+            external/soloud20200207
+          key: ${{ runner.os }}-downloads-${{ hashFiles('Makefile', '.github/workflows/makefile.yml') }}
+
       - name: Download Lua 5.4.8
         run: |
-          mkdir -p external
-          curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
+          if [ -d external/lua-5.4.8 ]; then echo "lua-5.4.8 already present (cache)"; else
+            mkdir -p external
+            curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
+          fi
 
       - name: Download SoLoud 20200207
         run: |
-          mkdir -p external
-          curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
-          unzip -q -o /tmp/soloud.zip -d external
+          if [ -d external/soloud20200207 ]; then echo "soloud20200207 already present (cache)"; else
+            mkdir -p external
+            curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
+            unzip -q -o /tmp/soloud.zip -d external
+            rm -f /tmp/soloud.zip
+          fi
+
+      - name: Cache bgfx build
+        uses: actions/cache@v4
+        with:
+          path: external/lib
+          key: ${{ runner.os }}-bgfx-${{ hashFiles('external/bgfx/**', 'external/bx/**', 'external/bimg/**', 'Makefile') }}
 
       - name: Build bgfx/bimg/bx
         run: make bgfx
+
+      - name: Cache SDL3 build
+        uses: actions/cache@v4
+        with:
+          path: external/SDL/build
+          key: ${{ runner.os }}-sdl3-${{ hashFiles('external/SDL/**', 'Makefile') }}
 
       - name: Build SDL3 from source
         run: |
@@ -50,6 +75,12 @@ jobs:
         run: |
           sudo cmake --install external/SDL/build
           sudo ldconfig
+
+      - name: Cache CMake build
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: ${{ runner.os }}-build-${{ hashFiles('CMakeLists.txt', 'src/**', 'tests(vibecoded)/cpp/**', 'Makefile') }}
 
       - name: Build project
         run: |
