@@ -40,7 +40,7 @@ LDFLAGS = -L$(LIB_DIR) -lbimg -llu -lsoloud \
           $(FREETYPE) $(PTHREAD) $(DL) $(M) \
           -Wl,-rpath,$(abspath $(SDL_LIB))
 
-.PHONY: all clean test deps
+.PHONY: all clean test deps bgfx
 
 all: insane_night insane_night_tests
 
@@ -52,6 +52,10 @@ deps:
 	curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
 	unzip -q -o /tmp/soloud.zip -d $(EXT_DIR)
 	rm -f /tmp/soloud.zip
+
+bgfx:
+	@mkdir -p $(LIB_DIR)
+	cd $(EXT_DIR)/bgfx && make linux-clang-release64
 
 insane_night: $(MAIN_OBJS) $(LIB_DIR)/liblua.a $(LIB_DIR)/libsoloud.a $(LIB_DIR)/libtsfont.a
 	$(CXX) $(CXXFLAGS) $^ -L$(LIB_DIR) -lbimg -lbgfx -llu -lsoloud $(SDL_LIB) $(FREETYPE) $(PTHREAD) $(DL) $(M) -Wl,-rpath,$(abspath $(SDL_LIB)) -o $@

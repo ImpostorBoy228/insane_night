@@ -38,7 +38,7 @@ jobs:
           curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
           unzip -q -o /tmp/soloud.zip -d external
 
-      - name: Build bgfx/bimg/bx/shaderc
+      - name: Build bgfx/bimg/bx
         run: make bgfx
 
       - name: Build SDL3 from source
@@ -50,9 +50,6 @@ jobs:
         run: |
           sudo cmake --install external/SDL/build
           sudo ldconfig
-
-      - name: Compile shaders
-        run: make shaders
 
       - name: Build project
         run: |
