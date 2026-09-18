@@ -30,6 +30,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <coroutine>
 #include <generator>
 #include <experimental/simd>
 #include "tsfont_wrapper.hpp"
