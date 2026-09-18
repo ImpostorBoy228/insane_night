@@ -1,7 +1,6 @@
 #pragma once
 // shut up the compiler
 // TODO: add 3d models support
-// NOLINTBEGIN(readability-identifier-length,bugprone-narrowing-conversions,performance-noexcept-move-constructor)
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
 #include <algorithm>
@@ -1564,4 +1563,3 @@ public:
     }
 
 };
-// NOLINTEND(readability-identifier-length,bugprone-narrowing-conversions,performance-noexcept-move-constructor)

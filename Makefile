@@ -4,6 +4,8 @@ NINJA    ?= ninja
 SHADERC  ?= external/bgfx/tools/bin/linux/shaderc
 ROOT     ?= $(realpath $(dir $(firstword $(MAKEFILE_LIST))))
 
+export PKG_CONFIG_PATH ?= /usr/local/lib64/pkgconfig
+
 .PHONY: all dev shaders tests clean
 
 all: release

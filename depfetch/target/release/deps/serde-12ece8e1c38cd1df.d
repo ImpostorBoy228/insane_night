@@ -1,0 +1,14 @@
+/home/impostorboy/projects/insane_night/depfetch/target/release/deps/serde-12ece8e1c38cd1df.d: /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs /home/impostorboy/projects/insane_night/depfetch/target/release/build/serde-00816a60b6de05ff/out/private.rs
+
+/home/impostorboy/projects/insane_night/depfetch/target/release/deps/libserde-12ece8e1c38cd1df.rlib: /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs /home/impostorboy/projects/insane_night/depfetch/target/release/build/serde-00816a60b6de05ff/out/private.rs
+
+/home/impostorboy/projects/insane_night/depfetch/target/release/deps/libserde-12ece8e1c38cd1df.rmeta: /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs /home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs /home/impostorboy/projects/insane_night/depfetch/target/release/build/serde-00816a60b6de05ff/out/private.rs
+
+/home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs:
+/home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs:
+/home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs:
+/home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs:
+/home/impostorboy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs:
+/home/impostorboy/projects/insane_night/depfetch/target/release/build/serde-00816a60b6de05ff/out/private.rs:
+
+# env-dep:OUT_DIR=/home/impostorboy/projects/insane_night/depfetch/target/release/build/serde-00816a60b6de05ff/out
