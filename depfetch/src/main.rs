@@ -1,26 +1,19 @@
 use std::process::Command;
-use std::path::Path;
-
-const LUA_URL: &str = "https://www.lua.org/ftp/lua-5.4.8.tar.gz";
-const SOLOUD_URL: &str = "https://solhsa.com/soloud/soloud_20200207_lite.zip";
+use std::env;
 
 fn main() {
-    let external = Path::new("../external");
-    
-    let _ = Command::new("git")
-        .args(["submodule", "update", "--init", "--recursive"])
-        .current_dir("..")
-        .status();
+    let current_exe = env::current_exe().expect("failed to get current exe");
+    let project_root = current_exe
+        .parent().unwrap()  // target/release
+        .parent().unwrap()  // target
+        .parent().unwrap()  // depfetch
+        .parent().unwrap(); // insane_night
 
-    if !external.join("lua-5.4.8").exists() {
-        let _ = Command::new("sh")
-            .args(["-c", &format!("curl -sL {} | tar xz -C {}", LUA_URL, external.display())])
-            .status();
-    }
-    
-    if !external.join("soloud20200207").exists() {
-        let _ = Command::new("sh")
-            .args(["-c", &format!("curl -sL {} -o /tmp/soloud.zip && unzip -q -o /tmp/soloud.zip -d {}", SOLOUD_URL, external.display())])
-            .status();
+    let status = Command::new("git")
+        .args(["submodule", "update", "--init", "--recursive"])
+        .current_dir(&project_root)
+        .status();
+    if !status.map_or(false, |s| s.success()) {
+        eprintln!("git submodule update failed");
     }
 }

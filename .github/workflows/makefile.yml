@@ -31,6 +31,20 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev curl unzip
 
+      - name: Cache Lua 5.4.8
+        id: cache-lua
+        uses: actions/cache@v4
+        with:
+          path: external/lua-5.4.8
+          key: lua-5.4.8-src
+
+      - name: Cache SoLoud 20200207
+        id: cache-soloud
+        uses: actions/cache@v4
+        with:
+          path: external/soloud20200207
+          key: soloud-20200207-src
+
       - name: Cache depfetch binary
         id: cache-depfetch
         uses: actions/cache@v4
@@ -41,12 +55,23 @@ jobs:
       - name: Build depfetch
         if: steps.cache-depfetch.outputs.cache-hit != 'true'
         run: |
-          cd depfetch
-          cargo build --release
+          cd depfetch && cargo build --release
 
-      - name: Run depfetch (fetch deps)
+      - name: Download Lua 5.4.8
+        if: steps.cache-lua.outputs.cache-hit != 'true'
         run: |
-          ./depfetch/target/release/depfetch
+          mkdir -p external
+          curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
+
+      - name: Download SoLoud 20200207
+        if: steps.cache-soloud.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p external
+          curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
+          unzip -q -o /tmp/soloud.zip -d external
+
+      - name: Run depfetch (fetch submodules)
+        run: ./depfetch/target/release/depfetch
 
       - name: Get SDL submodule commit
         id: sdl-commit
