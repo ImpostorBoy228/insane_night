@@ -1,5 +1,4 @@
 /target
-depfetch/target
 external/bin
 external/lib
 external/lua-5.4.8
