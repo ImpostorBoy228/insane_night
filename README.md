@@ -1,7 +1,7 @@
 ## insane_night - new gen visual novel engine
 ### Core stuff
 - based on bgfx(potentially crossplatform)
-- uses C++26 + cmake + ninja 
+- uses C++26 + pure gcc
 - lua integration for game logic
 - son for main script instead of JSON
 ### Docs
