@@ -5,94 +5,230 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (recursive submodules)
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Sync submodules
-        run: git submodule sync --recursive
+      - name: Record submodule pins for cache keys
+        id: pins
+        run: |
+          {
+            echo "bgfx=$(git rev-parse HEAD:external/bgfx)"
+            echo "sdl=$(git rev-parse HEAD:external/SDL)"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Fix apt mirrors
         run: |
           sudo sed -i 's|azure\.archive\.ubuntu\.com|archive.ubuntu.com|g' /etc/apt/apt-mirrors.txt 2>/dev/null || true
           sudo sed -i 's|azure\.archive\.ubuntu\.com|archive.ubuntu.com|g' /etc/apt/sources.list 2>/dev/null || true
-          printf 'Acquire::Retries "0";\nAcquire::http::Timeout "10";\nAcquire::ftp::Timeout "10";\n' | sudo tee /etc/apt/apt.conf.d/99fastfail >/dev/null
+          printf 'Acquire::Retries "3";\nAcquire::http::Timeout "20";\nAcquire::ftp::Timeout "20";\n' | sudo tee /etc/apt/apt.conf.d/99-fastfail >/dev/null
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build build-essential libfreetype6-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libegl-dev libgl1-mesa-dev curl unzip libxcb1-dev g++-15
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential make gcc-14 g++-14 \
+            cmake ninja-build pkg-config \
+            libfreetype6-dev \
+            libx11-dev libxext-dev libxrandr-dev libxinerama-dev \
+            libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev \
+            libxcb1-dev libegl-dev libgl1-mesa-dev \
+            curl unzip
 
-      - name: Cache Lua/SoLoud downloads
+      - name: Select C++26 toolchain
+        run: |
+          set -euo pipefail
+          cat > /tmp/probe.cpp <<'EOF'
+          #include <coroutine>
+          #include <generator>
+          #include <semaphore>
+          #include <experimental/simd>
+
+          int main() {
+            std::counting_semaphore<1> sem{0};
+            using V = std::experimental::simd<unsigned char>;
+            alignas(V::size()) unsigned char src[V::size()]{};
+            unsigned char dst[V::size()]{};
+            V v(&src[0], std::experimental::element_aligned);
+            v.copy_to(&dst[0], std::experimental::element_aligned);
+            (void)sem;
+            return 0;
+          }
+          EOF
+          for cxx in g++-16 g++-15 g++-14 g++; do
+            command -v "$cxx" >/dev/null 2>&1 || continue
+            if "$cxx" -std=gnu++26 -fsyntax-only /tmp/probe.cpp 2>/tmp/probe.err; then
+              echo "CC=${cxx/g++/gcc}" >> "$GITHUB_ENV"
+              echo "CXX=$cxx"          >> "$GITHUB_ENV"
+              echo "using $cxx: $("$cxx" --version | head -1)"
+              exit 0
+            fi
+          done
+          echo "::error::no C++26-capable compiler found (need g++-14 or newer)"
+          cat /tmp/probe.err
+          exit 1
+
+      - name: Cache Lua 5.4.8 + SoLoud sources
         uses: actions/cache@v4
         with:
           path: |
             external/lua-5.4.8
             external/soloud20200207
-          key: ${{ runner.os }}-downloads-${{ hashFiles('Makefile', '.github/workflows/makefile.yml') }}
+          key: ${{ runner.os }}-thirdparty-lua548-soloud20200207-v1
+          restore-keys: ${{ runner.os }}-thirdparty-
 
-      - name: Download Lua 5.4.8
+      - name: Fetch Lua 5.4.8
         run: |
-          if [ -d external/lua-5.4.8 ]; then echo "lua-5.4.8 already present (cache)"; else
+          if [ -d external/lua-5.4.8 ]; then
+            echo "lua-5.4.8: cache hit"
+          else
             mkdir -p external
-            curl -sL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
+            curl -fsSL https://www.lua.org/ftp/lua-5.4.8.tar.gz | tar xz -C external
           fi
 
-      - name: Download SoLoud 20200207
+      - name: Fetch SoLoud 20200207
         run: |
-          if [ -d external/soloud20200207 ]; then echo "soloud20200207 already present (cache)"; else
+          if [ -d external/soloud20200207 ]; then
+            echo "soloud20200207: cache hit"
+          else
             mkdir -p external
-            curl -sL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
+            curl -fsSL https://solhsa.com/soloud/soloud_20200207_lite.zip -o /tmp/soloud.zip
             unzip -q -o /tmp/soloud.zip -d external
             rm -f /tmp/soloud.zip
           fi
 
-      - name: Cache bgfx build
+      - name: Cache bgfx libs + shaderc tool
         uses: actions/cache@v4
         with:
-          path: external/lib
-          key: ${{ runner.os }}-bgfx-${{ hashFiles('external/bgfx/**', 'external/bx/**', 'external/bimg/**', 'Makefile') }}
+          path: |
+            external/bgfx/.build
+            external/bgfx/tools/bin
+            external/lib
+          key: ${{ runner.os }}-bgfx-${{ steps.pins.outputs.bgfx }}-v2
+          restore-keys: ${{ runner.os }}-bgfx-
 
-      - name: Build bgfx/bimg/bx
+      - name: Build bgfx libs + shaderc
         run: make bgfx
 
       - name: Cache SDL3 build
         uses: actions/cache@v4
         with:
           path: external/SDL/build
-          key: ${{ runner.os }}-sdl3-${{ hashFiles('external/SDL/**', 'Makefile') }}
+          key: ${{ runner.os }}-sdl3-v3-${{ steps.pins.outputs.sdl }}
+          restore-keys: ${{ runner.os }}-sdl3-v3-
 
-      - name: Build SDL3 from source
+      - name: Build SDL3 (X11 only, tests/examples off)
         run: |
-          cmake -S external/SDL -B external/SDL/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
-          cmake --build external/SDL/build -j2
+          if [ -f external/SDL/build/libSDL3.so ]; then
+            echo "SDL3: cache hit"
+          else
+            cmake -S external/SDL -B external/SDL/build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DSDL_SHARED=ON -DSDL_STATIC=OFF \
+              -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_INSTALL_TESTS=OFF \
+              -DSDL_WAYLAND=OFF -DSDL_KMSDRM=OFF \
+              -DSDL_ALSA=OFF -DSDL_PULSEAUDIO=OFF -DSDL_PIPEWIRE=OFF \
+              -DSDL_JACK=OFF -DSDL_SNDIO=OFF \
+              -DSDL_DBUS=OFF -DSDL_IBUS=OFF -DSDL_FCITX=OFF \
+              -DSDL_LIBUDEV=OFF -DSDL_HIDAPI_LIBUSB=OFF
+            cmake --build external/SDL/build --parallel "$(nproc)"
+          fi
 
-      - name: Install SDL3
+      - name: Build project (app + tests binary)
         run: |
-          sudo cmake --install external/SDL/build
-          sudo ldconfig
+          make all
+          make insane_night_tests
 
-      - name: Cache CMake build
-        uses: actions/cache@v4
+      - name: Check generated shaders are committed
+        continue-on-error: true
+        run: |
+          make shaders
+          if ! git diff --quiet -- src/shaders; then
+            echo "::warning title=shader drift::src/shaders/*.bin.h differ from freshly built output — run 'make shaders' and commit"
+            git --no-pager diff --stat -- src/shaders
+          fi
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
         with:
-          path: build
-          key: ${{ runner.os }}-build-${{ hashFiles('CMakeLists.txt', 'src/**', 'tests(vibecoded)/cpp/**', 'Makefile') }}
+          name: engine-binaries
+          path: |
+            insane_night
+            insane_night_tests
+          retention-days: 1
 
-      - name: Build project
-        run: |
-          export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig:$PKG_CONFIG_PATH
-          cmake -B build -G Ninja \
-            -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_CXX_COMPILER=g++-15 \
-            -DCMAKE_BUILD_TYPE=Release
-          ninja -C build
-          ln -sf build/compile_commands.json compile_commands.json 2>/dev/null || true
+      - name: Upload SDL3 runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdl3-runtime
+          path: external/SDL/build/libSDL3.so*
+          retention-days: 1
 
-      - name: Run tests
+  test:
+    name: test
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout (code only)
+        uses: actions/checkout@v4
+
+      - name: Fetch external/son (Lua tests load it)
+        run: git submodule update --init external/son
+
+      - name: Fix apt mirrors
         run: |
-          ninja -C build insane_night_tests
-          BUILD_DIR=build bash "tests(vibecoded)/run.sh"
+          sudo sed -i 's|azure\.archive\.ubuntu\.com|archive.ubuntu.com|g' /etc/apt/apt-mirrors.txt 2>/dev/null || true
+          sudo sed -i 's|azure\.archive\.ubuntu\.com|archive.ubuntu.com|g' /etc/apt/sources.list 2>/dev/null || true
+
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends lua5.4 libfreetype6
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: engine-binaries
+
+      - name: Download SDL3 runtime
+        uses: actions/download-artifact@v4
+        with:
+          name: sdl3-runtime
+          path: external/SDL/build
+
+      - name: Prepare artifacts
+        run: |
+          test -x insane_night_tests || { echo "::error::insane_night_tests missing from artifact"; exit 1; }
+          chmod +x insane_night insane_night_tests
+          cd external/SDL/build
+          # download-artifact не сохраняет симлинки — восстанавливаем SONAME
+          if [ ! -e libSDL3.so.0 ]; then
+            ln -s "$(ls -1t libSDL3.so.0.* | head -1)" libSDL3.so.0
+          fi
+          ls -l
+
+      - name: Run test suites (Lua + C++)
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/external/SDL/build
+        run: |
+          lua5.4 -v
+          bash "tests(vibecoded)/run.sh"
