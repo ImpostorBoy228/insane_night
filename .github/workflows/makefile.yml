@@ -217,7 +217,8 @@ jobs:
 
       - name: Prepare artifacts
         run: |
-          test -x insane_night_tests || { echo "::error::insane_night_tests missing from artifact"; exit 1; }
+          ls -la
+          test -f insane_night_tests || { echo "::error::insane_night_tests missing from artifact"; exit 1; }
           chmod +x insane_night insane_night_tests
           cd external/SDL/build
           # download-artifact не сохраняет симлинки — восстанавливаем SONAME
